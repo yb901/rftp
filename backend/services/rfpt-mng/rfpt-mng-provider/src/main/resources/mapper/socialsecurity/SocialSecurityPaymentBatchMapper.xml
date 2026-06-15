@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zy.rfpt.mng.provider.infrastructure.persistence.socialsecurity.mapper.SocialSecurityPaymentBatchMapper">
+    <resultMap id="BatchMap" type="com.zy.rfpt.mng.provider.infrastructure.persistence.socialsecurity.entity.SocialSecurityPaymentBatchEntity">
+        <id property="id" column="id"/>
+        <result property="regionCode" column="region_code"/>
+        <result property="regionName" column="region_name"/>
+        <result property="siteType" column="site_type"/>
+        <result property="periodMonth" column="period_month"/>
+        <result property="status" column="status"/>
+        <result property="totalCount" column="total_count"/>
+        <result property="successCount" column="success_count"/>
+        <result property="failedCount" column="failed_count"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <sql id="BatchWhere">
+        <where>
+            <if test="query.regionCode != null and query.regionCode != ''">
+                AND b.region_code = #{query.regionCode}
+            </if>
+            <if test="query.periodMonth != null and query.periodMonth != ''">
+                AND b.period_month = #{query.periodMonth}
+            </if>
+            <if test="query.status != null and query.status != ''">
+                AND b.status = #{query.status}
+            </if>
+        </where>
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tb_tax_social_security_payment_batch
+        (region_code, site_type, period_month, status, total_count, success_count, failed_count, created_by, created_at, updated_at)
+        VALUES
+        (#{regionCode}, #{siteType}, #{periodMonth}, #{status}, #{totalCount}, #{successCount}, #{failedCount}, #{createdBy}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(1)
+        FROM tb_tax_social_security_payment_batch b
+        <include refid="BatchWhere"/>
+    </select>
+
+    <select id="page" resultMap="BatchMap">
+        SELECT b.*, r.region_name
+        FROM tb_tax_social_security_payment_batch b
+        LEFT JOIN tb_tax_region_site r ON r.region_code = b.region_code AND r.site_type = b.site_type
+        <include refid="BatchWhere"/>
+        ORDER BY b.id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+</mapper>

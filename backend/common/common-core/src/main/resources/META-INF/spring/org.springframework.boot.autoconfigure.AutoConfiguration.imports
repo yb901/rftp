@@ -1,0 +1,9 @@
+com.zy.common.core.idcodec.autoconfigure.IdCodecAutoConfiguration
+com.zy.common.core.oss.AliOssAutoConfiguration
+com.zy.common.core.dbencrypt.auto.QyDbEncryptAutoConfiguration
+com.zy.common.core.idgen.conf.IdGeneratorConfiguration
+com.zy.common.core.mq.autoconfigure.RocketMqAutoConfiguration
+com.zy.common.core.redis.RedisLockConfig
+com.zy.common.core.threadpool.ThreadPoolAutoConfiguration
+com.zy.common.core.es.EsAutoConfiguration
+com.zy.common.core.trace.autoconfigure.TraceAutoConfiguration

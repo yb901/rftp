@@ -1,0 +1,53 @@
+[versions]
+spring-boot = "3.5.14"
+lombok = "1.18.30"
+dubbo = "3.2.19"
+rocketmq = "5.5.0"
+mybatis = "3.0.3"
+mysql = "8.3.0"
+totp = "1.7.1"
+bouncycastle = "1.84"
+hutool = "5.8.44"
+caffeine = "3.1.8"
+commons-lang3 = "3.20.0"
+commons-collections4 = "4.5.0"
+aliyun-oss = "3.17.4"
+slf4j = "2.0.16"
+fastjson2 = "2.0.56"
+easyexcel = "4.0.3"
+testcontainers = "1.19.8"
+alipay-sdk = "4.40.831.ALL"
+alipay-sdk-v3 = "3.1.78.ALL"
+okhttp = "5.3.2"
+spring-cloud-alibaba = "2025.0.0.0"
+xxl-job = "3.4.0"
+
+[libraries]
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+dubbo-spring-boot-starter = { module = "org.apache.dubbo:dubbo-spring-boot-starter", version.ref = "dubbo" }
+dubbo-registry-nacos = { module = "org.apache.dubbo:dubbo-registry-nacos", version.ref = "dubbo" }
+rocketmq-client = { module = "org.apache.rocketmq:rocketmq-client", version.ref = "rocketmq" }
+mybatis-spring-boot-starter = { module = "org.mybatis.spring.boot:mybatis-spring-boot-starter", version.ref = "mybatis" }
+mysql-connector-j = { module = "com.mysql:mysql-connector-j", version.ref = "mysql" }
+totp = { module = "dev.samstevens.totp:totp", version.ref = "totp" }
+bouncycastle-bcprov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
+bouncycastle-bcpkix = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bouncycastle" }
+hutool-all = { module = "cn.hutool:hutool-all", version.ref = "hutool" }
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
+commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3" }
+commons-collections4 = { module = "org.apache.commons:commons-collections4", version.ref = "commons-collections4" }
+aliyun-oss = { module = "com.aliyun.oss:aliyun-sdk-oss", version.ref = "aliyun-oss" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+fastjson2 = { module = "com.alibaba.fastjson2:fastjson2", version.ref = "fastjson2" }
+easyexcel = { module = "com.alibaba:easyexcel", version.ref = "easyexcel" }
+testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
+testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+testcontainers-mysql = { module = "org.testcontainers:mysql", version.ref = "testcontainers" }
+alipay-sdk-java = { module = "com.alipay.sdk:alipay-sdk-java", version.ref = "alipay-sdk" }
+alipay-sdk-java-v3 = { module = "com.alipay.sdk:alipay-sdk-java-v3", version.ref = "alipay-sdk-v3" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+spring-cloud-starter-alibaba-nacos-config = { module = "com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config", version.ref = "spring-cloud-alibaba" }
+xxl-job-core = { module = "com.xuxueli:xxl-job-core", version.ref = "xxl-job" }
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
