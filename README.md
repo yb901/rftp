@@ -37,3 +37,32 @@ npm run dev
 ```
 
 数据库暂时复用 `rf_tax`，连接信息通过环境变量或配置中心注入，不在源码中保存密码。
+
+
+## 测试环境 Docker 部署
+
+测试环境部署脚本位于 `deploy/test`，包含后端、前端镜像构建和 `docker compose` 编排。
+
+首次部署：
+
+```bash
+git clone git@codeup.aliyun.com:6a0e7b2c7b6e0a0129639206/rfpt/rfpt.git
+cd rfpt
+cp deploy/test/.env.example deploy/test/.env
+vi deploy/test/.env
+bash deploy/test/deploy.sh
+```
+
+启动后访问：
+
+```text
+http://测试机IP:18092
+```
+
+后端接口默认端口：
+
+```text
+http://测试机IP:18091
+```
+
+详细说明见 `deploy/test/README.md`。
