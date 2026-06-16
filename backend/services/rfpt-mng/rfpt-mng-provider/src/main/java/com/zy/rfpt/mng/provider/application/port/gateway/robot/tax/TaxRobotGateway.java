@@ -10,6 +10,7 @@ public interface TaxRobotGateway {
      *
      * @param taxNo 纳税人识别号
      * @param siteType 站点类型
+     * @param settleMonth 费款所属月份
      */
-    void triggerSocialSecurityPayment(String taxNo, String siteType);
+    void triggerSocialSecurityPayment(String taxNo, String siteType, String settleMonth);
 }

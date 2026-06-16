@@ -106,7 +106,7 @@ public class SocialSecurityPaymentManagerImpl implements SocialSecurityPaymentMa
             @Override
             public void afterCommit() {
                 for (SocialSecurityPaymentTaskEntity task : tasks) {
-                    taxRobotGateway.triggerSocialSecurityPayment(task.getTaxNo(), task.getSiteType());
+                    taxRobotGateway.triggerSocialSecurityPayment(task.getTaxNo(), task.getSiteType(), task.getPeriodMonth());
                 }
             }
         });
