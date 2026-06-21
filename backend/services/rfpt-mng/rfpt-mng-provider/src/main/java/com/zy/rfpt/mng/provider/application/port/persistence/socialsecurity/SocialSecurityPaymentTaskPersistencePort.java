@@ -24,4 +24,7 @@ public interface SocialSecurityPaymentTaskPersistencePort {
 
     /** 按条件分页查询任务。 */
     List<SocialSecurityPaymentTaskEntity> page(SocialSecurityPaymentTaskQuery query);
+
+    /** 按税号批量查询企业信息。 */
+    List<SocialSecurityPaymentTaskEntity> listEnterpriseInfoByTaxNos(List<String> taxNos);
 }

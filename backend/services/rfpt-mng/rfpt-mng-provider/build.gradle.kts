@@ -14,8 +14,12 @@ dependencies {
     implementation(project(":common:common-core"))
     implementation(project(":common:common-utils"))
     implementation(project(":services:rfpt-mng:rfpt-mng-api"))
+    implementation(project(":services:rfpt-performance:rfpt-performance-api"))
 
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation(libs.dubbo.spring.boot.starter)
+    implementation(libs.dubbo.registry.nacos)
+    implementation(libs.spring.cloud.starter.alibaba.nacos.config)
     implementation(libs.mybatis.spring.boot.starter)
     implementation(libs.mysql.connector.j)
     implementation(libs.hutool.all)

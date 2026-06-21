@@ -23,4 +23,7 @@ public interface SocialSecurityPaymentBatchMapper {
     List<SocialSecurityPaymentBatchEntity> page(@Param("query") SocialSecurityPaymentBatchQuery query,
                                                 @Param("offset") int offset,
                                                 @Param("limit") int limit);
+
+    /** 按地区编码批量查询地区名称。 */
+    List<SocialSecurityPaymentBatchEntity> listRegionNamesByRegionCodes(@Param("regionCodes") List<String> regionCodes);
 }

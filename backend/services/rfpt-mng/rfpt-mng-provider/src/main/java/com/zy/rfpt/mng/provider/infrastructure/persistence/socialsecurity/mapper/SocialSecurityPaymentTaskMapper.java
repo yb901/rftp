@@ -29,4 +29,7 @@ public interface SocialSecurityPaymentTaskMapper {
     List<SocialSecurityPaymentTaskEntity> page(@Param("query") SocialSecurityPaymentTaskQuery query,
                                                @Param("offset") int offset,
                                                @Param("limit") int limit);
+
+    /** 按税号批量查询企业信息。 */
+    List<SocialSecurityPaymentTaskEntity> listEnterpriseInfoByTaxNos(@Param("taxNos") List<String> taxNos);
 }

@@ -26,7 +26,9 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 社保缴费应用管理器实现。
@@ -72,7 +74,9 @@ public class SocialSecurityPaymentManagerImpl implements SocialSecurityPaymentMa
     @Override
     public PageResp<SocialSecurityPaymentBatchResult> pageBatch(SocialSecurityPaymentBatchQuery query) {
         long total = batchPersistencePort.count(query);
-        List<SocialSecurityPaymentBatchResult> list = batchPersistencePort.page(query).stream()
+        List<SocialSecurityPaymentBatchEntity> batches = batchPersistencePort.page(query);
+        fillRegionNames(batches);
+        List<SocialSecurityPaymentBatchResult> list = batches.stream()
                 .map(this::toBatchResult)
                 .toList();
         return PageResp.of(list, total, query.getPage(), query.getSize());
@@ -81,7 +85,9 @@ public class SocialSecurityPaymentManagerImpl implements SocialSecurityPaymentMa
     @Override
     public PageResp<SocialSecurityPaymentTaskResult> pageTask(SocialSecurityPaymentTaskQuery query) {
         long total = taskPersistencePort.count(query);
-        List<SocialSecurityPaymentTaskResult> list = taskPersistencePort.page(query).stream()
+        List<SocialSecurityPaymentTaskEntity> tasks = taskPersistencePort.page(query);
+        fillEnterpriseInfo(tasks);
+        List<SocialSecurityPaymentTaskResult> list = tasks.stream()
                 .map(this::toTaskResult)
                 .toList();
         return PageResp.of(list, total, query.getPage(), query.getSize());
@@ -117,6 +123,59 @@ public class SocialSecurityPaymentManagerImpl implements SocialSecurityPaymentMa
             return 0;
         }
         return (int) command.getTaxNoList().stream().filter(StringUtils::isNotBlank).count();
+    }
+
+    /**
+     * 批量回填社保缴费批次地区名称。
+     *
+     * @param batches 社保缴费批次
+     */
+    private void fillRegionNames(List<SocialSecurityPaymentBatchEntity> batches) {
+        if (batches == null || batches.isEmpty()) {
+            return;
+        }
+        List<String> regionCodes = batches.stream()
+                .map(SocialSecurityPaymentBatchEntity::getRegionCode)
+                .filter(StringUtils::isNotBlank)
+                .distinct()
+                .toList();
+        List<SocialSecurityPaymentBatchEntity> regions = batchPersistencePort.listRegionNamesByRegionCodes(regionCodes);
+        Map<String, String> regionNameMap = new HashMap<>();
+        for (SocialSecurityPaymentBatchEntity region : regions) {
+            regionNameMap.put(region.getRegionCode(), region.getRegionName());
+        }
+        for (SocialSecurityPaymentBatchEntity batch : batches) {
+            batch.setRegionName(regionNameMap.get(batch.getRegionCode()));
+        }
+    }
+
+    /**
+     * 批量回填社保缴费任务企业信息。
+     *
+     * @param tasks 社保缴费任务
+     */
+    private void fillEnterpriseInfo(List<SocialSecurityPaymentTaskEntity> tasks) {
+        if (tasks == null || tasks.isEmpty()) {
+            return;
+        }
+        List<String> taxNos = tasks.stream()
+                .map(SocialSecurityPaymentTaskEntity::getTaxNo)
+                .filter(StringUtils::isNotBlank)
+                .distinct()
+                .toList();
+        List<SocialSecurityPaymentTaskEntity> enterprises = taskPersistencePort.listEnterpriseInfoByTaxNos(taxNos);
+        Map<String, SocialSecurityPaymentTaskEntity> enterpriseMap = new HashMap<>();
+        for (SocialSecurityPaymentTaskEntity enterprise : enterprises) {
+            enterpriseMap.put(enterprise.getTaxNo(), enterprise);
+        }
+        for (SocialSecurityPaymentTaskEntity task : tasks) {
+            SocialSecurityPaymentTaskEntity enterprise = enterpriseMap.get(task.getTaxNo());
+            if (enterprise == null) {
+                continue;
+            }
+            task.setEnterpriseName(enterprise.getEnterpriseName());
+            task.setSecurityAccountName(enterprise.getSecurityAccountName());
+        }
     }
 
     private void validateCreateCommand(SocialSecurityPaymentBatchCreateCommand command) {

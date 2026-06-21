@@ -33,6 +33,54 @@ export interface TaskRecord {
   updatedAt?: string;
 }
 
+export interface PerformanceTask {
+  id: number;
+  performanceDescription: string;
+  periodStartDate: string;
+  periodEndDate: string;
+  confirmDeadlineTime: string;
+  secondConfirmDeadlineTime?: string;
+  statusCode?: string;
+  totalCount?: number;
+  confirmedCount?: number;
+  feedbackCount?: number;
+  autoConfirmedCount?: number;
+}
+
+export interface EmployeePerformanceImportItem {
+  rowNo?: number;
+  employeeName: string;
+  mobile: string;
+  employeeNo?: string;
+  projectDepartment?: string;
+  positionName?: string;
+  performance: string;
+}
+
+export interface EmployeePerformanceImportResult {
+  success: boolean;
+  successCount: number;
+  failCount: number;
+  errors?: Array<{ rowNo?: number; mobile?: string; errorMessage?: string }>;
+}
+
+export interface EmployeePerformanceRecord {
+  id: number;
+  taskId: number;
+  performanceDescription?: string;
+  employeeName: string;
+  mobile: string;
+  employeeNo?: string;
+  projectDepartment?: string;
+  positionName?: string;
+  performance: string;
+  confirmStatus: string;
+  feedbackStatus: string;
+  feedbackContent?: string;
+  feedbackHandleOpinion?: string;
+  feedbackHandleAdminName?: string;
+}
+
 const request = axios.create({ baseURL: '' });
 
 interface ApiResult<T> {
@@ -44,7 +92,7 @@ interface ApiResult<T> {
 async function unwrap<T>(promise: Promise<{ data: ApiResult<T> | T }>): Promise<T> {
   const response = await promise;
   const body = response.data as ApiResult<T>;
-  if (body && body.code !== undefined && body.code !== 0 && body.code !== '000000') {
+  if (body && body.code !== undefined && body.code !== 0 && body.code !== '000000' && body.code !== 'E000000') {
     throw new Error(body.message || '请求失败');
   }
   return body && Object.prototype.hasOwnProperty.call(body, 'data') ? body.data : (response.data as T);
@@ -64,4 +112,40 @@ export function fetchTasks(params: Record<string, unknown>) {
 
 export function retryTask(taskId: number, operator: string) {
   return unwrap<void>(request.post(`/api/social-security-payments/tasks/${taskId}/retry`, { operator }));
+}
+
+export function createPerformanceTask(data: {
+  performanceDescription: string;
+  periodStartDate: string;
+  periodEndDate: string;
+  confirmDeadlineTime: string;
+  secondConfirmDeadlineTime?: string;
+  createAdminName?: string;
+}) {
+  return unwrap<PerformanceTask>(request.post('/api/performance/tasks', data));
+}
+
+export function fetchPerformanceTasks(params: Record<string, unknown>) {
+  return unwrap<PageResp<PerformanceTask>>(request.get('/api/performance/tasks', { params }));
+}
+
+export function importPerformanceRecords(taskId: number, records: EmployeePerformanceImportItem[]) {
+  return unwrap<EmployeePerformanceImportResult>(request.post(`/api/performance/tasks/${taskId}/records/import`, { records }));
+}
+
+export function fetchPerformanceRecords(params: Record<string, unknown>) {
+  return unwrap<PageResp<EmployeePerformanceRecord>>(request.get('/api/performance/records', { params }));
+}
+
+export function exportPerformanceRecords(params: Record<string, unknown>) {
+  return request.get('/api/performance/records/export', { params, responseType: 'blob' });
+}
+
+export function adjustPerformanceRecord(recordId: number, data: {
+  afterPerformance: string;
+  adjustReason?: string;
+  operatorAdminName?: string;
+  operatorMobile?: string;
+}) {
+  return unwrap<void>(request.post(`/api/performance/records/${recordId}/adjust`, data));
 }

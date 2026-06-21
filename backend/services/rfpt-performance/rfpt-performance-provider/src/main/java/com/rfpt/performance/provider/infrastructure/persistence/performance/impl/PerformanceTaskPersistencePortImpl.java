@@ -1,0 +1,135 @@
+package com.rfpt.performance.provider.infrastructure.persistence.performance.impl;
+
+import cn.hutool.core.bean.BeanUtil;
+import com.rfpt.performance.provider.application.port.persistence.performance.PerformanceTaskPersistencePort;
+import com.rfpt.performance.provider.application.port.persistence.performance.data.PerformanceTaskData;
+import com.rfpt.performance.provider.application.port.persistence.performance.record.PerformanceTaskRecord;
+import com.rfpt.performance.provider.application.query.performance.PerformanceTaskPageQuery;
+import com.rfpt.performance.provider.infrastructure.persistence.performance.entity.PerformanceTaskEntity;
+import com.rfpt.performance.provider.infrastructure.persistence.performance.mapper.PerformanceTaskMapper;
+import org.springframework.stereotype.Repository;
+
+import javax.annotation.Resource;
+import java.time.LocalDateTime;
+import java.util.List;
+
+/**
+ * 绩效任务持久化端口实现。
+ */
+@Repository
+public class PerformanceTaskPersistencePortImpl implements PerformanceTaskPersistencePort {
+
+    /**
+     * 绩效任务 Mapper。
+     */
+    @Resource
+    private PerformanceTaskMapper performanceTaskMapper;
+
+    /**
+     * 按 ID 查询绩效任务。
+     *
+     * @param id 绩效任务 ID
+     * @return 绩效任务读取记录
+     */
+    @Override
+    public PerformanceTaskRecord getById(Long id) {
+        PerformanceTaskEntity entity = performanceTaskMapper.getById(id);
+        if (entity == null) {
+            return null;
+        }
+        return BeanUtil.copyProperties(entity, PerformanceTaskRecord.class);
+    }
+
+    /**
+     * 按 ID 批量查询绩效任务。
+     *
+     * @param ids 绩效任务 ID
+     * @return 绩效任务读取记录
+     */
+    @Override
+    public List<PerformanceTaskRecord> listByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        List<PerformanceTaskEntity> entities = performanceTaskMapper.listByIds(ids);
+        return BeanUtil.copyToList(entities, PerformanceTaskRecord.class);
+    }
+
+    /**
+     * 按条件统计绩效任务。
+     *
+     * @param query 查询条件
+     * @return 总数
+     */
+    @Override
+    public long count(PerformanceTaskPageQuery query) {
+        return performanceTaskMapper.count(query);
+    }
+
+    /**
+     * 按条件分页查询绩效任务。
+     *
+     * @param query 查询条件
+     * @return 绩效任务
+     */
+    @Override
+    public List<PerformanceTaskRecord> page(PerformanceTaskPageQuery query) {
+        int offset = Math.max(query.getPage() - 1, 0) * query.getSize();
+        List<PerformanceTaskEntity> entities = performanceTaskMapper.page(query, offset, query.getSize());
+        return BeanUtil.copyToList(entities, PerformanceTaskRecord.class);
+    }
+
+    /**
+     * 查询首次确认超期任务 ID。
+     *
+     * @param limit 最大数量
+     * @return 绩效任务 ID
+     */
+    @Override
+    public List<Long> listExpiredFirstConfirmTaskIds(int limit) {
+        return performanceTaskMapper.listExpiredFirstConfirmTaskIds(limit);
+    }
+
+    /**
+     * 查询二次确认超期任务 ID。
+     *
+     * @param limit 最大数量
+     * @return 绩效任务 ID
+     */
+    @Override
+    public List<Long> listExpiredSecondConfirmTaskIds(int limit) {
+        return performanceTaskMapper.listExpiredSecondConfirmTaskIds(limit);
+    }
+
+    /**
+     * 新增绩效任务。
+     *
+     * @param data 绩效任务写入数据
+     * @return 绩效任务读取记录
+     */
+    @Override
+    public PerformanceTaskRecord insert(PerformanceTaskData data) {
+        PerformanceTaskEntity entity = BeanUtil.copyProperties(data, PerformanceTaskEntity.class);
+        entity.setTotalCount(0);
+        entity.setConfirmedCount(0);
+        entity.setFeedbackCount(0);
+        entity.setAutoConfirmedCount(0);
+        entity.setCreatedAt(LocalDateTime.now());
+        entity.setUpdatedAt(entity.getCreatedAt());
+        entity.setIsDeleted(0);
+        performanceTaskMapper.insert(entity);
+        return BeanUtil.copyProperties(entity, PerformanceTaskRecord.class);
+    }
+
+    /**
+     * 增加绩效任务员工数量。
+     *
+     * @param id 绩效任务 ID
+     * @param count 增加数量
+     * @return 是否更新成功
+     */
+    @Override
+    public boolean increaseTotalCount(Long id, int count) {
+        return performanceTaskMapper.increaseTotalCount(id, count) > 0;
+    }
+}

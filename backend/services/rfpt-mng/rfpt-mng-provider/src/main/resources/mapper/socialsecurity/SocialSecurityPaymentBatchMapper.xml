@@ -19,13 +19,13 @@
     <sql id="BatchWhere">
         <where>
             <if test="query.regionCode != null and query.regionCode != ''">
-                AND b.region_code = #{query.regionCode}
+                AND region_code = #{query.regionCode}
             </if>
             <if test="query.periodMonth != null and query.periodMonth != ''">
-                AND b.period_month = #{query.periodMonth}
+                AND period_month = #{query.periodMonth}
             </if>
             <if test="query.status != null and query.status != ''">
-                AND b.status = #{query.status}
+                AND status = #{query.status}
             </if>
         </where>
     </sql>
@@ -39,16 +39,24 @@
 
     <select id="count" resultType="long">
         SELECT COUNT(1)
-        FROM tb_tax_social_security_payment_batch b
+        FROM tb_tax_social_security_payment_batch
         <include refid="BatchWhere"/>
     </select>
 
     <select id="page" resultMap="BatchMap">
-        SELECT b.*, r.region_name
-        FROM tb_tax_social_security_payment_batch b
-        LEFT JOIN tb_tax_region_site r ON r.region_code = b.region_code AND r.site_type = b.site_type
+        SELECT *
+        FROM tb_tax_social_security_payment_batch
         <include refid="BatchWhere"/>
-        ORDER BY b.id DESC
+        ORDER BY id DESC
         LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="listRegionNamesByRegionCodes" resultMap="BatchMap">
+        SELECT region_code, region_name
+        FROM tb_tax_region
+        WHERE region_code IN
+        <foreach collection="regionCodes" item="regionCode" open="(" separator="," close=")">
+            #{regionCode}
+        </foreach>
     </select>
 </mapper>

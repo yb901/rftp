@@ -34,4 +34,12 @@ public class SocialSecurityPaymentBatchPersistencePortImpl implements SocialSecu
         int offset = Math.max(query.getPage() - 1, 0) * query.getSize();
         return mapper.page(query, offset, query.getSize());
     }
+
+    @Override
+    public List<SocialSecurityPaymentBatchEntity> listRegionNamesByRegionCodes(List<String> regionCodes) {
+        if (regionCodes == null || regionCodes.isEmpty()) {
+            return List.of();
+        }
+        return mapper.listRegionNamesByRegionCodes(regionCodes);
+    }
 }

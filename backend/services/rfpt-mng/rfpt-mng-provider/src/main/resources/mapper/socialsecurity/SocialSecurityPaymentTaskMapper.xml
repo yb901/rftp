@@ -23,13 +23,13 @@
     <sql id="TaskWhere">
         <where>
             <if test="query.batchId != null">
-                AND t.batch_id = #{query.batchId}
+                AND batch_id = #{query.batchId}
             </if>
             <if test="query.taxNo != null and query.taxNo != ''">
-                AND t.tax_no = #{query.taxNo}
+                AND tax_no = #{query.taxNo}
             </if>
             <if test="query.status != null and query.status != ''">
-                AND t.task_status = #{query.status}
+                AND task_status = #{query.status}
             </if>
         </where>
     </sql>
@@ -44,10 +44,9 @@
     </insert>
 
     <select id="findById" resultMap="TaskMap">
-        SELECT t.*, e.enterprise_name, e.security_account_name
-        FROM tb_tax_social_security_payment_task t
-        LEFT JOIN tb_tax_enterprise e ON e.tax_no = t.tax_no
-        WHERE t.id = #{id}
+        SELECT *
+        FROM tb_tax_social_security_payment_task
+        WHERE id = #{id}
     </select>
 
     <update id="markRetry">
@@ -59,16 +58,24 @@
 
     <select id="count" resultType="long">
         SELECT COUNT(1)
-        FROM tb_tax_social_security_payment_task t
+        FROM tb_tax_social_security_payment_task
         <include refid="TaskWhere"/>
     </select>
 
     <select id="page" resultMap="TaskMap">
-        SELECT t.*, e.enterprise_name, e.security_account_name
-        FROM tb_tax_social_security_payment_task t
-        LEFT JOIN tb_tax_enterprise e ON e.tax_no = t.tax_no
+        SELECT *
+        FROM tb_tax_social_security_payment_task
         <include refid="TaskWhere"/>
-        ORDER BY t.id DESC
+        ORDER BY id DESC
         LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="listEnterpriseInfoByTaxNos" resultMap="TaskMap">
+        SELECT tax_no, enterprise_name, security_account_name
+        FROM tb_tax_enterprise
+        WHERE tax_no IN
+        <foreach collection="taxNos" item="taxNo" open="(" separator="," close=")">
+            #{taxNo}
+        </foreach>
     </select>
 </mapper>

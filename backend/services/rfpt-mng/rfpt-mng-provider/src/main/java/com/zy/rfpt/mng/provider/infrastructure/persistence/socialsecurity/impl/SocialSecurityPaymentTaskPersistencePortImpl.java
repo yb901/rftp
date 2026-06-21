@@ -44,4 +44,12 @@ public class SocialSecurityPaymentTaskPersistencePortImpl implements SocialSecur
         int offset = Math.max(query.getPage() - 1, 0) * query.getSize();
         return mapper.page(query, offset, query.getSize());
     }
+
+    @Override
+    public List<SocialSecurityPaymentTaskEntity> listEnterpriseInfoByTaxNos(List<String> taxNos) {
+        if (taxNos == null || taxNos.isEmpty()) {
+            return List.of();
+        }
+        return mapper.listEnterpriseInfoByTaxNos(taxNos);
+    }
 }

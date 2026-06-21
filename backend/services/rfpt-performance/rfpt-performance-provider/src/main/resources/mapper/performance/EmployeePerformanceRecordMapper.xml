@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rfpt.performance.provider.infrastructure.persistence.performance.mapper.EmployeePerformanceRecordMapper">
+    <resultMap id="AdminRecordMap" type="com.rfpt.performance.provider.application.port.persistence.performance.record.admin.EmployeePerformanceAdminRecord">
+        <id property="id" column="id"/>
+        <result property="taskId" column="task_id"/>
+        <result property="employeeName" column="employee_name"/>
+        <result property="mobile" column="mobile"/>
+        <result property="employeeNo" column="employee_no"/>
+        <result property="projectDepartment" column="project_department"/>
+        <result property="positionName" column="position_name"/>
+        <result property="performance" column="performance"/>
+        <result property="confirmStatus" column="confirm_status"/>
+        <result property="feedbackStatus" column="feedback_status"/>
+    </resultMap>
+
+    <resultMap id="FeedbackRecordMap" type="com.rfpt.performance.provider.application.port.persistence.performance.record.admin.EmployeePerformanceFeedbackRecord">
+        <id property="recordId" column="record_id"/>
+        <result property="feedbackContent" column="feedback_content"/>
+        <result property="handleOpinion" column="handle_opinion"/>
+        <result property="handleAdminName" column="handle_admin_name"/>
+    </resultMap>
+
+    <select id="getById" resultMap="AdminRecordMap">
+        SELECT id, task_id, mobile, performance, confirm_status, feedback_status
+        FROM tb_employee_performance_record
+        WHERE id = #{id}
+          AND is_deleted = 0
+    </select>
+
+    <sql id="RecordWhere">
+        <where>
+            is_deleted = 0
+            <if test="query.taskId != null">
+                AND task_id = #{query.taskId}
+            </if>
+            <if test="query.employeeName != null and query.employeeName != ''">
+                AND employee_name LIKE CONCAT('%', #{query.employeeName}, '%')
+            </if>
+            <if test="query.mobile != null and query.mobile != ''">
+                AND mobile = #{query.mobile}
+            </if>
+            <if test="query.confirmStatus != null and query.confirmStatus != ''">
+                AND confirm_status = #{query.confirmStatus}
+            </if>
+            <if test="query.feedbackStatus != null and query.feedbackStatus != ''">
+                AND feedback_status = #{query.feedbackStatus}
+            </if>
+        </where>
+    </sql>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(1)
+        FROM tb_employee_performance_record
+        <include refid="RecordWhere"/>
+    </select>
+
+    <select id="page" resultMap="AdminRecordMap">
+        SELECT id, task_id, employee_name, mobile, employee_no, project_department, position_name,
+               performance, confirm_status, feedback_status
+        FROM tb_employee_performance_record
+        <include refid="RecordWhere"/>
+        ORDER BY id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="listFeedbackByRecordIds" resultMap="FeedbackRecordMap">
+        SELECT record_id, feedback_content, handle_opinion, handle_admin_name
+        FROM tb_employee_performance_feedback
+        WHERE is_deleted = 0
+          AND record_id IN
+          <foreach collection="recordIds" item="recordId" open="(" separator="," close=")">
+              #{recordId}
+          </foreach>
+    </select>
+
+    <select id="listExistingMobiles" resultType="string">
+        SELECT mobile
+        FROM tb_employee_performance_record
+        WHERE task_id = #{taskId}
+          AND mobile IN
+          <foreach collection="mobiles" item="mobile" open="(" separator="," close=")">
+              #{mobile}
+          </foreach>
+    </select>
+
+    <insert id="batchInsert">
+        INSERT INTO tb_employee_performance_record
+        (task_id, employee_name, mobile, employee_no, project_department, position_name, performance,
+         confirm_status, feedback_status, created_at, updated_at, is_deleted)
+        VALUES
+        <foreach collection="records" item="record" separator=",">
+            (#{record.taskId}, #{record.employeeName}, #{record.mobile}, #{record.employeeNo},
+             #{record.projectDepartment}, #{record.positionName}, #{record.performance}, #{record.confirmStatus},
+             #{record.feedbackStatus}, #{record.createdAt}, #{record.updatedAt}, #{record.isDeleted})
+        </foreach>
+    </insert>
+
+    <update id="updatePerformanceForSecondConfirm">
+        UPDATE tb_employee_performance_record
+        SET performance = #{performance},
+            confirm_status = 'PENDING_SECOND_CONFIRM',
+            feedback_status = 'HANDLED_ADJUSTED',
+            last_adjust_time = NOW(),
+            updated_at = NOW()
+        WHERE id = #{id}
+          AND is_deleted = 0
+    </update>
+
+    <update id="markFeedbackAdjusted">
+        UPDATE tb_employee_performance_feedback
+        SET status = 'HANDLED_ADJUSTED',
+            handle_opinion = #{handleOpinion},
+            handle_admin_id = #{handleAdminId},
+            handle_admin_name = #{handleAdminName},
+            handled_at = NOW(),
+            updated_at = NOW()
+        WHERE record_id = #{recordId}
+          AND is_deleted = 0
+    </update>
+
+    <insert id="insertAdjustLog">
+        INSERT INTO tb_employee_performance_adjust_log
+        (task_id, record_id, mobile, before_performance, after_performance, adjust_reason,
+         operator_admin_id, operator_admin_name, operator_mobile, ip_address, created_at)
+        VALUES
+        (#{taskId}, #{recordId}, #{mobile}, #{beforePerformance}, #{afterPerformance}, #{adjustReason},
+         #{operatorAdminId}, #{operatorAdminName}, #{operatorMobile}, #{ipAddress}, #{createdAt})
+    </insert>
+</mapper>

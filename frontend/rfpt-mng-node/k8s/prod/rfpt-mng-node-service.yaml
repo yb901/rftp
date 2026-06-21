@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rfpt-mng-node
+  namespace: prod
+  labels:
+    app.kubernetes.io/name: rfpt-mng-node
+    app.kubernetes.io/part-of: rfpt
+spec:
+  selector:
+    app.kubernetes.io/name: rfpt-mng-node
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: http
+  type: ClusterIP
