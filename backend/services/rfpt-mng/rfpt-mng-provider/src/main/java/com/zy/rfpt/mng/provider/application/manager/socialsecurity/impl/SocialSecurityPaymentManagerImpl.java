@@ -24,7 +24,6 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -61,8 +60,6 @@ public class SocialSecurityPaymentManagerImpl implements SocialSecurityPaymentMa
         batch.setSuccessCount(0);
         batch.setFailedCount(0);
         batch.setCreatedBy(command.getOperator());
-        batch.setCreatedAt(LocalDateTime.now());
-        batch.setUpdatedAt(batch.getCreatedAt());
         batchPersistencePort.insert(batch);
 
         List<SocialSecurityPaymentTaskEntity> tasks = buildTasks(batch, command);
@@ -206,8 +203,6 @@ public class SocialSecurityPaymentManagerImpl implements SocialSecurityPaymentMa
             task.setRetryCount(0);
             task.setMaxRetryCount(3);
             task.setCreatedBy(command.getOperator());
-            task.setCreatedAt(LocalDateTime.now());
-            task.setUpdatedAt(task.getCreatedAt());
             tasks.add(task);
         }
         if (tasks.isEmpty()) {

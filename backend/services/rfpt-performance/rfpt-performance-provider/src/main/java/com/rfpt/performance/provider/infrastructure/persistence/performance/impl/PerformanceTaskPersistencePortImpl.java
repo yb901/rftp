@@ -10,7 +10,6 @@ import com.rfpt.performance.provider.infrastructure.persistence.performance.mapp
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -114,8 +113,6 @@ public class PerformanceTaskPersistencePortImpl implements PerformanceTaskPersis
         entity.setConfirmedCount(0);
         entity.setFeedbackCount(0);
         entity.setAutoConfirmedCount(0);
-        entity.setCreatedAt(LocalDateTime.now());
-        entity.setUpdatedAt(entity.getCreatedAt());
         entity.setIsDeleted(0);
         performanceTaskMapper.insert(entity);
         return BeanUtil.copyProperties(entity, PerformanceTaskRecord.class);

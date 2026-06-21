@@ -85,17 +85,16 @@
         INSERT INTO tb_employee_performance_task
         (performance_description, period_start_date, period_end_date, confirm_deadline_time,
          second_confirm_deadline_time, status, total_count, confirmed_count, feedback_count,
-         auto_confirmed_count, create_admin_id, create_admin_name, created_at, updated_at, is_deleted)
+         auto_confirmed_count, create_admin_id, create_admin_name, is_deleted)
         VALUES
         (#{performanceDescription}, #{periodStartDate}, #{periodEndDate}, #{confirmDeadlineTime},
          #{secondConfirmDeadlineTime}, #{status}, #{totalCount}, #{confirmedCount}, #{feedbackCount},
-         #{autoConfirmedCount}, #{createAdminId}, #{createAdminName}, #{createdAt}, #{updatedAt}, #{isDeleted})
+         #{autoConfirmedCount}, #{createAdminId}, #{createAdminName}, #{isDeleted})
     </insert>
 
     <update id="increaseTotalCount">
         UPDATE tb_employee_performance_task
-        SET total_count = total_count + #{count},
-            updated_at = NOW()
+        SET total_count = total_count + #{count}
         WHERE id = #{id}
           AND is_deleted = 0
     </update>

@@ -87,12 +87,12 @@
     <insert id="batchInsert">
         INSERT INTO tb_employee_performance_record
         (task_id, employee_name, mobile, employee_no, project_department, position_name, performance,
-         confirm_status, feedback_status, created_at, updated_at, is_deleted)
+         confirm_status, feedback_status, is_deleted)
         VALUES
         <foreach collection="records" item="record" separator=",">
             (#{record.taskId}, #{record.employeeName}, #{record.mobile}, #{record.employeeNo},
              #{record.projectDepartment}, #{record.positionName}, #{record.performance}, #{record.confirmStatus},
-             #{record.feedbackStatus}, #{record.createdAt}, #{record.updatedAt}, #{record.isDeleted})
+             #{record.feedbackStatus}, #{record.isDeleted})
         </foreach>
     </insert>
 
@@ -101,8 +101,7 @@
         SET performance = #{performance},
             confirm_status = 'PENDING_SECOND_CONFIRM',
             feedback_status = 'HANDLED_ADJUSTED',
-            last_adjust_time = NOW(),
-            updated_at = NOW()
+            last_adjust_time = NOW()
         WHERE id = #{id}
           AND is_deleted = 0
     </update>
@@ -113,8 +112,7 @@
             handle_opinion = #{handleOpinion},
             handle_admin_id = #{handleAdminId},
             handle_admin_name = #{handleAdminName},
-            handled_at = NOW(),
-            updated_at = NOW()
+            handled_at = NOW()
         WHERE record_id = #{recordId}
           AND is_deleted = 0
     </update>
@@ -122,9 +120,9 @@
     <insert id="insertAdjustLog">
         INSERT INTO tb_employee_performance_adjust_log
         (task_id, record_id, mobile, before_performance, after_performance, adjust_reason,
-         operator_admin_id, operator_admin_name, operator_mobile, ip_address, created_at)
+         operator_admin_id, operator_admin_name, operator_mobile, ip_address)
         VALUES
         (#{taskId}, #{recordId}, #{mobile}, #{beforePerformance}, #{afterPerformance}, #{adjustReason},
-         #{operatorAdminId}, #{operatorAdminName}, #{operatorMobile}, #{ipAddress}, #{createdAt})
+         #{operatorAdminId}, #{operatorAdminName}, #{operatorMobile}, #{ipAddress})
     </insert>
 </mapper>

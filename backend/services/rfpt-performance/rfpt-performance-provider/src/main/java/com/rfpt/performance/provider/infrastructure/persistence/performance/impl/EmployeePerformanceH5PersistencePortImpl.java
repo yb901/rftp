@@ -13,7 +13,6 @@ import com.rfpt.performance.provider.infrastructure.persistence.performance.mapp
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -90,9 +89,6 @@ public class EmployeePerformanceH5PersistencePortImpl implements EmployeePerform
     @Override
     public Long insertSmsEvidence(PerformanceSmsEvidenceData data) {
         PerformanceSmsEvidenceEntity entity = BeanUtil.copyProperties(data, PerformanceSmsEvidenceEntity.class);
-        LocalDateTime now = LocalDateTime.now();
-        entity.setCreatedAt(now);
-        entity.setUpdatedAt(now);
         employeePerformanceH5Mapper.insertSmsEvidence(entity);
         return entity.getId();
     }
@@ -122,7 +118,6 @@ public class EmployeePerformanceH5PersistencePortImpl implements EmployeePerform
     @Override
     public boolean markSmsVerified(PerformanceSmsEvidenceData data) {
         PerformanceSmsEvidenceEntity entity = BeanUtil.copyProperties(data, PerformanceSmsEvidenceEntity.class);
-        entity.setUpdatedAt(LocalDateTime.now());
         return employeePerformanceH5Mapper.markSmsVerified(entity) > 0;
     }
 
@@ -135,7 +130,6 @@ public class EmployeePerformanceH5PersistencePortImpl implements EmployeePerform
     @Override
     public boolean insertConfirmLog(PerformanceConfirmLogData data) {
         PerformanceConfirmLogEntity entity = BeanUtil.copyProperties(data, PerformanceConfirmLogEntity.class);
-        entity.setCreatedAt(LocalDateTime.now());
         return employeePerformanceH5Mapper.insertConfirmLog(entity) > 0;
     }
 
@@ -147,11 +141,7 @@ public class EmployeePerformanceH5PersistencePortImpl implements EmployeePerform
      */
     @Override
     public int batchInsertConfirmLog(List<PerformanceConfirmLogData> dataList) {
-        LocalDateTime now = LocalDateTime.now();
         List<PerformanceConfirmLogEntity> entities = BeanUtil.copyToList(dataList, PerformanceConfirmLogEntity.class);
-        for (PerformanceConfirmLogEntity entity : entities) {
-            entity.setCreatedAt(now);
-        }
         return employeePerformanceH5Mapper.batchInsertConfirmLog(entities);
     }
 
@@ -189,9 +179,6 @@ public class EmployeePerformanceH5PersistencePortImpl implements EmployeePerform
     @Override
     public boolean insertFeedback(PerformanceFeedbackData data) {
         PerformanceFeedbackEntity entity = BeanUtil.copyProperties(data, PerformanceFeedbackEntity.class);
-        LocalDateTime now = LocalDateTime.now();
-        entity.setCreatedAt(now);
-        entity.setUpdatedAt(now);
         entity.setIsDeleted(0);
         return employeePerformanceH5Mapper.insertFeedback(entity) > 0;
     }

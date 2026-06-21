@@ -13,7 +13,6 @@ import com.rfpt.performance.provider.infrastructure.persistence.performance.mapp
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -96,11 +95,8 @@ public class EmployeePerformanceRecordPersistencePortImpl implements EmployeePer
      */
     @Override
     public int batchInsert(List<EmployeePerformanceRecordData> records) {
-        LocalDateTime now = LocalDateTime.now();
         List<EmployeePerformanceRecordEntity> entities = BeanUtil.copyToList(records, EmployeePerformanceRecordEntity.class);
         for (EmployeePerformanceRecordEntity entity : entities) {
-            entity.setCreatedAt(now);
-            entity.setUpdatedAt(now);
             entity.setIsDeleted(0);
         }
         return employeePerformanceRecordMapper.batchInsert(entities);
@@ -141,7 +137,6 @@ public class EmployeePerformanceRecordPersistencePortImpl implements EmployeePer
     @Override
     public boolean insertAdjustLog(EmployeePerformanceAdjustLogData data) {
         EmployeePerformanceAdjustLogEntity entity = BeanUtil.copyProperties(data, EmployeePerformanceAdjustLogEntity.class);
-        entity.setCreatedAt(LocalDateTime.now());
         return employeePerformanceRecordMapper.insertAdjustLog(entity) > 0;
     }
 }

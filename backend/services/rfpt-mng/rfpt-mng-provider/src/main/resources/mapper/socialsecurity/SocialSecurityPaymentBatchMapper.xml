@@ -32,9 +32,9 @@
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO tb_tax_social_security_payment_batch
-        (region_code, site_type, period_month, status, total_count, success_count, failed_count, created_by, created_at, updated_at)
+        (region_code, site_type, period_month, status, total_count, success_count, failed_count, created_by)
         VALUES
-        (#{regionCode}, #{siteType}, #{periodMonth}, #{status}, #{totalCount}, #{successCount}, #{failedCount}, #{createdBy}, #{createdAt}, #{updatedAt})
+        (#{regionCode}, #{siteType}, #{periodMonth}, #{status}, #{totalCount}, #{successCount}, #{failedCount}, #{createdBy})
     </insert>
 
     <select id="count" resultType="long">

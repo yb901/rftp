@@ -36,10 +36,10 @@
 
     <insert id="batchInsert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO tb_tax_social_security_payment_task
-        (batch_id, tax_no, region_code, settle_month, task_status, retryable, retry_count, max_retry_count, created_by, gmt_create, gmt_modified)
+        (batch_id, tax_no, region_code, settle_month, task_status, retryable, retry_count, max_retry_count, created_by)
         VALUES
         <foreach collection="list" item="item" separator=",">
-            (#{item.batchId}, #{item.taxNo}, #{item.regionCode}, #{item.periodMonth}, #{item.status}, #{item.retryable}, #{item.retryCount}, #{item.maxRetryCount}, #{item.createdBy}, #{item.createdAt}, #{item.updatedAt})
+            (#{item.batchId}, #{item.taxNo}, #{item.regionCode}, #{item.periodMonth}, #{item.status}, #{item.retryable}, #{item.retryCount}, #{item.maxRetryCount}, #{item.createdBy})
         </foreach>
     </insert>
 
@@ -52,7 +52,7 @@
     <update id="markRetry">
         UPDATE tb_tax_social_security_payment_task
         SET task_status = 'PROCESSING', retryable = 0, retry_count = retry_count + 1,
-            error_message = NULL, gmt_modified = NOW(), updated_by = #{operator}
+            error_message = NULL, updated_by = #{operator}
         WHERE id = #{id}
     </update>
 
