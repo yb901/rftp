@@ -2,7 +2,7 @@
 
 ## Mapper、Entity、XML
 
-Mapper、Mapper XML、Entity 按业务上下文拆包。当前 `rf` 主库暂时使用简单上下文命名：
+Mapper、Mapper XML、Entity 按业务上下文拆包。单数据源模块可使用简单上下文命名：
 
 ```text
 infrastructure/persistence/{context}/mapper/XxxMapper.java
@@ -10,7 +10,7 @@ infrastructure/persistence/{context}/entity/XxxEntity.java
 src/main/resources/mapper/{context}/XxxMapper.xml
 ```
 
-如果后续引入多数据源，再按数据源命名空间扩展为：
+多数据源模块按数据源命名空间扩展，例如 `rf-mng` 使用 `platform` 和 `robot`：
 
 ```text
 infrastructure/persistence/{datasource}/{context}/mapper/XxxMapper.java

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.rf.mng.provider.infrastructure.persistence.socialsecurity.mapper.SocialSecurityPaymentBatchMapper">
+<mapper namespace="com.rf.mng.provider.infrastructure.persistence.platform.socialsecurity.mapper.SocialSecurityPaymentBatchMapper">
     <resultMap id="BatchMap" type="com.rf.mng.provider.infrastructure.persistence.socialsecurity.entity.SocialSecurityPaymentBatchEntity">
         <id property="id" column="id"/>
         <result property="regionCode" column="region_code"/>
@@ -49,14 +49,5 @@
         <include refid="BatchWhere"/>
         ORDER BY id DESC
         LIMIT #{offset}, #{limit}
-    </select>
-
-    <select id="listRegionNamesByRegionCodes" resultMap="BatchMap">
-        SELECT region_code, region_name
-        FROM tb_tax_region
-        WHERE region_code IN
-        <foreach collection="regionCodes" item="regionCode" open="(" separator="," close=")">
-            #{regionCode}
-        </foreach>
     </select>
 </mapper>

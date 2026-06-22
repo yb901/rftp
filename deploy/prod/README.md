@@ -46,18 +46,33 @@ data:
   xxl-job-admin-addresses: http://xxl-job-admin.prod.svc.cluster.local:8080/xxl-job-admin
 ```
 
-数据库密钥：
+平台主库密钥：
 
 ```yaml
 apiVersion: v1
 kind: Secret
 metadata:
-  name: rf-backend-db-secret
+  name: rf-platform-db-secret
   namespace: prod
 type: Opaque
 stringData:
-  url: jdbc:mysql://mysql.prod:3306/rf_tax?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
-  username: rf_tax
+  url: jdbc:mysql://mysql.prod:3306/rf_pt?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+  username: rf_pt
+  password: 请替换为生产密码
+```
+
+机器人协作库密钥：
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rf-robot-db-secret
+  namespace: prod
+type: Opaque
+stringData:
+  url: jdbc:mysql://mysql.prod:3306/rf_robot?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+  username: rf_robot
   password: 请替换为生产密码
 ```
 
@@ -92,4 +107,6 @@ stringData:
   - `RF_PERFORMANCE_H5_SMS_MOCK_ENABLED=false`
   - `RF_PERFORMANCE_H5_CAPTCHA_ENABLED=true`
 - XXL-JOB 需要在调度中心配置执行器 `rf-performance`，并添加任务 handler：`employeePerformanceAutoConfirmJob`。
-- 数据库上线前需要执行 `backend/services/rf-performance/sql/20260621_employee_performance.sql`。
+- 数据库拆分为 `rf_pt` 和 `rf_robot`：平台业务表放入 `rf_pt`，tax-browser-worker 与 rf-mng 交互的税务机器人表放入 `rf_robot`。
+- 生产上线前需要在 `rf_pt` 执行 `backend/services/rf-performance/sql/20260621_employee_performance.sql` 和 `backend/services/rf-mng/sql/rf_pt/20260615_social_security_payment_management.sql`。
+- 生产上线前需要在 `rf_robot` 执行 qy_robot 税务机器人表结构，并执行 `backend/services/rf-mng/sql/rf_robot/20260615_social_security_payment_task_management_ext.sql`。

@@ -1,5 +1,5 @@
 -- 员工绩效查看与确认反馈表结构。
--- 数据库：rf_tax
+-- 数据库：rf_pt
 
 CREATE TABLE IF NOT EXISTS `tb_employee_performance_task` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键编号',

@@ -10,10 +10,11 @@
 - Docker Compose v2
 - Git
 
-数据库使用现有 `rf_tax`。首次部署前需要确认已经执行：
+数据库拆分为平台主库 `rf_pt` 和机器人协作库 `rf_robot`。首次部署前需要确认已经执行：
 
-1. `qy_robot/sql/014_add_tax_social_security_payment.sql`
-2. `backend/services/rf-mng/sql/20260615_social_security_payment_management.sql`
+1. 在 `rf_robot` 执行 qy_robot 税务机器人表结构，例如 `qy_robot/sql/010_add_tax_browser_worker.sql`、`qy_robot/sql/013_add_tax_enterprise_security_account_name.sql`、`qy_robot/sql/014_add_tax_social_security_payment.sql`。
+2. 在 `rf_robot` 执行 `backend/services/rf-mng/sql/rf_robot/20260615_social_security_payment_task_management_ext.sql`。
+3. 在 `rf_pt` 执行 `backend/services/rf-mng/sql/rf_pt/20260615_social_security_payment_management.sql`。
 
 ## 配置环境变量
 
@@ -25,9 +26,12 @@ vi deploy/test/.env
 
 至少需要确认：
 
-- `RF_DB_URL`
-- `RF_DB_USERNAME`
-- `RF_DB_PASSWORD`
+- `RF_PLATFORM_DB_URL`
+- `RF_PLATFORM_DB_USERNAME`
+- `RF_PLATFORM_DB_PASSWORD`
+- `RF_ROBOT_DB_URL`
+- `RF_ROBOT_DB_USERNAME`
+- `RF_ROBOT_DB_PASSWORD`
 - `RF_TAX_ROBOT_BASE_URL`
 
 `RF_TAX_ROBOT_BASE_URL` 指向 `tax-browser-worker`，例如 `http://192.168.110.192:3220`。

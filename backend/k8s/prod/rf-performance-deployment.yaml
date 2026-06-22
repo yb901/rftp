@@ -44,20 +44,20 @@ spec:
               value: "false"
             - name: RF_PERFORMANCE_H5_CAPTCHA_ENABLED
               value: "true"
-            - name: RF_DB_URL
+            - name: RF_PLATFORM_DB_URL
               valueFrom:
                 secretKeyRef:
-                  name: rf-backend-db-secret
+                  name: rf-platform-db-secret
                   key: url
-            - name: RF_DB_USERNAME
+            - name: RF_PLATFORM_DB_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: rf-backend-db-secret
+                  name: rf-platform-db-secret
                   key: username
-            - name: RF_DB_PASSWORD
+            - name: RF_PLATFORM_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: rf-backend-db-secret
+                  name: rf-platform-db-secret
                   key: password
             - name: DUBBO_REGISTRY_ADDRESS
               valueFrom:

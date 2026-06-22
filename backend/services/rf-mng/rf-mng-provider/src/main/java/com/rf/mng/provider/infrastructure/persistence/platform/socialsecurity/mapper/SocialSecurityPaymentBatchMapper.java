@@ -1,4 +1,4 @@
-package com.rf.mng.provider.infrastructure.persistence.socialsecurity.mapper;
+package com.rf.mng.provider.infrastructure.persistence.platform.socialsecurity.mapper;
 
 import com.rf.mng.provider.application.query.socialsecurity.SocialSecurityPaymentBatchQuery;
 import com.rf.mng.provider.infrastructure.persistence.socialsecurity.entity.SocialSecurityPaymentBatchEntity;
@@ -24,6 +24,4 @@ public interface SocialSecurityPaymentBatchMapper {
                                                 @Param("offset") int offset,
                                                 @Param("limit") int limit);
 
-    /** 按地区编码批量查询地区名称。 */
-    List<SocialSecurityPaymentBatchEntity> listRegionNamesByRegionCodes(@Param("regionCodes") List<String> regionCodes);
 }

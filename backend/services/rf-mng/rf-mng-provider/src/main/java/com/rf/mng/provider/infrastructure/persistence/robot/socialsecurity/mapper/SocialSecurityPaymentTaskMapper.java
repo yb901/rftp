@@ -1,4 +1,4 @@
-package com.rf.mng.provider.infrastructure.persistence.socialsecurity.mapper;
+package com.rf.mng.provider.infrastructure.persistence.robot.socialsecurity.mapper;
 
 import com.rf.mng.provider.application.query.socialsecurity.SocialSecurityPaymentTaskQuery;
 import com.rf.mng.provider.infrastructure.persistence.socialsecurity.entity.SocialSecurityPaymentTaskEntity;
@@ -30,6 +30,4 @@ public interface SocialSecurityPaymentTaskMapper {
                                                @Param("offset") int offset,
                                                @Param("limit") int limit);
 
-    /** 按税号批量查询企业信息。 */
-    List<SocialSecurityPaymentTaskEntity> listEnterpriseInfoByTaxNos(@Param("taxNos") List<String> taxNos);
 }

@@ -5,7 +5,7 @@ import com.rf.mng.provider.application.port.persistence.socialsecurity.data.Soci
 import com.rf.mng.provider.application.port.persistence.socialsecurity.record.SocialSecurityPaymentTaskRecord;
 import com.rf.mng.provider.application.query.socialsecurity.SocialSecurityPaymentTaskQuery;
 import com.rf.mng.provider.infrastructure.persistence.socialsecurity.entity.SocialSecurityPaymentTaskEntity;
-import com.rf.mng.provider.infrastructure.persistence.socialsecurity.mapper.SocialSecurityPaymentTaskMapper;
+import com.rf.mng.provider.infrastructure.persistence.robot.socialsecurity.mapper.SocialSecurityPaymentTaskMapper;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
@@ -50,15 +50,6 @@ public class SocialSecurityPaymentTaskPersistencePortImpl implements SocialSecur
     public List<SocialSecurityPaymentTaskRecord> page(SocialSecurityPaymentTaskQuery query) {
         int offset = Math.max(query.getPage() - 1, 0) * query.getSize();
         List<SocialSecurityPaymentTaskEntity> entities = mapper.page(query, offset, query.getSize());
-        return entities.stream().map(this::toRecord).toList();
-    }
-
-    @Override
-    public List<SocialSecurityPaymentTaskRecord> listEnterpriseInfoByTaxNos(List<String> taxNos) {
-        if (taxNos == null || taxNos.isEmpty()) {
-            return List.of();
-        }
-        List<SocialSecurityPaymentTaskEntity> entities = mapper.listEnterpriseInfoByTaxNos(taxNos);
         return entities.stream().map(this::toRecord).toList();
     }
 

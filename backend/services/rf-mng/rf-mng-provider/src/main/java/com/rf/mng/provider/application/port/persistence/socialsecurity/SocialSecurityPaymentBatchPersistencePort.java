@@ -20,6 +20,4 @@ public interface SocialSecurityPaymentBatchPersistencePort {
     /** 按条件分页查询批次。 */
     List<SocialSecurityPaymentBatchRecord> page(SocialSecurityPaymentBatchQuery query);
 
-    /** 按地区编码批量查询地区名称。 */
-    List<SocialSecurityPaymentBatchRecord> listRegionNamesByRegionCodes(List<String> regionCodes);
 }

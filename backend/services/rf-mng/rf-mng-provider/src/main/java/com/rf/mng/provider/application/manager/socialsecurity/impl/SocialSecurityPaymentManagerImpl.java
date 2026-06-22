@@ -8,6 +8,7 @@ import com.rf.mng.provider.application.command.socialsecurity.SocialSecurityPaym
 import com.rf.mng.provider.application.manager.socialsecurity.SocialSecurityPaymentManager;
 import com.rf.mng.provider.application.port.gateway.robot.tax.TaxRobotGateway;
 import com.rf.mng.provider.application.port.persistence.socialsecurity.SocialSecurityPaymentBatchPersistencePort;
+import com.rf.mng.provider.application.port.persistence.socialsecurity.SocialSecurityRobotReferencePersistencePort;
 import com.rf.mng.provider.application.port.persistence.socialsecurity.SocialSecurityPaymentTaskPersistencePort;
 import com.rf.mng.provider.application.port.persistence.socialsecurity.data.SocialSecurityPaymentBatchData;
 import com.rf.mng.provider.application.port.persistence.socialsecurity.data.SocialSecurityPaymentTaskData;
@@ -44,6 +45,10 @@ public class SocialSecurityPaymentManagerImpl implements SocialSecurityPaymentMa
     /** 任务持久化端口。 */
     @Resource
     private SocialSecurityPaymentTaskPersistencePort taskPersistencePort;
+
+    /** 机器人基础信息持久化端口。 */
+    @Resource
+    private SocialSecurityRobotReferencePersistencePort robotReferencePersistencePort;
 
     /** 税务机器人网关。 */
     @Resource
@@ -146,7 +151,7 @@ public class SocialSecurityPaymentManagerImpl implements SocialSecurityPaymentMa
                 .filter(StringUtils::isNotBlank)
                 .distinct()
                 .toList();
-        List<SocialSecurityPaymentBatchRecord> regions = batchPersistencePort.listRegionNamesByRegionCodes(regionCodes);
+        List<SocialSecurityPaymentBatchRecord> regions = robotReferencePersistencePort.listRegionNamesByRegionCodes(regionCodes);
         Map<String, String> regionNameMap = new HashMap<>();
         for (SocialSecurityPaymentBatchRecord region : regions) {
             regionNameMap.put(region.getRegionCode(), region.getRegionName());
@@ -170,7 +175,7 @@ public class SocialSecurityPaymentManagerImpl implements SocialSecurityPaymentMa
                 .filter(StringUtils::isNotBlank)
                 .distinct()
                 .toList();
-        List<SocialSecurityPaymentTaskRecord> enterprises = taskPersistencePort.listEnterpriseInfoByTaxNos(taxNos);
+        List<SocialSecurityPaymentTaskRecord> enterprises = robotReferencePersistencePort.listEnterpriseInfoByTaxNos(taxNos);
         Map<String, SocialSecurityPaymentTaskRecord> enterpriseMap = new HashMap<>();
         for (SocialSecurityPaymentTaskRecord enterprise : enterprises) {
             enterpriseMap.put(enterprise.getTaxNo(), enterprise);

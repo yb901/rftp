@@ -75,7 +75,7 @@ npm install
 npm run build
 ```
 
-数据库暂时复用 `rf_tax`，连接信息通过环境变量或配置中心注入，不在源码中保存密码。
+数据库拆分为平台主库 `rf_pt` 和机器人协作库 `rf_robot`。平台业务表放在 `rf_pt`，tax-browser-worker 与管理端交互的税务机器人表放在 `rf_robot`，连接信息通过环境变量或配置中心注入，不在源码中保存密码。
 
 ## 部署
 

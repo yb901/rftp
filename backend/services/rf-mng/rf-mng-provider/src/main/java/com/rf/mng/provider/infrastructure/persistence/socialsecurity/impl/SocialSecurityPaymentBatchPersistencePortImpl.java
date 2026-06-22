@@ -5,7 +5,7 @@ import com.rf.mng.provider.application.port.persistence.socialsecurity.data.Soci
 import com.rf.mng.provider.application.port.persistence.socialsecurity.record.SocialSecurityPaymentBatchRecord;
 import com.rf.mng.provider.application.query.socialsecurity.SocialSecurityPaymentBatchQuery;
 import com.rf.mng.provider.infrastructure.persistence.socialsecurity.entity.SocialSecurityPaymentBatchEntity;
-import com.rf.mng.provider.infrastructure.persistence.socialsecurity.mapper.SocialSecurityPaymentBatchMapper;
+import com.rf.mng.provider.infrastructure.persistence.platform.socialsecurity.mapper.SocialSecurityPaymentBatchMapper;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
@@ -38,15 +38,6 @@ public class SocialSecurityPaymentBatchPersistencePortImpl implements SocialSecu
     public List<SocialSecurityPaymentBatchRecord> page(SocialSecurityPaymentBatchQuery query) {
         int offset = Math.max(query.getPage() - 1, 0) * query.getSize();
         List<SocialSecurityPaymentBatchEntity> entities = mapper.page(query, offset, query.getSize());
-        return entities.stream().map(this::toRecord).toList();
-    }
-
-    @Override
-    public List<SocialSecurityPaymentBatchRecord> listRegionNamesByRegionCodes(List<String> regionCodes) {
-        if (regionCodes == null || regionCodes.isEmpty()) {
-            return List.of();
-        }
-        List<SocialSecurityPaymentBatchEntity> entities = mapper.listRegionNamesByRegionCodes(regionCodes);
         return entities.stream().map(this::toRecord).toList();
     }
 
