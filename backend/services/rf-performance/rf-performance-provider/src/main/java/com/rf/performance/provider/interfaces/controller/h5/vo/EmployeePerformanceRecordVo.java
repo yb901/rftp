@@ -1,0 +1,56 @@
+package com.rf.performance.provider.interfaces.controller.h5.vo;
+
+import lombok.Data;
+
+import java.io.Serial;
+import java.io.Serializable;
+
+/**
+ * 员工绩效记录 H5 返回对象。
+ */
+@Data
+public class EmployeePerformanceRecordVo implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * 绩效记录前端 ID。
+     */
+    private Long id;
+
+    /**
+     * 绩效描述。
+     */
+    private String performanceDescription;
+
+    /**
+     * 评价周期展示文本。
+     */
+    private String periodText;
+
+    /**
+     * 绩效。
+     */
+    private String performance;
+
+    /**
+     * 确认状态展示文本。
+     */
+    private String confirmStatusText;
+
+    /**
+     * 确认状态编码。
+     */
+    private String confirmStatus;
+
+    /**
+     * 反馈状态编码。
+     */
+    private String feedbackStatus;
+
+    /**
+     * 确认截止时间展示文本。
+     */
+    private String confirmDeadlineTime;
+}

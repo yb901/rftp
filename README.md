@@ -1,6 +1,6 @@
-# rfpt
+# rf
 
-`rfpt` 是人力业务相关系统仓库，当前包含社保缴费管理和员工绩效查看/确认反馈能力。仓库采用前后端同库管理，后端参考 `zy_qy` 的 DDD 分层规范，前端包含管理后台和公众号 H5。
+`rf` 是人力业务相关系统仓库，当前包含社保缴费管理和员工绩效查看/确认反馈能力。仓库采用前后端同库管理，后端参考 `zy_qy` 的 DDD 分层规范，前端包含管理后台和公众号 H5。
 
 ## 技术栈
 
@@ -16,13 +16,13 @@
 backend/
   common/                         后端公共能力
   services/
-    rfpt-mng/                     管理端后端
-    rfpt-performance/             员工绩效后端
+    rf-mng/                     管理端后端
+    rf-performance/             员工绩效后端
   docs/backend-rules/             后端开发规范
   k8s/prod/                       生产后端 K8s 配置
 frontend/
-  rfpt-mng-node/                  管理后台前端
-  rfpt-h5-node/                   员工端公众号 H5
+  rf-mng-node/                  管理后台前端
+  rf-h5-node/                   员工端公众号 H5
 deploy/
   test/                           测试环境 Docker Compose
   prod/                           生产云效流水线说明
@@ -38,8 +38,8 @@ deploy/
 执行具体开发前先读取根目录 `AGENTS.md`，再按任务范围读取：
 
 - 后端：`backend/docs/backend-rules/ASSISTANT.md`
-- 管理后台：`frontend/rfpt-mng-node/docs/frontend-rules/ASSISTANT.md`
-- H5：`frontend/rfpt-h5-node/docs/frontend-rules/ASSISTANT.md`
+- 管理后台：`frontend/rf-mng-node/docs/frontend-rules/ASSISTANT.md`
+- H5：`frontend/rf-h5-node/docs/frontend-rules/ASSISTANT.md`
 
 核心约束摘要：
 
@@ -55,14 +55,14 @@ deploy/
 
 ```bash
 cd backend
-./gradlew :services:rfpt-mng:rfpt-mng-provider:compileJava
-./gradlew :services:rfpt-performance:rfpt-performance-provider:compileJava
+./gradlew :services:rf-mng:rf-mng-provider:compileJava
+./gradlew :services:rf-performance:rf-performance-provider:compileJava
 ```
 
 管理后台：
 
 ```bash
-cd frontend/rfpt-mng-node
+cd frontend/rf-mng-node
 npm install
 npm run build
 ```
@@ -70,7 +70,7 @@ npm run build
 员工端 H5：
 
 ```bash
-cd frontend/rfpt-h5-node
+cd frontend/rf-h5-node
 npm install
 npm run build
 ```

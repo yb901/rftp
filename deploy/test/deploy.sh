@@ -29,4 +29,4 @@ docker compose --env-file .env up -d
 echo "[INFO] 当前服务状态"
 docker compose --env-file .env ps
 
-echo "[INFO] 部署完成。前端入口：http://<测试机IP>:${RFPT_MNG_WEB_PORT:-18092}"
+echo "[INFO] 部署完成。前端入口：http://<测试机IP>:${RF_MNG_WEB_PORT:-18092}"

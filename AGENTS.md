@@ -1,6 +1,6 @@
-# rfpt 编码助手入口
+# rf 编码助手入口
 
-本文是编码助手进入 `rfpt` 仓库后的总入口。执行代码、配置、测试、提交等具体操作前，必须先读取本文，再按本次任务范围读取对应子目录规则。
+本文是编码助手进入 `rf` 仓库后的总入口。执行代码、配置、测试、提交等具体操作前，必须先读取本文，再按本次任务范围读取对应子目录规则。
 
 ## 语言约束
 
@@ -11,8 +11,8 @@
 | 任务范围 | 必读规则 |
 | --- | --- |
 | 后端 Java、SQL、Dubbo、Job、Gateway、部署配置 | `backend/docs/backend-rules/ASSISTANT.md` |
-| 管理后台前端 `rfpt-mng-node` | `frontend/rfpt-mng-node/docs/frontend-rules/ASSISTANT.md` |
-| 员工端 H5 `rfpt-h5-node` | `frontend/rfpt-h5-node/docs/frontend-rules/ASSISTANT.md` |
+| 管理后台前端 `rf-mng-node` | `frontend/rf-mng-node/docs/frontend-rules/ASSISTANT.md` |
+| 员工端 H5 `rf-h5-node` | `frontend/rf-h5-node/docs/frontend-rules/ASSISTANT.md` |
 | Docker Compose 测试部署 | `deploy/test/README.md` |
 | 生产 K8s / 云效部署 | `deploy/prod/README.md` |
 
@@ -30,10 +30,10 @@
 ## 项目边界
 
 - `backend/common`：后端公共技术能力。
-- `backend/services/rfpt-mng`：管理端服务，对外提供管理 API，并通过 RPC 调用员工绩效模块。
-- `backend/services/rfpt-performance`：员工绩效服务，采用 `api` / `provider` 双模块。
-- `frontend/rfpt-mng-node`：管理后台。
-- `frontend/rfpt-h5-node`：公众号 H5 员工端。
+- `backend/services/rf-mng`：管理端服务，对外提供管理 API，并通过 RPC 调用员工绩效模块。
+- `backend/services/rf-performance`：员工绩效服务，采用 `api` / `provider` 双模块。
+- `frontend/rf-mng-node`：管理后台。
+- `frontend/rf-h5-node`：公众号 H5 员工端。
 - `deploy/test`：测试环境 Docker Compose 部署。
 - `backend/k8s/prod`、`frontend/*/k8s/prod`、`deploy/prod`：生产 K8s 与云效流水线配置。
 
@@ -57,16 +57,16 @@
 
 ```bash
 cd backend
-./gradlew :services:rfpt-mng:rfpt-mng-provider:compileJava
-./gradlew :services:rfpt-performance:rfpt-performance-provider:compileJava
+./gradlew :services:rf-mng:rf-mng-provider:compileJava
+./gradlew :services:rf-performance:rf-performance-provider:compileJava
 ```
 
 前端按影响项目执行：
 
 ```bash
-cd frontend/rfpt-mng-node
+cd frontend/rf-mng-node
 npm run build
 
-cd frontend/rfpt-h5-node
+cd frontend/rf-h5-node
 npm run build
 ```

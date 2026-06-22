@@ -1,41 +1,41 @@
 services:
-  rfpt-mng:
+  rf-mng:
     build:
       context: ../../backend
-      dockerfile: services/rfpt-mng/rfpt-mng-provider/Dockerfile
-    image: ${RFPT_MNG_IMAGE:-rfpt-mng:test}
-    container_name: ${RFPT_MNG_CONTAINER_NAME:-rfpt-mng-test}
+      dockerfile: services/rf-mng/rf-mng-provider/Dockerfile
+    image: ${RF_MNG_IMAGE:-rf-mng:test}
+    container_name: ${RF_MNG_CONTAINER_NAME:-rf-mng-test}
     restart: unless-stopped
     environment:
       TZ: Asia/Shanghai
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-test}
-      RFPT_MNG_SERVER_PORT: 18091
-      RFPT_DB_URL: ${RFPT_DB_URL}
-      RFPT_DB_USERNAME: ${RFPT_DB_USERNAME}
-      RFPT_DB_PASSWORD: ${RFPT_DB_PASSWORD}
-      RFPT_TAX_ROBOT_BASE_URL: ${RFPT_TAX_ROBOT_BASE_URL}
-      RFPT_TAX_ROBOT_INTERNAL_TOKEN: ${RFPT_TAX_ROBOT_INTERNAL_TOKEN:-}
-      RFPT_TAX_ROBOT_TIMEOUT_MILLIS: ${RFPT_TAX_ROBOT_TIMEOUT_MILLIS:-330000}
-      JAVA_OPTS: ${RFPT_MNG_JAVA_OPTS:--Xms256m -Xmx512m}
+      RF_MNG_SERVER_PORT: 18091
+      RF_DB_URL: ${RF_DB_URL}
+      RF_DB_USERNAME: ${RF_DB_USERNAME}
+      RF_DB_PASSWORD: ${RF_DB_PASSWORD}
+      RF_TAX_ROBOT_BASE_URL: ${RF_TAX_ROBOT_BASE_URL}
+      RF_TAX_ROBOT_INTERNAL_TOKEN: ${RF_TAX_ROBOT_INTERNAL_TOKEN:-}
+      RF_TAX_ROBOT_TIMEOUT_MILLIS: ${RF_TAX_ROBOT_TIMEOUT_MILLIS:-330000}
+      JAVA_OPTS: ${RF_MNG_JAVA_OPTS:--Xms256m -Xmx512m}
     ports:
-      - "${RFPT_MNG_PORT:-18091}:18091"
+      - "${RF_MNG_PORT:-18091}:18091"
     networks:
-      - rfpt-test
+      - rf-test
 
-  rfpt-mng-web:
+  rf-mng-web:
     build:
-      context: ../../frontend/rfpt-mng-node
+      context: ../../frontend/rf-mng-node
       dockerfile: Dockerfile
-    image: ${RFPT_MNG_WEB_IMAGE:-rfpt-mng-web:test}
-    container_name: ${RFPT_MNG_WEB_CONTAINER_NAME:-rfpt-mng-web-test}
+    image: ${RF_MNG_WEB_IMAGE:-rf-mng-web:test}
+    container_name: ${RF_MNG_WEB_CONTAINER_NAME:-rf-mng-web-test}
     restart: unless-stopped
     depends_on:
-      - rfpt-mng
+      - rf-mng
     ports:
-      - "${RFPT_MNG_WEB_PORT:-18092}:80"
+      - "${RF_MNG_WEB_PORT:-18092}:80"
     networks:
-      - rfpt-test
+      - rf-test
 
 networks:
-  rfpt-test:
-    name: ${RFPT_DOCKER_NETWORK:-rfpt-test}
+  rf-test:
+    name: ${RF_DOCKER_NETWORK:-rf-test}

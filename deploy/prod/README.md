@@ -4,10 +4,10 @@
 
 ## 服务清单
 
-- `rfpt-mng`：管理端后端，镜像由 `deploy/prod/aliyun-pipeline-rfpt-mng-backend.yaml` 构建。
-- `rfpt-performance`：员工绩效后端，镜像由 `deploy/prod/aliyun-pipeline-rfpt-performance-backend.yaml` 构建。
-- `rfpt-mng-node`：管理端前端，镜像由 `deploy/prod/aliyun-pipeline-rfpt-mng-node.yaml` 构建。
-- `rfpt-h5-node`：员工绩效 H5，镜像由 `deploy/prod/aliyun-pipeline-rfpt-h5-node.yaml` 构建。
+- `rf-mng`：管理端后端，镜像由 `deploy/prod/aliyun-pipeline-rf-mng-backend.yaml` 构建。
+- `rf-performance`：员工绩效后端，镜像由 `deploy/prod/aliyun-pipeline-rf-performance-backend.yaml` 构建。
+- `rf-mng-node`：管理端前端，镜像由 `deploy/prod/aliyun-pipeline-rf-mng-node.yaml` 构建。
+- `rf-h5-node`：员工绩效 H5，镜像由 `deploy/prod/aliyun-pipeline-rf-h5-node.yaml` 构建。
 
 ## 云效变量
 
@@ -20,10 +20,10 @@
 
 流水线 YAML 中还包含以下占位符，需要在导入云效后替换：
 
-- `RFPT_CODEUP_ENDPOINT_PLACEHOLDER`
-- `RFPT_CODEUP_SERVICE_CONNECTION_PLACEHOLDER`
-- `RFPT_YUNXIAO_RUNNER_GROUP_PLACEHOLDER`
-- `RFPT_ACK_CLUSTER_PLACEHOLDER`
+- `RF_CODEUP_ENDPOINT_PLACEHOLDER`
+- `RF_CODEUP_SERVICE_CONNECTION_PLACEHOLDER`
+- `RF_YUNXIAO_RUNNER_GROUP_PLACEHOLDER`
+- `RF_ACK_CLUSTER_PLACEHOLDER`
 
 ## ACK 预置资源
 
@@ -39,7 +39,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: rfpt-backend-config
+  name: rf-backend-config
   namespace: prod
 data:
   dubbo-registry-address: nacos://nacos.prod.svc.cluster.local:8848
@@ -52,7 +52,7 @@ data:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: rfpt-backend-db-secret
+  name: rf-backend-db-secret
   namespace: prod
 type: Opaque
 stringData:
@@ -67,7 +67,7 @@ stringData:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: rfpt-performance-aliyun-secret
+  name: rf-performance-aliyun-secret
   namespace: prod
 type: Opaque
 stringData:
@@ -81,15 +81,15 @@ stringData:
 
 ## 路由建议
 
-- 管理端前端 `rfpt-mng-node` 暴露给后台域名。
-- 员工端 H5 `rfpt-h5-node` 暴露给公众号菜单域名或路径。
-- `rfpt-mng-node` 的 `/api/` 代理到 `rfpt-mng`。
-- `rfpt-h5-node` 的 `/api/performance/h5/` 代理到 `rfpt-performance`。
+- 管理端前端 `rf-mng-node` 暴露给后台域名。
+- 员工端 H5 `rf-h5-node` 暴露给公众号菜单域名或路径。
+- `rf-mng-node` 的 `/api/` 代理到 `rf-mng`。
+- `rf-h5-node` 的 `/api/performance/h5/` 代理到 `rf-performance`。
 
 ## 注意事项
 
-- `rfpt-performance` 生产模板中已设置：
-  - `RFPT_PERFORMANCE_H5_SMS_MOCK_ENABLED=false`
-  - `RFPT_PERFORMANCE_H5_CAPTCHA_ENABLED=true`
-- XXL-JOB 需要在调度中心配置执行器 `rfpt-performance`，并添加任务 handler：`employeePerformanceAutoConfirmJob`。
-- 数据库上线前需要执行 `backend/services/rfpt-performance/sql/20260621_employee_performance.sql`。
+- `rf-performance` 生产模板中已设置：
+  - `RF_PERFORMANCE_H5_SMS_MOCK_ENABLED=false`
+  - `RF_PERFORMANCE_H5_CAPTCHA_ENABLED=true`
+- XXL-JOB 需要在调度中心配置执行器 `rf-performance`，并添加任务 handler：`employeePerformanceAutoConfirmJob`。
+- 数据库上线前需要执行 `backend/services/rf-performance/sql/20260621_employee_performance.sql`。

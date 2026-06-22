@@ -1,6 +1,6 @@
 # 测试环境 Docker 部署
 
-本目录用于部署 `rfpt-mng` 管理端测试环境，包含后端 Spring Boot 服务和前端 Nginx 静态服务。
+本目录用于部署 `rf-mng` 管理端测试环境，包含后端 Spring Boot 服务和前端 Nginx 静态服务。
 
 ## 前置条件
 
@@ -13,24 +13,24 @@
 数据库使用现有 `rf_tax`。首次部署前需要确认已经执行：
 
 1. `qy_robot/sql/014_add_tax_social_security_payment.sql`
-2. `backend/services/rfpt-mng/sql/20260615_social_security_payment_management.sql`
+2. `backend/services/rf-mng/sql/20260615_social_security_payment_management.sql`
 
 ## 配置环境变量
 
 ```bash
-cd /path/to/rfpt
+cd /path/to/rf
 cp deploy/test/.env.example deploy/test/.env
 vi deploy/test/.env
 ```
 
 至少需要确认：
 
-- `RFPT_DB_URL`
-- `RFPT_DB_USERNAME`
-- `RFPT_DB_PASSWORD`
-- `RFPT_TAX_ROBOT_BASE_URL`
+- `RF_DB_URL`
+- `RF_DB_USERNAME`
+- `RF_DB_PASSWORD`
+- `RF_TAX_ROBOT_BASE_URL`
 
-`RFPT_TAX_ROBOT_BASE_URL` 指向 `tax-browser-worker`，例如 `http://192.168.110.192:3220`。
+`RF_TAX_ROBOT_BASE_URL` 指向 `tax-browser-worker`，例如 `http://192.168.110.192:3220`。
 
 ## 启动
 
@@ -61,13 +61,13 @@ bash deploy/test/logs.sh
 只看后端：
 
 ```bash
-bash deploy/test/logs.sh rfpt-mng
+bash deploy/test/logs.sh rf-mng
 ```
 
 只看前端 Nginx：
 
 ```bash
-bash deploy/test/logs.sh rfpt-mng-web
+bash deploy/test/logs.sh rf-mng-web
 ```
 
 ## 停止

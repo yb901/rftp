@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rf-mng
+  namespace: prod
+  labels:
+    app.kubernetes.io/name: rf-mng
+    app.kubernetes.io/part-of: rf
+spec:
+  selector:
+    app.kubernetes.io/name: rf-mng
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: http
+  type: ClusterIP

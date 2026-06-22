@@ -2,7 +2,7 @@
 
 ## Mapper、Entity、XML
 
-Mapper、Mapper XML、Entity 按业务上下文拆包。当前 `rfpt` 主库暂时使用简单上下文命名：
+Mapper、Mapper XML、Entity 按业务上下文拆包。当前 `rf` 主库暂时使用简单上下文命名：
 
 ```text
 infrastructure/persistence/{context}/mapper/XxxMapper.java
