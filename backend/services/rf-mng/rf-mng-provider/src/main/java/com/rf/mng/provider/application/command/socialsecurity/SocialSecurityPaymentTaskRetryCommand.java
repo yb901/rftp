@@ -17,7 +17,4 @@ public class SocialSecurityPaymentTaskRetryCommand implements Serializable {
 
     /** 任务编号。 */
     private Long taskId;
-
-    /** 操作人。 */
-    private String operator;
 }

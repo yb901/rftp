@@ -40,41 +40,26 @@ spec:
               value: /app/logs
             - name: APP_VERSION
               value: APP_VERSION_PLACEHOLDER
-            - name: RF_PLATFORM_DB_URL
-              valueFrom:
-                secretKeyRef:
-                  name: rf-platform-db-secret
-                  key: url
-            - name: RF_PLATFORM_DB_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: rf-platform-db-secret
-                  key: username
-            - name: RF_PLATFORM_DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: rf-platform-db-secret
-                  key: password
-            - name: RF_ROBOT_DB_URL
-              valueFrom:
-                secretKeyRef:
-                  name: rf-robot-db-secret
-                  key: url
-            - name: RF_ROBOT_DB_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: rf-robot-db-secret
-                  key: username
-            - name: RF_ROBOT_DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: rf-robot-db-secret
-                  key: password
-            - name: DUBBO_REGISTRY_ADDRESS
+            - name: QY_NACOS_CONFIG_SERVER_ADDR
               valueFrom:
                 configMapKeyRef:
-                  name: rf-backend-config
-                  key: dubbo-registry-address
+                  name: qy-backend-nacos-config
+                  key: config-server-addr
+            - name: QY_APPCONF_NACOS_CONFIG_GROUP
+              valueFrom:
+                configMapKeyRef:
+                  name: qy-backend-nacos-config
+                  key: appconf-config-group
+            - name: QY_NACOS_NAMESPACE_QY
+              valueFrom:
+                configMapKeyRef:
+                  name: qy-backend-nacos-config
+                  key: appconf-namespace
+            - name: QY_CONFIG_CRYPTO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: qy-backend-config-crypto-secret
+                  key: secret-key
             - name: JAVA_OPS
               value: "-Xms512m -Xmx1g -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=256m -XX:+UseZGC -XX:+ZGenerational -XX:+UseStringDeduplication -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/app/logs -XX:+ExitOnOutOfMemoryError -Dfile.encoding=UTF-8 -Duser.timezone=Asia/Shanghai -Duser.home=/app"
           readinessProbe:

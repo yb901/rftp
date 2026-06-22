@@ -18,7 +18,7 @@ import com.rf.performance.provider.application.port.persistence.performance.reco
 import com.rf.performance.provider.application.port.persistence.performance.record.h5.EmployeePerformanceH5Record;
 import com.rf.performance.provider.application.result.performance.h5.EmployeePerformanceH5Result;
 import com.rf.performance.provider.application.result.performance.h5.PerformanceH5LoginResult;
-import com.rf.performance.provider.common.config.PerformanceH5AuthProperties;
+import com.rf.performance.provider.common.config.PerformanceSmsProperties;
 import com.rf.performance.provider.domain.performance.PerformanceConfirmStatus;
 import com.rf.performance.provider.domain.performance.PerformanceFeedbackStatus;
 import com.zy.common.core.enums.ErrorCode;
@@ -67,10 +67,10 @@ public class EmployeePerformanceH5ManagerImpl implements EmployeePerformanceH5Ma
     private PerformanceTaskPersistencePort performanceTaskPersistencePort;
 
     /**
-     * H5 登录配置。
+     * 短信与验证码配置。
      */
     @Resource
-    private PerformanceH5AuthProperties performanceH5AuthProperties;
+    private PerformanceSmsProperties performanceSmsProperties;
 
     /**
      * 图形验证码校验网关。
@@ -99,7 +99,7 @@ public class EmployeePerformanceH5ManagerImpl implements EmployeePerformanceH5Ma
             verifyCaptcha(safeCommand.getCaptchaTraceId());
         }
         String code = createSmsCode();
-        if (!Boolean.TRUE.equals(performanceH5AuthProperties.getMockEnabled())) {
+        if (!Boolean.TRUE.equals(performanceSmsProperties.getMockEnabled())) {
             sendRealSmsCode(safeCommand.getMobile(), code);
         }
         PerformanceSmsEvidenceData data = new PerformanceSmsEvidenceData();
@@ -290,7 +290,7 @@ public class EmployeePerformanceH5ManagerImpl implements EmployeePerformanceH5Ma
      * @param captchaVerifyParam 图形验证码参数
      */
     private void verifyCaptcha(String captchaVerifyParam) {
-        if (!Boolean.TRUE.equals(performanceH5AuthProperties.getCaptchaEnabled())) {
+        if (!Boolean.TRUE.equals(performanceSmsProperties.getCaptchaEnabled())) {
             return;
         }
         CaptchaVerifyGatewayParam param = new CaptchaVerifyGatewayParam();
@@ -304,8 +304,8 @@ public class EmployeePerformanceH5ManagerImpl implements EmployeePerformanceH5Ma
      * @return 短信验证码
      */
     private String createSmsCode() {
-        if (Boolean.TRUE.equals(performanceH5AuthProperties.getMockEnabled())) {
-            return performanceH5AuthProperties.getMockCode();
+        if (Boolean.TRUE.equals(performanceSmsProperties.getMockEnabled())) {
+            return performanceSmsProperties.getMockCode();
         }
         return String.valueOf((int) (Math.random() * 900000) + 100000);
     }

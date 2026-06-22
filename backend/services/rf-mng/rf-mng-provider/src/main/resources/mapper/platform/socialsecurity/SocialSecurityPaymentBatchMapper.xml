@@ -11,7 +11,8 @@
         <result property="totalCount" column="total_count"/>
         <result property="successCount" column="success_count"/>
         <result property="failedCount" column="failed_count"/>
-        <result property="createdBy" column="created_by"/>
+        <result property="createAdminId" column="create_admin_id"/>
+        <result property="createAdminName" column="create_admin_name"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
     </resultMap>
@@ -32,9 +33,9 @@
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO tb_tax_social_security_payment_batch
-        (region_code, site_type, period_month, status, total_count, success_count, failed_count, created_by)
+        (region_code, site_type, period_month, status, total_count, success_count, failed_count, create_admin_id, create_admin_name)
         VALUES
-        (#{regionCode}, #{siteType}, #{periodMonth}, #{status}, #{totalCount}, #{successCount}, #{failedCount}, #{createdBy})
+        (#{regionCode}, #{siteType}, #{periodMonth}, #{status}, #{totalCount}, #{successCount}, #{failedCount}, #{createAdminId}, #{createAdminName})
     </insert>
 
     <select id="count" resultType="long">

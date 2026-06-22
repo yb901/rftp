@@ -7,7 +7,7 @@ import com.aliyun.dysmsapi20170525.models.SendSmsResponse;
 import com.aliyun.teaopenapi.models.Config;
 import com.rf.performance.provider.application.port.gateway.auth.sms.SmsCodeGateway;
 import com.rf.performance.provider.application.port.gateway.auth.sms.param.SmsCodeSendGatewayParam;
-import com.rf.performance.provider.common.config.PerformanceH5AuthProperties;
+import com.rf.performance.provider.common.config.PerformanceSmsProperties;
 import com.zy.common.core.enums.ErrorCode;
 import com.zy.common.core.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
@@ -31,10 +31,10 @@ public class AliyunSmsCodeGatewayImpl implements SmsCodeGateway {
     private static final String OK_CODE = "OK";
 
     /**
-     * H5 登录配置。
+     * 短信与验证码配置。
      */
     @Resource
-    private PerformanceH5AuthProperties performanceH5AuthProperties;
+    private PerformanceSmsProperties performanceSmsProperties;
 
     /**
      * 发送短信验证码。
@@ -65,10 +65,10 @@ public class AliyunSmsCodeGatewayImpl implements SmsCodeGateway {
      */
     private Client createClient() throws Exception {
         Config config = new Config()
-                .setAccessKeyId(performanceH5AuthProperties.getAccessKeyId())
-                .setAccessKeySecret(performanceH5AuthProperties.getAccessKeySecret())
-                .setRegionId(performanceH5AuthProperties.getRegionId())
-                .setEndpoint(performanceH5AuthProperties.getEndpoint());
+                .setAccessKeyId(performanceSmsProperties.getAccessKeyId())
+                .setAccessKeySecret(performanceSmsProperties.getAccessKeySecret())
+                .setRegionId(performanceSmsProperties.getRegionId())
+                .setEndpoint(performanceSmsProperties.getEndpoint());
         return new Client(config);
     }
 
@@ -80,12 +80,12 @@ public class AliyunSmsCodeGatewayImpl implements SmsCodeGateway {
      */
     private SendSmsRequest buildRequest(SmsCodeSendGatewayParam param) {
         String templateParam = JSON.toJSONString(Map.of(
-                performanceH5AuthProperties.getCodeTemplateParamName(), param.getCode()
+                performanceSmsProperties.getCodeTemplateParamName(), param.getCode()
         ));
         return new SendSmsRequest()
                 .setPhoneNumbers(param.getMobile())
-                .setSignName(performanceH5AuthProperties.getSignName())
-                .setTemplateCode(performanceH5AuthProperties.getTemplateCode())
+                .setSignName(performanceSmsProperties.getSignName())
+                .setTemplateCode(performanceSmsProperties.getTemplateCode())
                 .setTemplateParam(templateParam);
     }
 
@@ -122,12 +122,12 @@ public class AliyunSmsCodeGatewayImpl implements SmsCodeGateway {
      * 校验阿里云短信配置。
      */
     private void validateConfig() {
-        if (StringUtils.isAnyBlank(performanceH5AuthProperties.getAccessKeyId(),
-                performanceH5AuthProperties.getAccessKeySecret(),
-                performanceH5AuthProperties.getSignName(),
-                performanceH5AuthProperties.getTemplateCode(),
-                performanceH5AuthProperties.getEndpoint(),
-                performanceH5AuthProperties.getCodeTemplateParamName())) {
+        if (StringUtils.isAnyBlank(performanceSmsProperties.getAccessKeyId(),
+                performanceSmsProperties.getAccessKeySecret(),
+                performanceSmsProperties.getSignName(),
+                performanceSmsProperties.getTemplateCode(),
+                performanceSmsProperties.getEndpoint(),
+                performanceSmsProperties.getCodeTemplateParamName())) {
             throw new BusinessException(ErrorCode.E999002, "阿里云短信配置不完整");
         }
     }

@@ -1,14 +1,12 @@
 package com.rf.performance.provider.common.web;
 
-import com.rf.performance.provider.common.config.PerformanceH5AuthProperties;
+import com.rf.performance.provider.common.config.PerformanceWebAuthProperties;
 import com.zy.common.core.enums.ErrorCode;
 import com.zy.common.core.exception.BusinessException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Resource;
 
 /**
  * 员工绩效 H5 请求上下文。
@@ -17,19 +15,13 @@ import javax.annotation.Resource;
 public class PerformanceH5RequestContext {
 
     /**
-     * H5 登录配置。
-     */
-    @Resource
-    private PerformanceH5AuthProperties performanceH5AuthProperties;
-
-    /**
      * 获取登录手机号。
      *
      * @param request HTTP 请求
      * @return 登录手机号
      */
     public String requireMobile(HttpServletRequest request) {
-        String mobile = getCookieValue(request, performanceH5AuthProperties.getCookieName());
+        String mobile = getCookieValue(request, PerformanceWebAuthProperties.COOKIE_NAME);
         if (StringUtils.isBlank(mobile)) {
             throw new BusinessException(ErrorCode.E999005, "请先登录");
         }

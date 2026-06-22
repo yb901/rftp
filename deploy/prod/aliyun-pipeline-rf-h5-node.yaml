@@ -3,46 +3,227 @@ name: rf-h5-node
 sources:
   my_repo:
     type: codeup
-    name: rf
-    endpoint: RF_CODEUP_ENDPOINT_PLACEHOLDER
+    name: rfpt
+    endpoint: https://codeup.aliyun.com/6a0e7b2c7b6e0a0129639206/rfpt/rfpt.git
     branch: main
     certificate:
       type: serviceConnection
-      serviceConnection: RF_CODEUP_SERVICE_CONNECTION_PLACEHOLDER
+      serviceConnection: dgqwgyszp67p6z61
 
 stages:
   stage1:
-    name: "员工绩效 H5 构建并推送镜像"
+    name: "员工绩效 H5 前端构建、上传 OSS 并推送镜像"
     jobs:
-      build_and_push:
-        name: "Build And Push"
+      build_upload_push:
+        name: "Build Upload Push"
         runsOn:
-          group: RF_YUNXIAO_RUNNER_GROUP_PLACEHOLDER
+          group: private/PMCrDXq0zBgals4t
           vm: true
         steps:
-          build_push_step:
-            name: "Build Push"
+          build_upload_push_step:
+            name: "Build Upload Push"
             step: Command
             with:
               run: |
-                set -e
+                echo "当前目录"
+                pwd
+                ls -la
+
+                print_commit_summary() {
+                  line() {
+                    printf '%s\n' '============================================================'
+                  }
+
+                  short_commit() {
+                    git rev-parse --short "$1" 2>/dev/null || printf '%s' "$1"
+                  }
+
+                  current_commit="${CI_COMMIT_ID:-$(git rev-parse HEAD)}"
+                  previous_commit=""
+                  for name in YUNXIAO_PRE_COMMIT_ID PRE_COMMIT_ID CI_PRE_COMMIT_ID PREVIOUS_COMMIT_ID LAST_SUCCESS_COMMIT_ID; do
+                    value=$(eval "printf '%s' \"\${$name:-}\"")
+                    if [ -n "$value" ] && git cat-file -e "$value^{commit}" 2>/dev/null; then
+                      previous_commit="$value"
+                      break
+                    fi
+                  done
+
+                  if [ -z "$previous_commit" ]; then
+                    previous_commit=$(printenv | awk -F= '
+                      $1 ~ /(^|[._-])preCommitId$/ || $1 ~ /(^|[._-])PRE_COMMIT_ID$/ {
+                        print $2
+                        exit
+                      }
+                    ')
+                  fi
+
+                  if [ -n "$previous_commit" ] && ! git cat-file -e "$previous_commit^{commit}" 2>/dev/null; then
+                    previous_commit=""
+                  fi
+
+                  if [ -z "$previous_commit" ] && git rev-parse HEAD~1 >/dev/null 2>&1; then
+                    previous_commit=$(git rev-parse HEAD~1)
+                  fi
+
+                  branch_name="${CI_COMMIT_REF_NAME:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null || printf 'unknown')}"
+                  build_number="${BUILD_NUMBER:-unknown}"
+
+                  line
+                  printf '发布变更摘要\n'
+                  printf '分支: %s\n' "$branch_name"
+                  printf '构建号: %s\n' "$build_number"
+                  printf '本次提交: %s (%s)\n' "$(short_commit "$current_commit")" "$current_commit"
+                  if [ -n "$previous_commit" ]; then
+                    printf '上次提交: %s (%s)\n' "$(short_commit "$previous_commit")" "$previous_commit"
+                  else
+                    printf '上次提交: 未获取到，展示最近 10 条提交\n'
+                  fi
+
+                  line
+                  printf '提交列表:\n'
+                  if [ -n "$previous_commit" ] && git merge-base --is-ancestor "$previous_commit" "$current_commit" 2>/dev/null; then
+                    commit_range="$previous_commit..$current_commit"
+                    git log "$commit_range" --date=format:'%Y-%m-%d %H:%M:%S %z' --pretty=format:'  - %h | %ad | %an | %s' --no-decorate
+                  else
+                    commit_range=""
+                    git log -10 --date=format:'%Y-%m-%d %H:%M:%S %z' --pretty=format:'  - %h | %ad | %an | %s' --no-decorate
+                  fi
+
+                  printf '\n'
+                  line
+                  printf '变更文件:\n'
+                  if [ -n "$commit_range" ]; then
+                    changed_count=$(git diff --name-only "$previous_commit" "$current_commit" | wc -l | tr -d ' ')
+                    if [ "$changed_count" -eq 0 ]; then
+                      printf '  无文件变更\n'
+                    else
+                      git diff --name-status "$previous_commit" "$current_commit" | sed 's/^/  /' | head -200
+                      if [ "$changed_count" -gt 200 ]; then
+                        printf '  ... 共 %s 个文件，仅展示前 200 个\n' "$changed_count"
+                      else
+                        printf '  共 %s 个文件\n' "$changed_count"
+                      fi
+                    fi
+                  else
+                    git show --name-status --format='' "$current_commit" | sed 's/^/  /' | head -200
+                  fi
+                  line
+                }
+                print_commit_summary || true
+
+                echo "检查变量"
+                for name in CDN_BASE_URL OSS_ENDPOINT OSS_BUCKET OSS_ACCESS_KEY_ID OSS_ACCESS_KEY_SECRET CR_USER_NAME CR_PWD NGINX_IMAGE; do
+                  if [ -z "$(eval echo \$$name)" ]; then
+                    echo "$name 未配置"
+                    exit 1
+                  fi
+                done
+
+                echo "进入 H5 前端目录"
                 cd frontend/rf-h5-node
+
+                APP_CDN_NAME="rf-h5"
+                CDN_BASE_URL="${CDN_BASE_URL%/}"
+                APP_CDN_BASE_URL="${CDN_BASE_URL}/${APP_CDN_NAME}/"
+                OSS_PREFIX="${APP_CDN_NAME}/"
+                OSS_ASSETS_PATH="oss://${OSS_BUCKET}/${OSS_PREFIX}assets"
+                export CDN_BASE_URL
+
+                echo "H5 静态资源配置"
+                echo "CDN_BASE_URL=$CDN_BASE_URL"
+                echo "APP_CDN_NAME=$APP_CDN_NAME"
+                echo "APP_CDN_BASE_URL=$APP_CDN_BASE_URL"
+                echo "OSS_BUCKET=$OSS_BUCKET"
+                echo "OSS_PREFIX=$OSS_PREFIX"
+                echo "OSS_ASSETS_PATH=$OSS_ASSETS_PATH"
+
+                echo "加载 Node.js"
+                if [ -n "$NODE_BIN_DIR" ]; then
+                  export PATH="$NODE_BIN_DIR:$PATH"
+                fi
+
+                if ! command -v node >/dev/null 2>&1; then
+                  export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+                  if [ -s "$NVM_DIR/nvm.sh" ]; then
+                    . "$NVM_DIR/nvm.sh"
+                    nvm use 22
+                  else
+                    echo "未找到 node，也未找到 nvm 初始化脚本: $NVM_DIR/nvm.sh"
+                    echo "请确认云效构建机已安装 Node.js 22，或配置 NODE_BIN_DIR / NVM_DIR"
+                    exit 1
+                  fi
+                fi
+
+                echo "Node Version"
+                node -v
+                npm -v
+
+                echo "安装依赖"
                 npm ci
+
+                echo "构建 H5 前端"
                 npm run build
-                echo "$CR_PWD" | docker login --username "$CR_USER_NAME" --password-stdin "$ACR_REGISTRY"
+
+                echo "查看构建产物"
+                ls -la dist
+                ls -la dist/assets
+
+                echo "检查 ossutil"
+                if [ -n "$OSSUTIL_BIN" ]; then
+                  OSSUTIL_CMD="$OSSUTIL_BIN"
+                elif command -v ossutil >/dev/null 2>&1; then
+                  OSSUTIL_CMD="$(command -v ossutil)"
+                elif command -v ossutil64 >/dev/null 2>&1; then
+                  OSSUTIL_CMD="$(command -v ossutil64)"
+                else
+                  echo "未找到 ossutil / ossutil64"
+                  echo "请在云效构建机安装 ossutil，或配置 OSSUTIL_BIN 为可执行文件完整路径"
+                  exit 1
+                fi
+                echo "OSSUTIL_CMD=$OSSUTIL_CMD"
+                "$OSSUTIL_CMD" --version || true
+
+                echo "配置 ossutil"
+                "$OSSUTIL_CMD" config \
+                  -e "$OSS_ENDPOINT" \
+                  -i "$OSS_ACCESS_KEY_ID" \
+                  -k "$OSS_ACCESS_KEY_SECRET"
+
+                echo "上传 assets 到 OSS"
+                "$OSSUTIL_CMD" cp -rf dist/assets "$OSS_ASSETS_PATH" \
+                  --meta Cache-Control:max-age=31536000,public,immutable
+
+                echo "校验 OSS assets 目录"
+                "$OSSUTIL_CMD" ls "$OSS_ASSETS_PATH" || {
+                  echo "OSS assets 目录校验失败: $OSS_ASSETS_PATH"
+                  exit 1
+                }
+
+                echo "Docker Login"
+                echo "$CR_PWD" | docker login \
+                  --username "$CR_USER_NAME" \
+                  --password-stdin \
+                  qy-prd-registry-vpc.cn-hangzhou.cr.aliyuncs.com
+
                 IMAGE_TAG="${CI_COMMIT_ID}-${BUILD_NUMBER}"
-                IMAGE="${ACR_REGISTRY}/${ACR_NAMESPACE}/rf-h5-node:${IMAGE_TAG}"
-                docker build -t "$IMAGE" -f Dockerfile .
-                docker push "$IMAGE"
-                echo "IMAGE=$IMAGE"
+                IMAGE="qy-prd-registry-vpc.cn-hangzhou.cr.aliyuncs.com/qy-prod/rf-h5-node:${IMAGE_TAG}"
+
+                echo "Docker Build"
+                echo "NGINX_IMAGE=$NGINX_IMAGE"
+                docker build --build-arg NGINX_IMAGE="$NGINX_IMAGE" -t ${IMAGE} -f Dockerfile .
+
+                echo "Docker Push"
+                docker push ${IMAGE}
+
+                echo "本次镜像: $IMAGE"
 
   stage2:
-    name: "部署员工绩效 H5 到 ACK"
+    name: "部署员工绩效 H5 前端到 ACK"
     jobs:
       deploy_to_ack:
-        name: "Deploy To ACK"
+        name: "Deploy To ACK With Kubernetes Connection"
         runsOn:
-          group: RF_YUNXIAO_RUNNER_GROUP_PLACEHOLDER
+          group: private/PMCrDXq0zBgals4t
           vm: true
         steps:
           render_manifest_step:
@@ -50,22 +231,27 @@ stages:
             step: Command
             with:
               run: |
-                set -e
                 IMAGE_TAG="${CI_COMMIT_ID}-${BUILD_NUMBER}"
-                IMAGE="${ACR_REGISTRY}/${ACR_NAMESPACE}/rf-h5-node:${IMAGE_TAG}"
+                IMAGE="qy-prd-registry-vpc.cn-hangzhou.cr.aliyuncs.com/qy-prod/rf-h5-node:${IMAGE_TAG}"
                 MANIFEST_DIR=".manifest-rf-h5-node"
                 MANIFEST_FILE="${MANIFEST_DIR}/rf-h5-node.yaml"
+
                 mkdir -p "$MANIFEST_DIR"
                 cp frontend/rf-h5-node/k8s/prod/rf-h5-node-deployment.yaml "$MANIFEST_FILE"
                 printf '\n---\n' >> "$MANIFEST_FILE"
                 cat frontend/rf-h5-node/k8s/prod/rf-h5-node-service.yaml >> "$MANIFEST_FILE"
+
                 sed -i "s#RF_H5_NODE_IMAGE_PLACEHOLDER#$IMAGE#g" "$MANIFEST_FILE"
                 sed -i "s#APP_VERSION_PLACEHOLDER#$IMAGE_TAG#g" "$MANIFEST_FILE"
+
+                echo "IMAGE=$IMAGE"
+                grep image: "$MANIFEST_FILE"
+
           kubectl_apply_step:
             name: "Kubectl Apply"
             step: KubectlApply
             with:
-              kubernetesCluster: RF_ACK_CLUSTER_PLACEHOLDER
+              kubernetesCluster:
               kubectlVersion: "1.30.14"
               namespace: prod
               yamlPath: .manifest-rf-h5-node/rf-h5-node.yaml

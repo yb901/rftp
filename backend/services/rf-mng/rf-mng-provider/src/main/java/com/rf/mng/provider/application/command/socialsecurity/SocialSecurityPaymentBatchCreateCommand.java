@@ -28,6 +28,9 @@ public class SocialSecurityPaymentBatchCreateCommand implements Serializable {
     /** 纳税人识别号列表；为空时按地区生成全部启用企业任务。 */
     private List<String> taxNoList;
 
-    /** 操作人。 */
-    private String operator;
+    /** 创建管理员ID。 */
+    private Long createAdminId;
+
+    /** 创建管理员名称。 */
+    private String createAdminName;
 }

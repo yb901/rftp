@@ -37,8 +37,8 @@ public class SocialSecurityPaymentTaskPersistencePortImpl implements SocialSecur
     }
 
     @Override
-    public int markRetry(Long id, String operator) {
-        return mapper.markRetry(id, operator);
+    public int markRetry(Long id) {
+        return mapper.markRetry(id);
     }
 
     @Override
@@ -65,7 +65,8 @@ public class SocialSecurityPaymentTaskPersistencePortImpl implements SocialSecur
         entity.setRetryable(data.getRetryable());
         entity.setRetryCount(data.getRetryCount());
         entity.setMaxRetryCount(data.getMaxRetryCount());
-        entity.setCreatedBy(data.getCreatedBy());
+        entity.setCreateAdminId(data.getCreateAdminId());
+        entity.setCreateAdminName(data.getCreateAdminName());
         return entity;
     }
 
@@ -86,7 +87,8 @@ public class SocialSecurityPaymentTaskPersistencePortImpl implements SocialSecur
         record.setRetryable(entity.getRetryable());
         record.setRetryCount(entity.getRetryCount());
         record.setMaxRetryCount(entity.getMaxRetryCount());
-        record.setCreatedBy(entity.getCreatedBy());
+        record.setCreateAdminId(entity.getCreateAdminId());
+        record.setCreateAdminName(entity.getCreateAdminName());
         record.setCreatedAt(entity.getCreatedAt());
         record.setUpdatedAt(entity.getUpdatedAt());
         return record;

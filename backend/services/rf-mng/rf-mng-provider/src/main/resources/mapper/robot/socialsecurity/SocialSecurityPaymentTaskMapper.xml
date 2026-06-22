@@ -15,7 +15,8 @@
         <result property="retryable" column="retryable"/>
         <result property="retryCount" column="retry_count"/>
         <result property="maxRetryCount" column="max_retry_count"/>
-        <result property="createdBy" column="created_by"/>
+        <result property="createAdminId" column="create_admin_id"/>
+        <result property="createAdminName" column="create_admin_name"/>
         <result property="createdAt" column="gmt_create"/>
         <result property="updatedAt" column="gmt_modified"/>
     </resultMap>
@@ -36,10 +37,10 @@
 
     <insert id="batchInsert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO tb_tax_social_security_payment_task
-        (batch_id, tax_no, region_code, settle_month, task_status, retryable, retry_count, max_retry_count, created_by)
+        (batch_id, tax_no, region_code, settle_month, task_status, retryable, retry_count, max_retry_count, create_admin_id, create_admin_name)
         VALUES
         <foreach collection="list" item="item" separator=",">
-            (#{item.batchId}, #{item.taxNo}, #{item.regionCode}, #{item.periodMonth}, #{item.status}, #{item.retryable}, #{item.retryCount}, #{item.maxRetryCount}, #{item.createdBy})
+            (#{item.batchId}, #{item.taxNo}, #{item.regionCode}, #{item.periodMonth}, #{item.status}, #{item.retryable}, #{item.retryCount}, #{item.maxRetryCount}, #{item.createAdminId}, #{item.createAdminName})
         </foreach>
     </insert>
 
@@ -52,7 +53,7 @@
     <update id="markRetry">
         UPDATE tb_tax_social_security_payment_task
         SET task_status = 'PROCESSING', retryable = 0, retry_count = retry_count + 1,
-            error_message = NULL, updated_by = #{operator}
+            error_message = NULL
         WHERE id = #{id}
     </update>
 

@@ -12,9 +12,8 @@
 
 数据库拆分为平台主库 `rf_pt` 和机器人协作库 `rf_robot`。首次部署前需要确认已经执行：
 
-1. 在 `rf_robot` 执行 qy_robot 税务机器人表结构，例如 `qy_robot/sql/010_add_tax_browser_worker.sql`、`qy_robot/sql/013_add_tax_enterprise_security_account_name.sql`、`qy_robot/sql/014_add_tax_social_security_payment.sql`。
-2. 在 `rf_robot` 执行 `backend/services/rf-mng/sql/rf_robot/20260615_social_security_payment_task_management_ext.sql`。
-3. 在 `rf_pt` 执行 `backend/services/rf-mng/sql/rf_pt/20260615_social_security_payment_management.sql`。
+1. 在 `rf_robot` 执行 qy_robot 税务机器人表结构，例如 `qy_robot/sql/010_add_tax_browser_worker.sql`、`qy_robot/sql/014_add_tax_social_security_payment.sql`、`qy_robot/sql/015_add_tax_bms_feedback.sql`。
+2. 在 `rf_pt` 执行平台基础与业务表结构，例如 `backend/services/rf-mng/sql/rf_pt/20260622_platform_admin.sql`、`backend/services/rf-mng/sql/rf_pt/20260615_social_security_payment_management.sql`。
 
 ## 配置环境变量
 
@@ -26,15 +25,17 @@ vi deploy/test/.env
 
 至少需要确认：
 
-- `RF_PLATFORM_DB_URL`
-- `RF_PLATFORM_DB_USERNAME`
-- `RF_PLATFORM_DB_PASSWORD`
-- `RF_ROBOT_DB_URL`
-- `RF_ROBOT_DB_USERNAME`
-- `RF_ROBOT_DB_PASSWORD`
-- `RF_TAX_ROBOT_BASE_URL`
+- `QY_NACOS_CONFIG_SERVER_ADDR`
+- `QY_APPCONF_NACOS_CONFIG_GROUP`
+- `QY_NACOS_NAMESPACE_QY`
+- `QY_CONFIG_CRYPTO_SECRET_KEY`
 
-`RF_TAX_ROBOT_BASE_URL` 指向 `tax-browser-worker`，例如 `http://192.168.110.192:3220`。
+数据库、Cookie、tax-browser-worker 等配置放入 Nacos：
+
+- `common-backend-test.properties`
+- `rf-mng-test.properties`
+
+配置内容可参考生产样例 `backend/docs/config/common-backend-prod.properties` 和 `backend/docs/config/rf-mng-prod.properties`。
 
 ## 启动
 

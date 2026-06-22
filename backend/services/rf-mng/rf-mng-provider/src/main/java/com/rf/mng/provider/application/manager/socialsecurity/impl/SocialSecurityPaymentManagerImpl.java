@@ -66,7 +66,8 @@ public class SocialSecurityPaymentManagerImpl implements SocialSecurityPaymentMa
         batch.setTotalCount(countTaxNos(command));
         batch.setSuccessCount(0);
         batch.setFailedCount(0);
-        batch.setCreatedBy(command.getOperator());
+        batch.setCreateAdminId(command.getCreateAdminId());
+        batch.setCreateAdminName(command.getCreateAdminName());
         batchPersistencePort.insert(batch);
 
         List<SocialSecurityPaymentTaskData> tasks = buildTasks(batch, command);
@@ -107,7 +108,7 @@ public class SocialSecurityPaymentManagerImpl implements SocialSecurityPaymentMa
         if (!Boolean.TRUE.equals(task.getRetryable())) {
             throw new BusinessException(ErrorCode.E999001, "当前任务不允许重试");
         }
-        taskPersistencePort.markRetry(command.getTaskId(), command.getOperator());
+        taskPersistencePort.markRetry(command.getTaskId());
         triggerAfterCommit(List.of(toTriggerTaskData(task)));
     }
 
@@ -217,7 +218,8 @@ public class SocialSecurityPaymentManagerImpl implements SocialSecurityPaymentMa
             task.setRetryable(Boolean.FALSE);
             task.setRetryCount(0);
             task.setMaxRetryCount(3);
-            task.setCreatedBy(command.getOperator());
+            task.setCreateAdminId(command.getCreateAdminId());
+            task.setCreateAdminName(command.getCreateAdminName());
             tasks.add(task);
         }
         if (tasks.isEmpty()) {

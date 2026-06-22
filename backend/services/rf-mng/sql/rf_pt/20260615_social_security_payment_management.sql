@@ -1,6 +1,6 @@
 -- 社保缴费管理端第一阶段表结构。
 -- 数据库：rf_pt
--- 依赖：请先在 rf_robot 执行 qy_robot 税务机器人表结构及本仓库 rf_robot 扩展脚本。
+-- 依赖：请先在 rf_robot 执行 qy_robot 税务机器人表结构。
 
 CREATE TABLE IF NOT EXISTS `tb_tax_social_security_payment_batch` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键编号',
@@ -12,9 +12,9 @@ CREATE TABLE IF NOT EXISTS `tb_tax_social_security_payment_batch` (
   `success_count` int NOT NULL DEFAULT 0 COMMENT '成功数量',
   `failed_count` int NOT NULL DEFAULT 0 COMMENT '失败数量',
   `remark` varchar(512) DEFAULT NULL COMMENT '备注',
-  `created_by` varchar(64) DEFAULT NULL COMMENT '创建人',
+  `create_admin_id` bigint DEFAULT NULL COMMENT '创建管理员ID',
+  `create_admin_name` varchar(64) DEFAULT NULL COMMENT '创建管理员名称',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `updated_by` varchar(64) DEFAULT NULL COMMENT '更新人',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
   KEY `idx_region_period_status` (`region_code`, `period_month`, `status`)

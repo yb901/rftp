@@ -47,8 +47,10 @@ public class SocialSecurityPaymentTaskRecord implements Serializable {
     private Integer retryCount;
     /** 最大重试次数。 */
     private Integer maxRetryCount;
-    /** 创建人。 */
-    private String createdBy;
+    /** 创建管理员ID。 */
+    private Long createAdminId;
+    /** 创建管理员名称。 */
+    private String createAdminName;
     /** 创建时间。 */
     private LocalDateTime createdAt;
     /** 更新时间。 */

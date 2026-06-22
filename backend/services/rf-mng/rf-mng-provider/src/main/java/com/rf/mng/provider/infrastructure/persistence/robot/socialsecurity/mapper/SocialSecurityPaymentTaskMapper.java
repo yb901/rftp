@@ -20,7 +20,7 @@ public interface SocialSecurityPaymentTaskMapper {
     SocialSecurityPaymentTaskEntity findById(@Param("id") Long id);
 
     /** 标记待重试。 */
-    int markRetry(@Param("id") Long id, @Param("operator") String operator);
+    int markRetry(@Param("id") Long id);
 
     /** 按条件统计。 */
     long count(@Param("query") SocialSecurityPaymentTaskQuery query);

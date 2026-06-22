@@ -18,7 +18,7 @@ public interface SocialSecurityPaymentTaskPersistencePort {
     SocialSecurityPaymentTaskRecord findById(Long id);
 
     /** 更新任务为待重试。 */
-    int markRetry(Long id, String operator);
+    int markRetry(Long id);
 
     /** 按条件统计任务数。 */
     long count(SocialSecurityPaymentTaskQuery query);

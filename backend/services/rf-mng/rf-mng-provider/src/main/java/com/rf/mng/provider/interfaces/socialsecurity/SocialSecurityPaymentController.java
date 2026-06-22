@@ -10,7 +10,6 @@ import com.rf.mng.provider.application.query.socialsecurity.SocialSecurityPaymen
 import com.rf.mng.provider.application.result.socialsecurity.SocialSecurityPaymentBatchResult;
 import com.rf.mng.provider.application.result.socialsecurity.SocialSecurityPaymentTaskResult;
 import com.rf.mng.provider.interfaces.socialsecurity.param.SocialSecurityPaymentBatchCreateCtrlParam;
-import com.rf.mng.provider.interfaces.socialsecurity.param.SocialSecurityPaymentTaskRetryCtrlParam;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -54,11 +53,9 @@ public class SocialSecurityPaymentController {
 
     /** 重试社保缴费任务。 */
     @PostMapping("/tasks/{taskId}/retry")
-    public Result<Void> retryTask(@PathVariable Long taskId,
-                                  @RequestBody SocialSecurityPaymentTaskRetryCtrlParam param) {
+    public Result<Void> retryTask(@PathVariable Long taskId) {
         SocialSecurityPaymentTaskRetryCommand command = new SocialSecurityPaymentTaskRetryCommand();
         command.setTaskId(taskId);
-        command.setOperator(param.getOperator());
         socialSecurityPaymentManager.retryTask(command);
         return Result.success();
     }

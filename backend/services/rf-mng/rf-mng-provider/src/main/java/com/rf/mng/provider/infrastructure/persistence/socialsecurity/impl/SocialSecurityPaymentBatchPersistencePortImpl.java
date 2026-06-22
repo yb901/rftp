@@ -51,7 +51,8 @@ public class SocialSecurityPaymentBatchPersistencePortImpl implements SocialSecu
         entity.setTotalCount(data.getTotalCount());
         entity.setSuccessCount(data.getSuccessCount());
         entity.setFailedCount(data.getFailedCount());
-        entity.setCreatedBy(data.getCreatedBy());
+        entity.setCreateAdminId(data.getCreateAdminId());
+        entity.setCreateAdminName(data.getCreateAdminName());
         return entity;
     }
 
@@ -66,7 +67,8 @@ public class SocialSecurityPaymentBatchPersistencePortImpl implements SocialSecu
         record.setTotalCount(entity.getTotalCount());
         record.setSuccessCount(entity.getSuccessCount());
         record.setFailedCount(entity.getFailedCount());
-        record.setCreatedBy(entity.getCreatedBy());
+        record.setCreateAdminId(entity.getCreateAdminId());
+        record.setCreateAdminName(entity.getCreateAdminName());
         record.setCreatedAt(entity.getCreatedAt());
         record.setUpdatedAt(entity.getUpdatedAt());
         return record;

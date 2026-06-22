@@ -7,7 +7,7 @@ import com.aliyun.tea.TeaException;
 import com.aliyun.teaopenapi.models.Config;
 import com.rf.performance.provider.application.port.gateway.auth.captcha.CaptchaGateway;
 import com.rf.performance.provider.application.port.gateway.auth.captcha.param.CaptchaVerifyGatewayParam;
-import com.rf.performance.provider.common.config.PerformanceH5AuthProperties;
+import com.rf.performance.provider.common.config.PerformanceSmsProperties;
 import com.zy.common.core.enums.ErrorCode;
 import com.zy.common.core.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
@@ -25,10 +25,10 @@ import javax.annotation.Resource;
 public class AliyunCaptchaGatewayImpl implements CaptchaGateway {
 
     /**
-     * H5 登录配置。
+     * 短信与验证码配置。
      */
     @Resource
-    private PerformanceH5AuthProperties performanceH5AuthProperties;
+    private PerformanceSmsProperties performanceSmsProperties;
 
     /**
      * 校验图形验证码。
@@ -63,10 +63,10 @@ public class AliyunCaptchaGatewayImpl implements CaptchaGateway {
      */
     private Client createClient() throws Exception {
         Config config = new Config()
-                .setAccessKeyId(performanceH5AuthProperties.getAccessKeyId())
-                .setAccessKeySecret(performanceH5AuthProperties.getAccessKeySecret())
-                .setRegionId(performanceH5AuthProperties.getCaptchaRegionId())
-                .setEndpoint(performanceH5AuthProperties.getCaptchaEndpoint());
+                .setAccessKeyId(performanceSmsProperties.getAccessKeyId())
+                .setAccessKeySecret(performanceSmsProperties.getAccessKeySecret())
+                .setRegionId(performanceSmsProperties.getCaptchaRegionId())
+                .setEndpoint(performanceSmsProperties.getCaptchaEndpoint());
         return new Client(config);
     }
 
@@ -113,10 +113,10 @@ public class AliyunCaptchaGatewayImpl implements CaptchaGateway {
      * 校验阿里云验证码配置。
      */
     private void validateConfig() {
-        if (StringUtils.isAnyBlank(performanceH5AuthProperties.getAccessKeyId(),
-                performanceH5AuthProperties.getAccessKeySecret(),
-                performanceH5AuthProperties.getCaptchaRegionId(),
-                performanceH5AuthProperties.getCaptchaEndpoint())) {
+        if (StringUtils.isAnyBlank(performanceSmsProperties.getAccessKeyId(),
+                performanceSmsProperties.getAccessKeySecret(),
+                performanceSmsProperties.getCaptchaRegionId(),
+                performanceSmsProperties.getCaptchaEndpoint())) {
             throw new BusinessException(ErrorCode.E999002, "阿里云验证码配置不完整");
         }
     }

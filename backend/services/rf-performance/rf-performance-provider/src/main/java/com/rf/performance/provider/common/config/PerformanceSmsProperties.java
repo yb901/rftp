@@ -2,28 +2,20 @@ package com.rf.performance.provider.common.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Component;
 
 /**
- * 员工绩效 H5 登录配置。
+ * 员工绩效短信与验证码配置。
  */
 @Data
 @Component
-@ConfigurationProperties(prefix = "rf.performance.h5.auth")
-public class PerformanceH5AuthProperties {
+@RefreshScope
+@ConfigurationProperties(prefix = "rf-performance.sms")
+public class PerformanceSmsProperties {
 
     /**
-     * 登录 Cookie 名称。
-     */
-    private String cookieName = "RF_PERFORMANCE_MOBILE";
-
-    /**
-     * 登录 Cookie 有效秒数。
-     */
-    private Integer cookieMaxAgeSeconds = 7 * 24 * 60 * 60;
-
-    /**
-     * 是否启用 mock 验证码。
+     * 是否启用 mock 短信发送。
      */
     private Boolean mockEnabled = Boolean.TRUE;
 
@@ -70,7 +62,7 @@ public class PerformanceH5AuthProperties {
     /**
      * 是否启用发送前图形验证码校验。
      */
-    private Boolean captchaEnabled = false;
+    private Boolean captchaEnabled = Boolean.TRUE;
 
     /**
      * 阿里云验证码地域。

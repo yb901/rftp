@@ -1,48 +1,185 @@
-name: rf-performance-backend
+name: rf-performance-backend-gradle-build
 
 sources:
   my_repo:
     type: codeup
-    name: rf
-    endpoint: RF_CODEUP_ENDPOINT_PLACEHOLDER
+    name: rfpt
+    endpoint: https://codeup.aliyun.com/6a0e7b2c7b6e0a0129639206/rfpt/rfpt.git
     branch: main
     certificate:
       type: serviceConnection
-      serviceConnection: RF_CODEUP_SERVICE_CONNECTION_PLACEHOLDER
+      serviceConnection: dgqwgyszp67p6z61
 
 stages:
   stage1:
-    name: "员工绩效后端构建并推送镜像"
+    name: "员工绩效后端 Gradle 构建并推送 Docker"
+
     jobs:
       build_and_push:
         name: "Build And Push"
+
         runsOn:
-          group: RF_YUNXIAO_RUNNER_GROUP_PLACEHOLDER
+          group: private/PMCrDXq0zBgals4t
           vm: true
+
         steps:
           build_push_step:
             name: "Build Push"
             step: Command
+
             with:
               run: |
-                set -e
+                echo "当前目录"
+                pwd
+
+                echo "查看代码"
+                ls -la
+
+                print_commit_summary() {
+                  line() {
+                    printf '%s\n' '============================================================'
+                  }
+
+                  short_commit() {
+                    git rev-parse --short "$1" 2>/dev/null || printf '%s' "$1"
+                  }
+
+                  current_commit="${CI_COMMIT_ID:-$(git rev-parse HEAD)}"
+                  previous_commit=""
+                  for name in YUNXIAO_PRE_COMMIT_ID PRE_COMMIT_ID CI_PRE_COMMIT_ID PREVIOUS_COMMIT_ID LAST_SUCCESS_COMMIT_ID; do
+                    value=$(eval "printf '%s' \"\${$name:-}\"")
+                    if [ -n "$value" ] && git cat-file -e "$value^{commit}" 2>/dev/null; then
+                      previous_commit="$value"
+                      break
+                    fi
+                  done
+
+                  if [ -z "$previous_commit" ]; then
+                    previous_commit=$(printenv | awk -F= '
+                      $1 ~ /(^|[._-])preCommitId$/ || $1 ~ /(^|[._-])PRE_COMMIT_ID$/ {
+                        print $2
+                        exit
+                      }
+                    ')
+                  fi
+
+                  if [ -n "$previous_commit" ] && ! git cat-file -e "$previous_commit^{commit}" 2>/dev/null; then
+                    previous_commit=""
+                  fi
+
+                  if [ -z "$previous_commit" ] && git rev-parse HEAD~1 >/dev/null 2>&1; then
+                    previous_commit=$(git rev-parse HEAD~1)
+                  fi
+
+                  branch_name="${CI_COMMIT_REF_NAME:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null || printf 'unknown')}"
+                  build_number="${BUILD_NUMBER:-unknown}"
+
+                  line
+                  printf '发布变更摘要\n'
+                  printf '分支: %s\n' "$branch_name"
+                  printf '构建号: %s\n' "$build_number"
+                  printf '本次提交: %s (%s)\n' "$(short_commit "$current_commit")" "$current_commit"
+                  if [ -n "$previous_commit" ]; then
+                    printf '上次提交: %s (%s)\n' "$(short_commit "$previous_commit")" "$previous_commit"
+                  else
+                    printf '上次提交: 未获取到，展示最近 10 条提交\n'
+                  fi
+
+                  line
+                  printf '提交列表:\n'
+                  if [ -n "$previous_commit" ] && git merge-base --is-ancestor "$previous_commit" "$current_commit" 2>/dev/null; then
+                    commit_range="$previous_commit..$current_commit"
+                    git log "$commit_range" --date=format:'%Y-%m-%d %H:%M:%S %z' --pretty=format:'  - %h | %ad | %an | %s' --no-decorate
+                  else
+                    commit_range=""
+                    git log -10 --date=format:'%Y-%m-%d %H:%M:%S %z' --pretty=format:'  - %h | %ad | %an | %s' --no-decorate
+                  fi
+
+                  printf '\n'
+                  line
+                  printf '变更文件:\n'
+                  if [ -n "$commit_range" ]; then
+                    changed_count=$(git diff --name-only "$previous_commit" "$current_commit" | wc -l | tr -d ' ')
+                    if [ "$changed_count" -eq 0 ]; then
+                      printf '  无文件变更\n'
+                    else
+                      git diff --name-status "$previous_commit" "$current_commit" | sed 's/^/  /' | head -200
+                      if [ "$changed_count" -gt 200 ]; then
+                        printf '  ... 共 %s 个文件，仅展示前 200 个\n' "$changed_count"
+                      else
+                        printf '  共 %s 个文件\n' "$changed_count"
+                      fi
+                    fi
+                  else
+                    git show --name-status --format='' "$current_commit" | sed 's/^/  /' | head -200
+                  fi
+                  line
+                }
+                print_commit_summary || true
+
+                echo "JDK"
+                java -version || yum install -y java-21-openjdk-devel
+
+                echo "进入后端目录"
                 cd backend
+
+                echo "Gradle Build"
                 chmod +x ./gradlew
-                ./gradlew :services:rf-performance:rf-performance-provider:clean :services:rf-performance:rf-performance-provider:bootJar -x test --no-daemon
-                echo "$CR_PWD" | docker login --username "$CR_USER_NAME" --password-stdin "$ACR_REGISTRY"
+
+                ./gradlew \
+                  :services:rf-performance:rf-performance-provider:clean \
+                  :services:rf-performance:rf-performance-provider:bootJar \
+                  -x test \
+                  --no-daemon
+
+                echo "查看 jar"
+                ls -la services/rf-performance/rf-performance-provider/build/libs
+
+                echo "Docker Version"
+                docker version
+
+                echo "Buildx Version"
+                docker buildx version
+
+                echo "Docker Login"
+
+                if [ -z "$CR_USER_NAME" ]; then
+                  echo "CR_USER_NAME 未配置"
+                  exit 1
+                fi
+
+                if [ -z "$CR_PWD" ]; then
+                  echo "CR_PWD 未配置"
+                  exit 1
+                fi
+
+                echo "$CR_PWD" | docker login \
+                  --username "$CR_USER_NAME" \
+                  --password-stdin \
+                  qy-prd-registry-vpc.cn-hangzhou.cr.aliyuncs.com
+
+                echo "Docker Build"
+
                 IMAGE_TAG="${CI_COMMIT_ID}-${BUILD_NUMBER}"
-                IMAGE="${ACR_REGISTRY}/${ACR_NAMESPACE}/rf-performance:${IMAGE_TAG}"
-                docker build --build-arg JAR_FILE=services/rf-performance/rf-performance-provider/build/libs/rf-performance-provider-1.0.0-SNAPSHOT.jar -t "$IMAGE" -f Dockerfile .
-                docker push "$IMAGE"
-                echo "IMAGE=$IMAGE"
+                IMAGE="qy-prd-registry-vpc.cn-hangzhou.cr.aliyuncs.com/qy-prod/rf-performance:${IMAGE_TAG}"
+
+                docker build \
+                  --build-arg JAR_FILE=services/rf-performance/rf-performance-provider/build/libs/rf-performance-provider-1.0.0-SNAPSHOT.jar \
+                  -t ${IMAGE} \
+                  -f Dockerfile \
+                  .
+
+                docker push ${IMAGE}
+
+                echo "本次镜像: $IMAGE"
 
   stage2:
     name: "部署员工绩效后端到 ACK"
     jobs:
       deploy_to_ack:
-        name: "Deploy To ACK"
+        name: "Deploy To ACK With Kubernetes Connection"
         runsOn:
-          group: RF_YUNXIAO_RUNNER_GROUP_PLACEHOLDER
+          group: private/PMCrDXq0zBgals4t
           vm: true
         steps:
           render_manifest_step:
@@ -50,22 +187,29 @@ stages:
             step: Command
             with:
               run: |
-                set -e
                 IMAGE_TAG="${CI_COMMIT_ID}-${BUILD_NUMBER}"
-                IMAGE="${ACR_REGISTRY}/${ACR_NAMESPACE}/rf-performance:${IMAGE_TAG}"
+                IMAGE="qy-prd-registry-vpc.cn-hangzhou.cr.aliyuncs.com/qy-prod/rf-performance:${IMAGE_TAG}"
                 MANIFEST_DIR=".manifest-rf-performance"
                 MANIFEST_FILE="${MANIFEST_DIR}/rf-performance.yaml"
+
                 mkdir -p "$MANIFEST_DIR"
                 cp backend/k8s/prod/rf-performance-deployment.yaml "$MANIFEST_FILE"
                 printf '\n---\n' >> "$MANIFEST_FILE"
                 cat backend/k8s/prod/rf-performance-service.yaml >> "$MANIFEST_FILE"
+
                 sed -i "s#RF_PERFORMANCE_IMAGE_PLACEHOLDER#$IMAGE#g" "$MANIFEST_FILE"
                 sed -i "s#APP_VERSION_PLACEHOLDER#$IMAGE_TAG#g" "$MANIFEST_FILE"
+
+                echo "IMAGE=$IMAGE"
+                grep image: "$MANIFEST_FILE"
+
           kubectl_apply_step:
             name: "Kubectl Apply"
             step: KubectlApply
             with:
-              kubernetesCluster: RF_ACK_CLUSTER_PLACEHOLDER
+              # Select the ACK cluster connection in Flow UI. The saved value should be
+              # a real Flow Kubernetes cluster ID, not a placeholder.
+              kubernetesCluster:
               kubectlVersion: "1.30.14"
               namespace: prod
               yamlPath: .manifest-rf-performance/rf-performance.yaml

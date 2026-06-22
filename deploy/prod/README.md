@@ -11,88 +11,65 @@
 
 ## 云效变量
 
-四条流水线均需要配置：
+四条流水线均复用 `zy_qy` 的云效资源：
 
-- `ACR_REGISTRY`：阿里云镜像仓库地址，例如 `xxx.cn-hangzhou.cr.aliyuncs.com`。
-- `ACR_NAMESPACE`：镜像命名空间。
 - `CR_USER_NAME`：镜像仓库用户名。
 - `CR_PWD`：镜像仓库密码。
+- `serviceConnection`：`dgqwgyszp67p6z61`。
+- `runsOn.group`：`private/PMCrDXq0zBgals4t`。
+- 镜像仓库：`qy-prd-registry-vpc.cn-hangzhou.cr.aliyuncs.com/qy-prod`。
 
-流水线 YAML 中还包含以下占位符，需要在导入云效后替换：
+前端流水线还需要配置：
 
-- `RF_CODEUP_ENDPOINT_PLACEHOLDER`
-- `RF_CODEUP_SERVICE_CONNECTION_PLACEHOLDER`
-- `RF_YUNXIAO_RUNNER_GROUP_PLACEHOLDER`
-- `RF_ACK_CLUSTER_PLACEHOLDER`
+- `CDN_BASE_URL`：静态资源 CDN 根地址。
+- `OSS_ENDPOINT`：OSS endpoint。
+- `OSS_BUCKET`：静态资源 bucket。
+- `OSS_ACCESS_KEY_ID`：OSS 访问密钥 ID。
+- `OSS_ACCESS_KEY_SECRET`：OSS 访问密钥 Secret。
+- `NGINX_IMAGE`：Nginx 基础镜像。
+
+四条流水线的仓库地址均为：
+
+```text
+https://codeup.aliyun.com/6a0e7b2c7b6e0a0129639206/rfpt/rfpt.git
+```
+
+`KubectlApply.kubernetesCluster` 与 `zy_qy` 一样在云效 Flow 页面选择真实 ACK 集群连接，YAML 中不写死集群 ID。
 
 ## ACK 预置资源
 
-命名空间：`prod`
+ACK/K8s 基础资源复用 `zy_qy`：
 
-镜像拉取：
+- 命名空间：`prod`
+- 镜像拉取：`acr-secret`
+- Nacos Config 入口：`qy-backend-nacos-config`
+- 配置密文解密密钥：`qy-backend-config-crypto-secret`
 
-- `acr-secret`
+`rf-mng` 和 `rf-performance` 的本地 `application.properties` 只保留启动引导配置，真实配置按 `zy_qy` 的两层结构放入 Nacos：
 
-配置：
+1. `common-backend-prod.properties`：后端公共基础设施配置。
+2. `${spring.application.name}-prod.properties`：项目自己的配置。
 
-```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: rf-backend-config
-  namespace: prod
-data:
-  dubbo-registry-address: nacos://nacos.prod.svc.cluster.local:8848
-  xxl-job-admin-addresses: http://xxl-job-admin.prod.svc.cluster.local:8080/xxl-job-admin
+生产需要在 Nacos 创建：
+
+| Data ID | 说明 | 样例 |
+| --- | --- | --- |
+| `common-backend-prod.properties` | Dubbo、XXL-JOB 等公共配置 | `backend/docs/config/common-backend-prod.properties` |
+| `rf-mng-prod.properties` | 管理端后端数据库、Cookie、tax-browser-worker 配置 | `backend/docs/config/rf-mng-prod.properties` |
+| `rf-performance-prod.properties` | 员工绩效后端数据库、短信、验证码、XXL-JOB 执行器配置 | `backend/docs/config/rf-performance-prod.properties` |
+
+敏感值使用 `SM4_密文`，解密密钥复用 `zy_qy` 的 `QY_CONFIG_CRYPTO_SECRET_KEY` 注入方式，不再为 rf 单独创建数据库、短信、Cookie 等 K8s Secret。
+
+生产 Deployment 不需要、也不应引用 `rf-platform-db-secret`。如果 ACK 报错 `secret "rf-platform-db-secret" not found`，说明集群里仍在运行旧版 manifest 或云效流水线未使用最新提交。处理方式：
+
+```bash
+kubectl -n prod get deploy rf-mng rf-performance -o yaml | grep -n "rf-platform-db-secret\|secretKeyRef" -A 3
 ```
 
-平台主库密钥：
+确认后重新使用最新流水线发布；最新 manifest 只引用：
 
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: rf-platform-db-secret
-  namespace: prod
-type: Opaque
-stringData:
-  url: jdbc:mysql://mysql.prod:3306/rf_pt?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
-  username: rf_pt
-  password: 请替换为生产密码
-```
-
-机器人协作库密钥：
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: rf-robot-db-secret
-  namespace: prod
-type: Opaque
-stringData:
-  url: jdbc:mysql://mysql.prod:3306/rf_robot?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
-  username: rf_robot
-  password: 请替换为生产密码
-```
-
-员工绩效阿里云密钥：
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: rf-performance-aliyun-secret
-  namespace: prod
-type: Opaque
-stringData:
-  sms-access-key-id: 请替换
-  sms-access-key-secret: 请替换
-  sms-sign-name: 请替换
-  sms-template-code: 请替换
-  captcha-prefix: 请替换
-  captcha-scene-id: 请替换
-```
+- `qy-backend-nacos-config`
+- `qy-backend-config-crypto-secret`
 
 ## 路由建议
 
@@ -103,10 +80,15 @@ stringData:
 
 ## 注意事项
 
-- `rf-performance` 生产模板中已设置：
-  - `RF_PERFORMANCE_H5_SMS_MOCK_ENABLED=false`
-  - `RF_PERFORMANCE_H5_CAPTCHA_ENABLED=true`
+- `rf-performance` 生产配置需要在 `rf-performance-prod.properties` 中设置：
+  - `rf-performance.sms.mock-enabled=false`
+  - `rf-performance.sms.access-key-id=SM4_密文`
+  - `rf-performance.sms.access-key-secret=SM4_密文`
+  - `rf-performance.sms.sign-name=短信签名`
+  - `rf-performance.sms.template-code=短信模板CODE`
+  - `rf-performance.sms.captcha-prefix=验证码身份标识`
+  - `rf-performance.sms.captcha-scene-id=验证码场景ID`
 - XXL-JOB 需要在调度中心配置执行器 `rf-performance`，并添加任务 handler：`employeePerformanceAutoConfirmJob`。
 - 数据库拆分为 `rf_pt` 和 `rf_robot`：平台业务表放入 `rf_pt`，tax-browser-worker 与 rf-mng 交互的税务机器人表放入 `rf_robot`。
-- 生产上线前需要在 `rf_pt` 执行 `backend/services/rf-performance/sql/20260621_employee_performance.sql` 和 `backend/services/rf-mng/sql/rf_pt/20260615_social_security_payment_management.sql`。
-- 生产上线前需要在 `rf_robot` 执行 qy_robot 税务机器人表结构，并执行 `backend/services/rf-mng/sql/rf_robot/20260615_social_security_payment_task_management_ext.sql`。
+- 生产上线前需要在 `rf_pt` 执行 `backend/services/rf-mng/sql/rf_pt/20260622_platform_admin.sql`、`backend/services/rf-performance/sql/20260621_employee_performance.sql` 和 `backend/services/rf-mng/sql/rf_pt/20260615_social_security_payment_management.sql`。
+- 生产上线前需要在 `rf_robot` 执行 qy_robot 税务机器人表结构。

@@ -24,6 +24,9 @@ public class SocialSecurityPaymentBatchCreateCtrlParam implements Serializable {
     private String periodMonth;
     /** 纳税人识别号列表。 */
     private List<String> taxNoList;
-    /** 操作人。 */
-    private String operator;
+    /** 创建管理员ID。 */
+    private Long createAdminId;
+
+    /** 创建管理员名称。 */
+    private String createAdminName;
 }
