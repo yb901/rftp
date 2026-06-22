@@ -402,7 +402,7 @@ function App() {
             <Form.Item name="password" label="密码" rules={[{ required: true, message: '请输入密码' }]}>
               <Input.Password autoComplete="current-password" />
             </Form.Item>
-            <Form.Item name="otpCode" label="动态验证码">
+            <Form.Item name="otpCode" label="动态验证码" rules={[{ required: true, message: '请输入动态验证码' }]}>
               <Input prefix={<SafetyCertificateOutlined />} autoComplete="one-time-code" inputMode="numeric" maxLength={6} />
             </Form.Item>
             <Button type="primary" htmlType="submit" icon={<LoginOutlined />} loading={loginLoading} block>

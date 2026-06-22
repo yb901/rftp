@@ -27,7 +27,7 @@ class IdCodecAutoConfigurationTest {
     @Test
     void shouldEnableWhenPropertyIsTrue() {
         contextRunner
-                .withPropertyValues("zy.id-codec.enabled=true")
+                .withPropertyValues("id-codec.enabled=true")
                 .run(context -> {
                     assertThat(context).hasSingleBean(IdCodecJacksonModule.class);
                     assertThat(context).hasSingleBean(IdCodecWebMvcConfigurer.class);

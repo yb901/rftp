@@ -15,7 +15,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @AutoConfiguration
 @ConditionalOnClass({ObjectMapper.class, WebMvcConfigurer.class})
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnProperty(prefix = "zy.id-codec", name = "enabled", havingValue = "true")
+@ConditionalOnProperty(prefix = "id-codec", name = "enabled", havingValue = "true")
 public class IdCodecAutoConfiguration {
 
     @Bean

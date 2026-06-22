@@ -56,7 +56,7 @@ ACK/K8s 基础资源复用 `zy_qy`：
 | Data ID | 说明 | 样例 |
 | --- | --- | --- |
 | `common-backend-prod.properties` | Dubbo、XXL-JOB 等公共配置 | `backend/docs/config/common-backend-prod.properties` |
-| `rf-mng-prod.properties` | 管理端后端数据库、Cookie、tax-browser-worker 配置 | `backend/docs/config/rf-mng-prod.properties` |
+| `rf-mng-prod.properties` | 管理端后端数据库、ID 编解码、Cookie、tax-browser-worker、Dubbo、数据库字段加密配置 | `backend/docs/config/rf-mng-prod.properties` |
 | `rf-performance-prod.properties` | 员工绩效后端数据库、短信、验证码、XXL-JOB 执行器配置 | `backend/docs/config/rf-performance-prod.properties` |
 
 敏感值使用 `SM4_密文`，解密密钥复用 `zy_qy` 的 `QY_CONFIG_CRYPTO_SECRET_KEY` 注入方式，不再为 rf 单独创建数据库、短信、Cookie 等 K8s Secret。
@@ -81,6 +81,10 @@ kubectl -n prod get deploy rf-mng rf-performance -o yaml | grep -n "rf-platform-
 
 ## 注意事项
 
+- `rf-mng` 生产配置需要在 `rf-mng-prod.properties` 中设置：
+  - `id-codec.enabled=true`：启用 ID 编解码自动配置；接口字段仍需要在代码中使用 `@IdEncode` / `@IdDecode` 标注才会实际生效。
+  - `db.encrypt.enabled=true`、`db.encrypt.secrets.S1=SM4_密文` 和 `db.encrypt.tables.tb_admin.columns.otp_secret.*`：启用 `tb_admin.otp_secret` 字段透明加解密。
+  - `dubbo.protocol.port=20891`、`dubbo.application.qos-port=22221`：避免与其他生产服务默认端口冲突。
 - `rf-performance` 生产配置需要在 `rf-performance-prod.properties` 中设置：
   - `rf-performance.sms.mock-enabled=false`
   - `rf-performance.sms.access-key-id=SM4_密文`

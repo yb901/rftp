@@ -93,7 +93,8 @@ public class AdminAuthManagerImpl implements AdminAuthManager {
      */
     private void verifyOtp(AdminLoginCommand command, AdminRecord admin) {
         if (StringUtils.isBlank(admin.getOtpSecret())) {
-            return;
+            log.warn("管理员登录失败，未配置OTP密钥，username={}, adminId={}", command.getUsername(), admin.getId());
+            throw new BusinessException(ErrorCode.E100002, "账号未配置动态验证码");
         }
         String otpCode = StringUtils.deleteWhitespace(command.getOtpCode());
         if (StringUtils.isBlank(otpCode)) {
