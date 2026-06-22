@@ -1,4 +1,5 @@
 import {
+  HomeOutlined,
   BankOutlined,
   DownloadOutlined,
   EditOutlined,
@@ -16,7 +17,7 @@ import {
   UserSwitchOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Button, DatePicker, Form, Input, Layout, Menu, Modal, Popconfirm, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd';
+import { Avatar, Breadcrumb, Button, Card, DatePicker, Descriptions, Form, Input, Layout, Menu, Modal, Popconfirm, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { MenuProps } from 'antd';
 import dayjs from 'dayjs';
@@ -550,6 +551,14 @@ function App() {
   };
 
   const pageMeta = getPageMeta(pageKey);
+  const performanceOverviewItems = [
+    { key: 'description', label: '模块说明', children: pageMeta.subtitle },
+    { key: 'taskTotal', label: '绩效任务数', children: performanceTaskPage.total },
+    { key: 'recordTotal', label: '员工记录数', children: performanceRecordPage.total },
+    { key: 'admin', label: '当前操作人', children: currentAdminName(loginUser) },
+    { key: 'taskStatus', label: '任务筛选状态', children: performanceTaskQueryForm.getFieldValue('status') || '全部' },
+    { key: 'recordStatus', label: '记录反馈状态', children: feedbackStatusText[performanceQueryForm.getFieldValue('feedbackStatus')] || '全部' },
+  ];
   const menuItems: MenuProps['items'] = [
     {
       key: 'social',
@@ -606,130 +615,174 @@ function App() {
       </Sider>
       <Layout>
         <Header className="app-header">
-          <div>
-            <div className="title">{pageMeta.title}</div>
-            <div className="subtitle">{pageMeta.subtitle}</div>
-          </div>
-          <Space>
-            <Text type="secondary">{currentAdminName(loginUser)}</Text>
-            <Button icon={<LogoutOutlined />} onClick={submitLogout}>退出</Button>
-            <Button icon={<ReloadOutlined />} onClick={refreshCurrentModule}>刷新</Button>
-            {pageKey === 'performance' ? (
-              <>
-                <Button icon={<DownloadOutlined />} onClick={downloadPerformanceExport}>导出</Button>
-                <Button icon={<DownloadOutlined />} onClick={downloadImportTemplate}>模板</Button>
-                <Button icon={<UploadOutlined />} onClick={() => setImportOpen(true)}>导入绩效</Button>
-                <Button type="primary" icon={<PlusOutlined />} onClick={() => {
-                  performanceTaskForm.setFieldsValue({ createAdminName: currentAdminName(loginUser) });
-                  setPerformanceTaskOpen(true);
-                }}>创建绩效</Button>
-              </>
-            ) : pageKey === 'admin' ? (
-              <Button type="primary" icon={<PlusOutlined />} onClick={openAdminCreate}>新增管理员</Button>
-            ) : pageKey === 'socialBatches' || pageKey === 'socialTasks' ? (
-              <Button type="primary" icon={<RocketOutlined />} onClick={() => {
-                form.setFieldsValue({ createAdminName: currentAdminName(loginUser) });
-                setCreateOpen(true);
-              }}>发起批次</Button>
-            ) : null}
+          <Button type="text" className="header-trigger" icon={<BankOutlined />} />
+          <Space size={12}>
+            <Avatar size={34} icon={<UserOutlined />} />
+            <Text strong>{currentAdminName(loginUser)}</Text>
+            <Button icon={<LogoutOutlined />} onClick={submitLogout}>退出登录</Button>
           </Space>
         </Header>
         <Content className="app-content">
+          <Breadcrumb
+            items={[
+              { title: <><HomeOutlined /> 首页</> },
+              { title: pageMeta.title },
+            ]}
+            className="page-breadcrumb"
+          />
           {pageKey === 'performance' ? (
             <div className="page-panel performance-panel">
-              <Tabs
-                items={[
-                  {
-                    key: 'performanceTasks',
-                    label: '绩效任务',
-                    children: (
-                      <Space direction="vertical" size={12} className="full-width">
-                        <Form layout="inline" form={performanceTaskQueryForm} className="query-bar">
-                          <Form.Item name="performanceDescription" label="绩效描述"><Input placeholder="绩效描述" allowClear /></Form.Item>
-                          <Form.Item name="status" label="状态"><Input placeholder="状态编码" allowClear /></Form.Item>
-                          <Button type="primary" onClick={() => loadPerformanceTasks(1, performanceTaskPage.size)}>查询</Button>
-                        </Form>
-                        <Table
-                          rowKey="id"
-                          loading={performanceTaskLoading}
-                          columns={performanceTaskColumns}
-                          dataSource={performanceTaskList}
-                          size="small"
-                          scroll={{ x: 1200 }}
-                          pagination={{
-                            current: performanceTaskPage.page,
-                            pageSize: performanceTaskPage.size,
-                            total: performanceTaskPage.total,
-                            onChange: loadPerformanceTasks,
-                          }}
-                        />
-                      </Space>
-                    ),
-                  },
-                  {
-                    key: 'performanceRecords',
-                    label: '员工记录',
-                    children: (
-                      <Space direction="vertical" size={12} className="full-width">
-                        <Form layout="inline" form={performanceQueryForm} className="query-bar">
-                          <Form.Item name="taskId" label="任务ID"><Input placeholder="任务ID" allowClear /></Form.Item>
-                          <Form.Item name="employeeName" label="姓名"><Input placeholder="员工姓名" allowClear /></Form.Item>
-                          <Form.Item name="mobile" label="手机号"><Input placeholder="手机号" allowClear /></Form.Item>
-                          <Form.Item name="confirmStatus" label="确认状态">
-                            <Select allowClear placeholder="全部" style={{ width: 150 }} options={Object.entries(confirmStatusText).map(([value, label]) => ({ value, label }))} />
-                          </Form.Item>
-                          <Form.Item name="feedbackStatus" label="反馈状态">
-                            <Select allowClear placeholder="全部" style={{ width: 120 }} options={Object.entries(feedbackStatusText).map(([value, label]) => ({ value, label }))} />
-                          </Form.Item>
-                          <Button type="primary" onClick={() => loadPerformanceRecords(1, performanceRecordPage.size)}>查询</Button>
-                        </Form>
-                        <Table
-                          rowKey="id"
-                          loading={performanceLoading}
-                          columns={performanceColumns}
-                          dataSource={performanceList}
-                          size="small"
-                          scroll={{ x: 1500 }}
-                          pagination={{
-                            current: performanceRecordPage.page,
-                            pageSize: performanceRecordPage.size,
-                            total: performanceRecordPage.total,
-                            onChange: loadPerformanceRecords,
-                          }}
-                        />
-                      </Space>
-                    ),
-                  },
-                ]}
-              />
+              <Card
+                size="small"
+                title="员工绩效基础信息"
+                className="info-card"
+                extra={(
+                  <Space wrap>
+                    <Button icon={<ReloadOutlined />} onClick={refreshCurrentModule}>刷新</Button>
+                    <Button icon={<DownloadOutlined />} onClick={downloadPerformanceExport}>导出</Button>
+                    <Button icon={<DownloadOutlined />} onClick={downloadImportTemplate}>模板</Button>
+                    <Button icon={<UploadOutlined />} onClick={() => setImportOpen(true)}>导入绩效</Button>
+                    <Button type="primary" icon={<PlusOutlined />} onClick={() => {
+                      performanceTaskForm.setFieldsValue({ createAdminName: currentAdminName(loginUser) });
+                      setPerformanceTaskOpen(true);
+                    }}>创建绩效</Button>
+                  </Space>
+                )}
+              >
+                <Descriptions column={3} items={performanceOverviewItems} />
+              </Card>
+              <Card size="small">
+                <Tabs
+                  items={[
+                    {
+                      key: 'performanceTasks',
+                      label: '绩效任务',
+                      children: (
+                        <Space direction="vertical" size={12} className="full-width">
+                          <div className="toolbar-row">
+                            <Text strong>任务列表</Text>
+                          </div>
+                          <Form layout="inline" form={performanceTaskQueryForm} className="query-bar">
+                            <Form.Item name="performanceDescription" label="绩效描述"><Input placeholder="绩效描述" allowClear /></Form.Item>
+                            <Form.Item name="status" label="状态"><Input placeholder="状态编码" allowClear /></Form.Item>
+                            <Button type="primary" onClick={() => loadPerformanceTasks(1, performanceTaskPage.size)}>查询</Button>
+                          </Form>
+                          <Table
+                            rowKey="id"
+                            loading={performanceTaskLoading}
+                            columns={performanceTaskColumns}
+                            dataSource={performanceTaskList}
+                            size="small"
+                            scroll={{ x: 1200 }}
+                            pagination={{
+                              current: performanceTaskPage.page,
+                              pageSize: performanceTaskPage.size,
+                              total: performanceTaskPage.total,
+                              onChange: loadPerformanceTasks,
+                            }}
+                          />
+                        </Space>
+                      ),
+                    },
+                    {
+                      key: 'performanceRecords',
+                      label: '员工记录',
+                      children: (
+                        <Space direction="vertical" size={12} className="full-width">
+                          <div className="toolbar-row">
+                            <Text strong>员工记录</Text>
+                          </div>
+                          <Form layout="inline" form={performanceQueryForm} className="query-bar">
+                            <Form.Item name="taskId" label="任务ID"><Input placeholder="任务ID" allowClear /></Form.Item>
+                            <Form.Item name="employeeName" label="姓名"><Input placeholder="员工姓名" allowClear /></Form.Item>
+                            <Form.Item name="mobile" label="手机号"><Input placeholder="手机号" allowClear /></Form.Item>
+                            <Form.Item name="confirmStatus" label="确认状态">
+                              <Select allowClear placeholder="全部" style={{ width: 150 }} options={Object.entries(confirmStatusText).map(([value, label]) => ({ value, label }))} />
+                            </Form.Item>
+                            <Form.Item name="feedbackStatus" label="反馈状态">
+                              <Select allowClear placeholder="全部" style={{ width: 120 }} options={Object.entries(feedbackStatusText).map(([value, label]) => ({ value, label }))} />
+                            </Form.Item>
+                            <Button type="primary" onClick={() => loadPerformanceRecords(1, performanceRecordPage.size)}>查询</Button>
+                          </Form>
+                          <Table
+                            rowKey="id"
+                            loading={performanceLoading}
+                            columns={performanceColumns}
+                            dataSource={performanceList}
+                            size="small"
+                            scroll={{ x: 1500 }}
+                            pagination={{
+                              current: performanceRecordPage.page,
+                              pageSize: performanceRecordPage.size,
+                              total: performanceRecordPage.total,
+                              onChange: loadPerformanceRecords,
+                            }}
+                          />
+                        </Space>
+                      ),
+                    },
+                  ]}
+                />
+              </Card>
             </div>
           ) : pageKey === 'admin' ? (
-            <Space direction="vertical" size={12} className="full-width">
-              <Form layout="inline" form={adminQueryForm} className="query-bar">
-                <Form.Item name="username" label="用户名"><Input placeholder="用户名" allowClear /></Form.Item>
-                <Form.Item name="realName" label="姓名"><Input placeholder="姓名" allowClear /></Form.Item>
-                <Form.Item name="role" label="角色"><Select allowClear placeholder="全部" style={{ width: 140 }} options={adminRoleOptions} /></Form.Item>
-                <Button type="primary" onClick={() => loadAdmins(1, adminPage.size)}>查询</Button>
-              </Form>
-              <Table
-                rowKey="id"
-                loading={adminLoading}
-                columns={adminColumns}
-                dataSource={adminList}
-                size="small"
-                scroll={{ x: 1200 }}
-                pagination={{
-                  current: adminPage.page,
-                  pageSize: adminPage.size,
-                  total: adminPage.total,
-                  onChange: loadAdmins,
-                }}
-              />
-            </Space>
+            <Card
+              size="small"
+              title={pageMeta.title}
+              extra={(
+                <Space>
+                  <Button icon={<ReloadOutlined />} onClick={refreshCurrentModule}>刷新</Button>
+                  <Button type="primary" icon={<PlusOutlined />} onClick={openAdminCreate}>新增管理员</Button>
+                </Space>
+              )}
+            >
+              <Space direction="vertical" size={12} className="full-width">
+                <Form layout="inline" form={adminQueryForm} className="query-bar">
+                  <Form.Item name="username" label="用户名"><Input placeholder="用户名" allowClear /></Form.Item>
+                  <Form.Item name="realName" label="姓名"><Input placeholder="姓名" allowClear /></Form.Item>
+                  <Form.Item name="role" label="角色"><Select allowClear placeholder="全部" style={{ width: 140 }} options={adminRoleOptions} /></Form.Item>
+                  <Button type="primary" onClick={() => loadAdmins(1, adminPage.size)}>查询</Button>
+                </Form>
+                <Table
+                  rowKey="id"
+                  loading={adminLoading}
+                  columns={adminColumns}
+                  dataSource={adminList}
+                  size="small"
+                  scroll={{ x: 1200 }}
+                  pagination={{
+                    current: adminPage.page,
+                    pageSize: adminPage.size,
+                    total: adminPage.total,
+                    onChange: loadAdmins,
+                  }}
+                />
+              </Space>
+            </Card>
           ) : pageKey === 'socialBatches' ? (
-            <Table rowKey="id" loading={batchLoading} columns={batchColumns} dataSource={batchList} pagination={false} size="small" />
+            <Card
+              size="small"
+              title={pageMeta.title}
+              extra={(
+                <Space>
+                  <Button icon={<ReloadOutlined />} onClick={refreshCurrentModule}>刷新</Button>
+                  <Button type="primary" icon={<RocketOutlined />} onClick={() => {
+                    form.setFieldsValue({ createAdminName: currentAdminName(loginUser) });
+                    setCreateOpen(true);
+                  }}>发起批次</Button>
+                </Space>
+              )}
+            >
+              <Table rowKey="id" loading={batchLoading} columns={batchColumns} dataSource={batchList} pagination={false} size="small" />
+            </Card>
           ) : pageKey === 'socialTasks' ? (
-            <Table rowKey="id" loading={taskLoading} columns={taskColumns} dataSource={taskList} pagination={false} size="small" scroll={{ x: 1300 }} />
+            <Card
+              size="small"
+              title={pageMeta.title}
+              extra={<Button icon={<ReloadOutlined />} onClick={refreshCurrentModule}>刷新</Button>}
+            >
+              <Table rowKey="id" loading={taskLoading} columns={taskColumns} dataSource={taskList} pagination={false} size="small" scroll={{ x: 1300 }} />
+            </Card>
           ) : pageKey === 'enterprise' ? (
             <ConfigPlaceholder icon={<BankOutlined />} title="企业维护" description="企业维护属于社保缴费模块，后续可在这里接入企业、税号和社保账号维护能力。" />
           ) : (
