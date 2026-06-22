@@ -17,9 +17,11 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "rfpt-backend"
+rootProject.name = "rf-backend"
 
 include("common:common-core")
 include("common:common-utils")
-include("services:rfpt-mng:rfpt-mng-api")
-include("services:rfpt-mng:rfpt-mng-provider")
+include("services:rf-mng:rf-mng-api")
+include("services:rf-mng:rf-mng-provider")
+include("services:rf-performance:rf-performance-api")
+include("services:rf-performance:rf-performance-provider")

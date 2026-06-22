@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rf.mng.provider.infrastructure.persistence.robot.socialsecurity.mapper.SocialSecurityRobotReferenceMapper">
+    <resultMap id="RegionMap" type="com.rf.mng.provider.infrastructure.persistence.socialsecurity.entity.SocialSecurityPaymentBatchEntity">
+        <result property="regionCode" column="region_code"/>
+        <result property="regionName" column="region_name"/>
+    </resultMap>
+
+    <resultMap id="EnterpriseMap" type="com.rf.mng.provider.infrastructure.persistence.socialsecurity.entity.SocialSecurityPaymentTaskEntity">
+        <result property="taxNo" column="tax_no"/>
+        <result property="enterpriseName" column="enterprise_name"/>
+        <result property="securityAccountName" column="security_account_name"/>
+    </resultMap>
+
+    <select id="listRegionNamesByRegionCodes" resultMap="RegionMap">
+        SELECT region_code, region_name
+        FROM tb_tax_region
+        WHERE region_code IN
+        <foreach collection="regionCodes" item="regionCode" open="(" separator="," close=")">
+            #{regionCode}
+        </foreach>
+    </select>
+
+    <select id="listEnterpriseInfoByTaxNos" resultMap="EnterpriseMap">
+        SELECT tax_no, enterprise_name, security_account_name
+        FROM tb_tax_enterprise
+        WHERE tax_no IN
+        <foreach collection="taxNos" item="taxNo" open="(" separator="," close=")">
+            #{taxNo}
+        </foreach>
+    </select>
+</mapper>

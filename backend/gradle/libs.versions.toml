@@ -12,6 +12,8 @@ caffeine = "3.1.8"
 commons-lang3 = "3.20.0"
 commons-collections4 = "4.5.0"
 aliyun-oss = "3.17.4"
+aliyun-dysmsapi = "4.5.1"
+aliyun-captcha = "1.1.3"
 slf4j = "2.0.16"
 fastjson2 = "2.0.56"
 easyexcel = "4.0.3"
@@ -37,6 +39,8 @@ caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "c
 commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3" }
 commons-collections4 = { module = "org.apache.commons:commons-collections4", version.ref = "commons-collections4" }
 aliyun-oss = { module = "com.aliyun.oss:aliyun-sdk-oss", version.ref = "aliyun-oss" }
+aliyun-dysmsapi = { module = "com.aliyun:dysmsapi20170525", version.ref = "aliyun-dysmsapi" }
+aliyun-captcha = { module = "com.aliyun:captcha20230305", version.ref = "aliyun-captcha" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 fastjson2 = { module = "com.alibaba.fastjson2:fastjson2", version.ref = "fastjson2" }
 easyexcel = { module = "com.alibaba:easyexcel", version.ref = "easyexcel" }

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rf.mng.provider.infrastructure.persistence.platform.admin.mapper.AdminMapper">
+    <resultMap id="AdminMap" type="com.rf.mng.provider.infrastructure.persistence.admin.entity.AdminEntity">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="realName" column="real_name"/>
+        <result property="password" column="password"/>
+        <result property="otpSecret" column="otp_secret"/>
+        <result property="enabled" column="enabled"/>
+        <result property="role" column="role"/>
+        <result property="gmtCreate" column="gmt_create"/>
+        <result property="gmtModified" column="gmt_modified"/>
+    </resultMap>
+
+    <select id="selectByUsername" resultMap="AdminMap">
+        SELECT *
+        FROM tb_admin
+        WHERE username = #{username}
+    </select>
+</mapper>
