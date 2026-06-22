@@ -60,6 +60,17 @@ ACK/K8s 基础资源复用 `zy_qy`：
 
 敏感值使用 `SM4_密文`，解密密钥复用 `zy_qy` 的 `QY_CONFIG_CRYPTO_SECRET_KEY` 注入方式，不再为 rf 单独创建数据库、短信、Cookie 等 K8s Secret。
 
+生产 Deployment 不需要、也不应引用 `rf-platform-db-secret`。如果 ACK 报错 `secret "rf-platform-db-secret" not found`，说明集群里仍在运行旧版 manifest 或云效流水线未使用最新提交。处理方式：
+
+```bash
+kubectl -n prod get deploy rf-mng rf-performance -o yaml | grep -n "rf-platform-db-secret\|secretKeyRef" -A 3
+```
+
+确认后重新使用最新流水线发布；最新 manifest 只引用：
+
+- `qy-backend-nacos-config`
+- `qy-backend-config-crypto-secret`
+
 ## 路由建议
 
 - 管理端前端 `rf-mng-node` 暴露给后台域名。
