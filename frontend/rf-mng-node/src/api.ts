@@ -93,7 +93,7 @@ export interface EmployeePerformanceRecord {
   feedbackHandleAdminName?: string;
 }
 
-const request = axios.create({ baseURL: '', withCredentials: true });
+const request = axios.create({ baseURL: import.meta.env.VITE_API_BASE_URL || '', withCredentials: true });
 
 interface ApiResult<T> {
   code?: number | string;

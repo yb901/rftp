@@ -21,7 +21,8 @@
 
 前端流水线还需要配置：
 
-- `CDN_BASE_URL`：静态资源 CDN 根地址。
+- `APP_CDN_BASE_URL`：当前前端应用的完整 CDN 前缀，例如 `https://cdn.zcglhr.com/rf-mng-node/`、`https://cdn.zcglhr.com/rf-h5/`。
+- `VITE_API_BASE_URL`：当前前端应用访问后端 API 的根地址，例如管理端 `https://mng.zcglhr.com`；如果走同域 Nginx 代理，可以配置为 `/api`。
 - `OSS_ENDPOINT`：OSS endpoint。
 - `OSS_BUCKET`：静态资源 bucket。
 - `OSS_ACCESS_KEY_ID`：OSS 访问密钥 ID。
