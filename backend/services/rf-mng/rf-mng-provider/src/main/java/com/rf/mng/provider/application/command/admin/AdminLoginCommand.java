@@ -20,4 +20,7 @@ public class AdminLoginCommand implements Serializable {
 
     /** 登录密码。 */
     private String password;
+
+    /** OTP动态验证码。 */
+    private String otpCode;
 }

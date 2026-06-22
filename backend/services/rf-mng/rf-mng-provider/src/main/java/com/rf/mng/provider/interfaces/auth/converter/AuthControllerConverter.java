@@ -29,6 +29,7 @@ public final class AuthControllerConverter {
         }
         command.setUsername(param.getUsername());
         command.setPassword(param.getPassword());
+        command.setOtpCode(param.getOtpCode());
         return command;
     }
 

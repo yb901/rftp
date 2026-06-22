@@ -76,7 +76,7 @@ kubectl -n prod get deploy rf-mng rf-performance -o yaml | grep -n "rf-platform-
 
 - 管理端前端 `rf-mng-node` 暴露给后台域名。
 - 员工端 H5 `rf-h5-node` 暴露给公众号菜单域名或路径。
-- `rf-mng-node` 的 `/api/` 代理到 `rf-mng`。
+- `rf-mng-node` 的 `/api/`、`/mng/` 代理到 `rf-mng`。
 - `rf-h5-node` 的 `/api/performance/h5/` 代理到 `rf-performance`。
 
 ## 注意事项

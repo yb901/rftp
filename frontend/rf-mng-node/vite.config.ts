@@ -21,6 +21,10 @@ export default defineConfig(({ mode }) => {
           target: 'http://127.0.0.1:18091',
           changeOrigin: true,
         },
+        '/mng': {
+          target: 'http://127.0.0.1:18091',
+          changeOrigin: true,
+        },
       },
     },
   };

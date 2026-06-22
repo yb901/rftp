@@ -114,7 +114,7 @@ async function unwrap<T>(promise: Promise<{ data: ApiResult<T> | T }>): Promise<
   return body && Object.prototype.hasOwnProperty.call(body, 'data') ? body.data : (response.data as T);
 }
 
-export function login(data: { username: string; password: string }) {
+export function login(data: { username: string; password: string; otpCode?: string }) {
   return unwrap<LoginResult>(request.post('/mng/auth/login', data));
 }
 

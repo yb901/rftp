@@ -8,6 +8,9 @@ import com.rf.mng.provider.application.result.admin.AdminResult;
 import com.zy.common.core.enums.ErrorCode;
 import com.zy.common.core.exception.BusinessException;
 import com.zy.common.utils.PasswordHashUtil;
+import dev.samstevens.totp.code.DefaultCodeGenerator;
+import dev.samstevens.totp.code.DefaultCodeVerifier;
+import dev.samstevens.totp.time.SystemTimeProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,9 @@ public class AdminAuthManagerImpl implements AdminAuthManager {
     /** 管理员持久化端口。 */
     @Resource
     private AdminPersistencePort adminPersistencePort;
+
+    /** OTP动态验证码校验器。 */
+    private final DefaultCodeVerifier otpCodeVerifier = new DefaultCodeVerifier(new DefaultCodeGenerator(), new SystemTimeProvider());
 
     /**
      * 执行管理员登录。
@@ -44,6 +50,7 @@ public class AdminAuthManagerImpl implements AdminAuthManager {
             throw new BusinessException(ErrorCode.E100002, "账号或密码错误");
         }
         verifyPassword(command, admin);
+        verifyOtp(command, admin);
         log.info("管理员登录成功，username={}, adminId={}", command.getUsername(), admin.getId());
         return toResult(admin);
     }
@@ -75,6 +82,27 @@ public class AdminAuthManagerImpl implements AdminAuthManager {
         if (!PasswordHashUtil.verifyPassword(command.getPassword(), admin.getPassword())) {
             log.warn("管理员登录失败，密码错误，username={}", command.getUsername());
             throw new BusinessException(ErrorCode.E100002, "账号或密码错误");
+        }
+    }
+
+    /**
+     * 校验OTP动态验证码。
+     *
+     * @param command 登录命令
+     * @param admin 管理员记录
+     */
+    private void verifyOtp(AdminLoginCommand command, AdminRecord admin) {
+        if (StringUtils.isBlank(admin.getOtpSecret())) {
+            return;
+        }
+        String otpCode = StringUtils.deleteWhitespace(command.getOtpCode());
+        if (StringUtils.isBlank(otpCode)) {
+            log.warn("管理员登录失败，未填写OTP验证码，username={}, adminId={}", command.getUsername(), admin.getId());
+            throw new BusinessException(ErrorCode.E999001, "请输入动态验证码");
+        }
+        if (!StringUtils.isNumeric(otpCode) || !otpCodeVerifier.isValidCode(admin.getOtpSecret(), otpCode)) {
+            log.warn("管理员登录失败，OTP验证码错误，username={}, adminId={}", command.getUsername(), admin.getId());
+            throw new BusinessException(ErrorCode.E100002, "动态验证码错误");
         }
     }
 
