@@ -41,5 +41,5 @@ public class SocialSecurityPaymentBatchResult implements Serializable {
     private Integer failedCount;
 
     /** 创建时间。 */
-    private LocalDateTime createdAt;
+    private LocalDateTime gmtCreate;
 }

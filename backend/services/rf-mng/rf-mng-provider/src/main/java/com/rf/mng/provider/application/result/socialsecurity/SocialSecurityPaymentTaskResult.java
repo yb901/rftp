@@ -53,6 +53,6 @@ public class SocialSecurityPaymentTaskResult implements Serializable {
     /** 是否允许重试。 */
     private Boolean retryable;
 
-    /** 更新时间。 */
-    private LocalDateTime updatedAt;
+    /** 修改时间。 */
+    private LocalDateTime gmtModified;
 }

@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS `tb_tax_social_security_payment_batch` (
   `remark` varchar(512) DEFAULT NULL COMMENT '备注',
   `create_admin_id` bigint DEFAULT NULL COMMENT '创建管理员ID',
   `create_admin_name` varchar(64) DEFAULT NULL COMMENT '创建管理员名称',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `gmt_create` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `gmt_modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
   PRIMARY KEY (`id`),
   KEY `idx_region_period_status` (`region_code`, `period_month`, `status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='税务社保缴费批次';

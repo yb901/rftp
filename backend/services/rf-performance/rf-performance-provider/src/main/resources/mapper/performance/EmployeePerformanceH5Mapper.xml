@@ -87,7 +87,18 @@
     </insert>
 
     <select id="getLatestSmsEvidence" resultType="com.rf.performance.provider.infrastructure.persistence.performance.entity.h5.PerformanceSmsEvidenceEntity">
-        SELECT *
+        SELECT id,
+               mobile,
+               scene,
+               sms_code,
+               sms_send_biz_id,
+               captcha_trace_id,
+               ip_address,
+               user_agent,
+               sent_at,
+               verified_at,
+               gmt_create,
+               gmt_modified
         FROM tb_employee_performance_sms_evidence
         WHERE mobile = #{mobile}
           AND scene = #{scene}

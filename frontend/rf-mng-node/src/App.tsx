@@ -174,7 +174,7 @@ function App() {
     { title: '月份', dataIndex: 'periodMonth', width: 120 },
     { title: '状态', dataIndex: 'status', width: 130, render: (value) => <Tag color={statusColor[value] || 'default'}>{value}</Tag> },
     { title: '任务', width: 170, render: (_, row) => `${row.successCount || 0}/${row.totalCount || 0} 成功，${row.failedCount || 0} 失败` },
-    { title: '创建时间', dataIndex: 'createdAt', width: 190 },
+    { title: '创建时间', dataIndex: 'gmtCreate', width: 190 },
   ], []);
 
   const taskColumns: ColumnsType<TaskRecord> = useMemo(() => [

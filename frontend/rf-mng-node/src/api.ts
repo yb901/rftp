@@ -26,7 +26,7 @@ export interface BatchRecord {
   totalCount: number;
   successCount: number;
   failedCount: number;
-  createdAt: string;
+  gmtCreate: string;
 }
 
 export interface TaskRecord {
@@ -42,7 +42,7 @@ export interface TaskRecord {
   errorCode?: string;
   errorMessage?: string;
   retryable?: boolean;
-  updatedAt?: string;
+  gmtModified?: string;
 }
 
 export interface PerformanceTask {

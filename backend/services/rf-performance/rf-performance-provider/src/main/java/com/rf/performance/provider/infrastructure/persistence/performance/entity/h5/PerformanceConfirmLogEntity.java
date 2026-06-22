@@ -68,5 +68,5 @@ public class PerformanceConfirmLogEntity {
     /**
      * 创建时间。
      */
-    private LocalDateTime createdAt;
+    private LocalDateTime gmtCreate;
 }

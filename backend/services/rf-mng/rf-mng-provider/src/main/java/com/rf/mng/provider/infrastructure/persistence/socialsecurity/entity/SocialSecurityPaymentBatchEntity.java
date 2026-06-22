@@ -39,7 +39,7 @@ public class SocialSecurityPaymentBatchEntity implements Serializable {
     /** 创建管理员名称。 */
     private String createAdminName;
     /** 创建时间。 */
-    private LocalDateTime createdAt;
-    /** 更新时间。 */
-    private LocalDateTime updatedAt;
+    private LocalDateTime gmtCreate;
+    /** 修改时间。 */
+    private LocalDateTime gmtModified;
 }

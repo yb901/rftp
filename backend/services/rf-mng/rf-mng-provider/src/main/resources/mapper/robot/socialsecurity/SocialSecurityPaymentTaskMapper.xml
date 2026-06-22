@@ -17,8 +17,8 @@
         <result property="maxRetryCount" column="max_retry_count"/>
         <result property="createAdminId" column="create_admin_id"/>
         <result property="createAdminName" column="create_admin_name"/>
-        <result property="createdAt" column="gmt_create"/>
-        <result property="updatedAt" column="gmt_modified"/>
+        <result property="gmtCreate" column="gmt_create"/>
+        <result property="gmtModified" column="gmt_modified"/>
     </resultMap>
 
     <sql id="TaskWhere">

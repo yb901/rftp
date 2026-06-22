@@ -68,5 +68,5 @@ public class EmployeePerformanceAdjustLogEntity {
     /**
      * 创建时间。
      */
-    private LocalDateTime createdAt;
+    private LocalDateTime gmtCreate;
 }

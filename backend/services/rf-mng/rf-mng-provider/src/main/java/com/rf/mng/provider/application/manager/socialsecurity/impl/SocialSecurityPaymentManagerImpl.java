@@ -238,7 +238,7 @@ public class SocialSecurityPaymentManagerImpl implements SocialSecurityPaymentMa
         result.setTotalCount(entity.getTotalCount());
         result.setSuccessCount(entity.getSuccessCount());
         result.setFailedCount(entity.getFailedCount());
-        result.setCreatedAt(entity.getCreatedAt());
+        result.setGmtCreate(entity.getGmtCreate());
         return result;
     }
 
@@ -256,7 +256,7 @@ public class SocialSecurityPaymentManagerImpl implements SocialSecurityPaymentMa
         result.setErrorCode(entity.getErrorCode());
         result.setErrorMessage(entity.getErrorMessage());
         result.setRetryable(entity.getRetryable());
-        result.setUpdatedAt(entity.getUpdatedAt());
+        result.setGmtModified(entity.getGmtModified());
         return result;
     }
 }

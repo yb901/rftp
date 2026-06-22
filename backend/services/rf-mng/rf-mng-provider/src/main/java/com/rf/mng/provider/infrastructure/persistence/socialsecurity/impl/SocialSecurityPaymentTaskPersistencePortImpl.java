@@ -89,8 +89,8 @@ public class SocialSecurityPaymentTaskPersistencePortImpl implements SocialSecur
         record.setMaxRetryCount(entity.getMaxRetryCount());
         record.setCreateAdminId(entity.getCreateAdminId());
         record.setCreateAdminName(entity.getCreateAdminName());
-        record.setCreatedAt(entity.getCreatedAt());
-        record.setUpdatedAt(entity.getUpdatedAt());
+        record.setGmtCreate(entity.getGmtCreate());
+        record.setGmtModified(entity.getGmtModified());
         return record;
     }
 }

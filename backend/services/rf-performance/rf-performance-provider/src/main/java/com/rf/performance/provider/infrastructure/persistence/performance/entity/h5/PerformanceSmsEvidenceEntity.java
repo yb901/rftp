@@ -63,10 +63,10 @@ public class PerformanceSmsEvidenceEntity {
     /**
      * 创建时间。
      */
-    private LocalDateTime createdAt;
+    private LocalDateTime gmtCreate;
 
     /**
-     * 更新时间。
+     * 修改时间。
      */
-    private LocalDateTime updatedAt;
+    private LocalDateTime gmtModified;
 }
