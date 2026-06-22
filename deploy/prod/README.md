@@ -11,19 +11,30 @@
 
 ## 云效变量
 
-四条流水线均需要配置：
+四条流水线均复用 `zy_qy` 的云效资源：
 
-- `ACR_REGISTRY`：阿里云镜像仓库地址，例如 `xxx.cn-hangzhou.cr.aliyuncs.com`。
-- `ACR_NAMESPACE`：镜像命名空间。
 - `CR_USER_NAME`：镜像仓库用户名。
 - `CR_PWD`：镜像仓库密码。
+- `serviceConnection`：`dgqwgyszp67p6z61`。
+- `runsOn.group`：`private/PMCrDXq0zBgals4t`。
+- 镜像仓库：`qy-prd-registry-vpc.cn-hangzhou.cr.aliyuncs.com/qy-prod`。
 
-流水线 YAML 中还包含以下占位符，需要在导入云效后替换：
+前端流水线还需要配置：
 
-- `RF_CODEUP_ENDPOINT_PLACEHOLDER`
-- `RF_CODEUP_SERVICE_CONNECTION_PLACEHOLDER`
-- `RF_YUNXIAO_RUNNER_GROUP_PLACEHOLDER`
-- `RF_ACK_CLUSTER_PLACEHOLDER`
+- `CDN_BASE_URL`：静态资源 CDN 根地址。
+- `OSS_ENDPOINT`：OSS endpoint。
+- `OSS_BUCKET`：静态资源 bucket。
+- `OSS_ACCESS_KEY_ID`：OSS 访问密钥 ID。
+- `OSS_ACCESS_KEY_SECRET`：OSS 访问密钥 Secret。
+- `NGINX_IMAGE`：Nginx 基础镜像。
+
+四条流水线的仓库地址均为：
+
+```text
+https://codeup.aliyun.com/6a0e7b2c7b6e0a0129639206/rfpt/rfpt.git
+```
+
+`KubectlApply.kubernetesCluster` 与 `zy_qy` 一样在云效 Flow 页面选择真实 ACK 集群连接，YAML 中不写死集群 ID。
 
 ## ACK 预置资源
 
@@ -59,8 +70,13 @@ ACK/K8s 基础资源复用 `zy_qy`：
 ## 注意事项
 
 - `rf-performance` 生产配置需要在 `rf-performance-prod.properties` 中设置：
-  - `rf.performance.h5.auth.mock-enabled=false`
-  - `rf.performance.h5.auth.captcha-enabled=true`
+  - `rf-performance.sms.mock-enabled=false`
+  - `rf-performance.sms.access-key-id=SM4_密文`
+  - `rf-performance.sms.access-key-secret=SM4_密文`
+  - `rf-performance.sms.sign-name=短信签名`
+  - `rf-performance.sms.template-code=短信模板CODE`
+  - `rf-performance.sms.captcha-prefix=验证码身份标识`
+  - `rf-performance.sms.captcha-scene-id=验证码场景ID`
 - XXL-JOB 需要在调度中心配置执行器 `rf-performance`，并添加任务 handler：`employeePerformanceAutoConfirmJob`。
 - 数据库拆分为 `rf_pt` 和 `rf_robot`：平台业务表放入 `rf_pt`，tax-browser-worker 与 rf-mng 交互的税务机器人表放入 `rf_robot`。
 - 生产上线前需要在 `rf_pt` 执行 `backend/services/rf-mng/sql/rf_pt/20260622_platform_admin.sql`、`backend/services/rf-performance/sql/20260621_employee_performance.sql` 和 `backend/services/rf-mng/sql/rf_pt/20260615_social_security_payment_management.sql`。
