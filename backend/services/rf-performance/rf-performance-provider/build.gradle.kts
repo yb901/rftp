@@ -10,6 +10,11 @@ tasks.jar {
     enabled = false
 }
 
+configurations.configureEach {
+    exclude(group = "pull-parser", module = "pull-parser")
+    exclude(group = "xpp3", module = "xpp3")
+}
+
 dependencies {
     implementation(project(":common:common-core"))
     implementation(project(":common:common-utils"))
