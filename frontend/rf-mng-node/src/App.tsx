@@ -2,11 +2,14 @@ import {
   DownloadOutlined,
   EditOutlined,
   EyeOutlined,
+  LoginOutlined,
+  LogoutOutlined,
   PlusOutlined,
   ReloadOutlined,
   RetweetOutlined,
   RocketOutlined,
   UploadOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
 import { Button, DatePicker, Form, Input, Layout, Modal, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -16,6 +19,7 @@ import {
   BatchRecord,
   EmployeePerformanceImportItem,
   EmployeePerformanceRecord,
+  LoginUser,
   PerformanceTask,
   TaskRecord,
   adjustPerformanceRecord,
@@ -27,6 +31,8 @@ import {
   fetchPerformanceTasks,
   fetchTasks,
   importPerformanceRecords,
+  login,
+  logout,
   retryTask,
 } from './api';
 
@@ -67,6 +73,8 @@ const feedbackStatusText: Record<string, string> = {
 };
 
 function App() {
+  const [loginUser, setLoginUser] = useState<LoginUser | null>(() => readLoginUser());
+  const [loginLoading, setLoginLoading] = useState(false);
   const [moduleKey, setModuleKey] = useState<'social' | 'performance'>('social');
   const [batchList, setBatchList] = useState<BatchRecord[]>([]);
   const [taskList, setTaskList] = useState<TaskRecord[]>([]);
@@ -88,6 +96,7 @@ function App() {
   const [performanceTaskForm] = Form.useForm();
   const [importForm] = Form.useForm();
   const [adjustForm] = Form.useForm();
+  const [loginForm] = Form.useForm();
   const [performanceQueryForm] = Form.useForm();
   const [performanceTaskQueryForm] = Form.useForm();
 
@@ -144,11 +153,20 @@ function App() {
   };
 
   useEffect(() => {
+    const handleUnauthorized = () => setLoginUser(null);
+    window.addEventListener('rf_mng_unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('rf_mng_unauthorized', handleUnauthorized);
+  }, []);
+
+  useEffect(() => {
+    if (!loginUser) {
+      return;
+    }
     void loadBatches();
     void loadTasks();
     void loadPerformanceTasks(1, 10);
     void loadPerformanceRecords();
-  }, []);
+  }, [loginUser]);
 
   const batchColumns: ColumnsType<BatchRecord> = useMemo(() => [
     { title: '批次', dataIndex: 'id', width: 90 },
@@ -254,7 +272,8 @@ function App() {
       siteType: 'default',
       periodMonth: values.periodMonth,
       taxNoList: values.taxNoText.split(/\s|,|，/).map((item: string) => item.trim()).filter(Boolean),
-      createAdminName: values.createAdminName || 'admin',
+      createAdminId: loginUser?.id,
+      createAdminName: values.createAdminName || currentAdminName(loginUser),
     });
     message.success('批次已提交');
     setCreateOpen(false);
@@ -270,7 +289,8 @@ function App() {
       periodEndDate: values.periodRange[1].format('YYYY-MM-DD'),
       confirmDeadlineTime: values.confirmDeadlineTime.format('YYYY-MM-DDTHH:mm:ss'),
       secondConfirmDeadlineTime: values.secondConfirmDeadlineTime?.format('YYYY-MM-DDTHH:mm:ss'),
-      createAdminName: values.createAdminName || 'admin',
+      createAdminId: loginUser?.id,
+      createAdminName: values.createAdminName || currentAdminName(loginUser),
     });
     message.success(`绩效任务已创建：${task.id}`);
     setPerformanceTaskOpen(false);
@@ -310,7 +330,7 @@ function App() {
 
   const openAdjust = (record: EmployeePerformanceRecord) => {
     setCurrentRecord(record);
-    adjustForm.setFieldsValue({ afterPerformance: record.performance, operatorAdminName: 'admin' });
+    adjustForm.setFieldsValue({ afterPerformance: record.performance, operatorAdminId: loginUser?.id, operatorAdminName: currentAdminName(loginUser) });
     setAdjustOpen(true);
   };
 
@@ -319,7 +339,7 @@ function App() {
       return;
     }
     const values = await adjustForm.validateFields();
-    await adjustPerformanceRecord(currentRecord.id, values);
+    await adjustPerformanceRecord(currentRecord.id, { ...values, operatorAdminId: loginUser?.id, operatorAdminName: values.operatorAdminName || currentAdminName(loginUser) });
     message.success('绩效已调整，员工需二次确认');
     setAdjustOpen(false);
     adjustForm.resetFields();
@@ -348,6 +368,48 @@ function App() {
     return Promise.all([loadBatches(), loadTasks()]);
   };
 
+  const submitLogin = async () => {
+    const values = await loginForm.validateFields();
+    setLoginLoading(true);
+    try {
+      const result = await login(values);
+      setLoginUser(result.user);
+      window.localStorage.setItem('rf_mng_login_user', JSON.stringify(result.user));
+      message.success('登录成功');
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const submitLogout = async () => {
+    await logout();
+    window.localStorage.removeItem('rf_mng_login_user');
+    setLoginUser(null);
+    message.success('已退出登录');
+  };
+
+  if (!loginUser) {
+    return (
+      <div className="login-shell">
+        <div className="login-panel">
+          <div className="login-title">rf-mng</div>
+          <div className="login-subtitle">管理后台登录</div>
+          <Form layout="vertical" form={loginForm} initialValues={{ username: 'admin' }} onFinish={submitLogin}>
+            <Form.Item name="username" label="用户名" rules={[{ required: true, message: '请输入用户名' }]}>
+              <Input prefix={<UserOutlined />} autoComplete="username" />
+            </Form.Item>
+            <Form.Item name="password" label="密码" rules={[{ required: true, message: '请输入密码' }]}>
+              <Input.Password autoComplete="current-password" />
+            </Form.Item>
+            <Button type="primary" htmlType="submit" icon={<LoginOutlined />} loading={loginLoading} block>
+              登录
+            </Button>
+          </Form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Layout className="app-shell">
       <Sider width={220} className="app-sider">
@@ -364,16 +426,24 @@ function App() {
             <div className="subtitle">{moduleKey === 'performance' ? '创建评价周期，导入员工绩效，跟踪确认反馈和调整闭环' : '按地区、月份发起任务，跟踪电子税务局执行结果'}</div>
           </div>
           <Space>
+            <Text type="secondary">{currentAdminName(loginUser)}</Text>
+            <Button icon={<LogoutOutlined />} onClick={submitLogout}>退出</Button>
             <Button icon={<ReloadOutlined />} onClick={refreshCurrentModule}>刷新</Button>
             {moduleKey === 'performance' ? (
               <>
                 <Button icon={<DownloadOutlined />} onClick={downloadPerformanceExport}>导出</Button>
                 <Button icon={<DownloadOutlined />} onClick={downloadImportTemplate}>模板</Button>
                 <Button icon={<UploadOutlined />} onClick={() => setImportOpen(true)}>导入绩效</Button>
-                <Button type="primary" icon={<PlusOutlined />} onClick={() => setPerformanceTaskOpen(true)}>创建绩效</Button>
+                <Button type="primary" icon={<PlusOutlined />} onClick={() => {
+                  performanceTaskForm.setFieldsValue({ createAdminName: currentAdminName(loginUser) });
+                  setPerformanceTaskOpen(true);
+                }}>创建绩效</Button>
               </>
             ) : (
-              <Button type="primary" icon={<RocketOutlined />} onClick={() => setCreateOpen(true)}>发起批次</Button>
+              <Button type="primary" icon={<RocketOutlined />} onClick={() => {
+                form.setFieldsValue({ createAdminName: currentAdminName(loginUser) });
+                setCreateOpen(true);
+              }}>发起批次</Button>
             )}
           </Space>
         </Header>
@@ -458,7 +528,7 @@ function App() {
       </Layout>
 
       <Modal title="发起社保缴费批次" open={createOpen} onCancel={() => setCreateOpen(false)} onOk={submitCreate} okText="提交执行">
-        <Form layout="vertical" form={form} initialValues={{ regionCode: 'liaoning', createAdminName: 'admin' }}>
+        <Form layout="vertical" form={form} initialValues={{ regionCode: 'liaoning', createAdminName: currentAdminName(loginUser) }}>
           <Form.Item name="regionCode" label="地区" rules={[{ required: true }]}>
             <Select options={[{ label: '辽宁', value: 'liaoning' }, { label: '宁波', value: 'ningbo' }, { label: '深圳', value: 'shenzhen' }]} />
           </Form.Item>
@@ -475,7 +545,7 @@ function App() {
       </Modal>
 
       <Modal title="创建绩效" open={performanceTaskOpen} onCancel={() => setPerformanceTaskOpen(false)} onOk={submitPerformanceTask} okText="创建">
-        <Form layout="vertical" form={performanceTaskForm} initialValues={{ createAdminName: 'admin' }}>
+        <Form layout="vertical" form={performanceTaskForm} initialValues={{ createAdminName: currentAdminName(loginUser) }}>
           <Form.Item name="performanceDescription" label="绩效描述" rules={[{ required: true }]}>
             <Input placeholder="如：2026年6月绩效" />
           </Form.Item>
@@ -572,6 +642,23 @@ function downloadImportTemplate() {
   link.download = '员工绩效导入模板.csv';
   link.click();
   window.URL.revokeObjectURL(url);
+}
+
+function readLoginUser(): LoginUser | null {
+  const raw = window.localStorage.getItem('rf_mng_login_user');
+  if (!raw) {
+    return null;
+  }
+  try {
+    return JSON.parse(raw) as LoginUser;
+  } catch {
+    window.localStorage.removeItem('rf_mng_login_user');
+    return null;
+  }
+}
+
+function currentAdminName(user: LoginUser | null) {
+  return user?.realName || user?.username || 'admin';
 }
 
 export default App;

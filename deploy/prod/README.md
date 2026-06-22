@@ -61,6 +61,19 @@ stringData:
   password: 请替换为生产密码
 ```
 
+管理后台密钥：
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rf-mng-secret
+  namespace: prod
+type: Opaque
+stringData:
+  cookie-secret-key: 请替换为固定的16字节Base62编码SM4密钥
+```
+
 机器人协作库密钥：
 
 ```yaml

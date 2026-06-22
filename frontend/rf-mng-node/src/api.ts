@@ -1,5 +1,17 @@
 import axios from 'axios';
 
+export interface LoginUser {
+  id: number;
+  username: string;
+  realName: string;
+  role: number;
+}
+
+export interface LoginResult {
+  token?: string;
+  user: LoginUser;
+}
+
 export interface PageResp<T> {
   list: T[];
   pagination: { page: number; size: number; total: number };
@@ -81,7 +93,7 @@ export interface EmployeePerformanceRecord {
   feedbackHandleAdminName?: string;
 }
 
-const request = axios.create({ baseURL: '' });
+const request = axios.create({ baseURL: '', withCredentials: true });
 
 interface ApiResult<T> {
   code?: number | string;
@@ -93,9 +105,21 @@ async function unwrap<T>(promise: Promise<{ data: ApiResult<T> | T }>): Promise<
   const response = await promise;
   const body = response.data as ApiResult<T>;
   if (body && body.code !== undefined && body.code !== 0 && body.code !== '000000' && body.code !== 'E000000') {
+    if (body.code === '100005') {
+      window.localStorage.removeItem('rf_mng_login_user');
+      window.dispatchEvent(new Event('rf_mng_unauthorized'));
+    }
     throw new Error(body.message || '请求失败');
   }
   return body && Object.prototype.hasOwnProperty.call(body, 'data') ? body.data : (response.data as T);
+}
+
+export function login(data: { username: string; password: string }) {
+  return unwrap<LoginResult>(request.post('/mng/auth/login', data));
+}
+
+export function logout() {
+  return unwrap<void>(request.post('/mng/auth/logout'));
 }
 
 export function createBatch(data: { regionCode: string; siteType: string; periodMonth: string; taxNoList: string[]; createAdminId?: number; createAdminName?: string }) {
@@ -120,6 +144,7 @@ export function createPerformanceTask(data: {
   periodEndDate: string;
   confirmDeadlineTime: string;
   secondConfirmDeadlineTime?: string;
+  createAdminId?: number;
   createAdminName?: string;
 }) {
   return unwrap<PerformanceTask>(request.post('/api/performance/tasks', data));
@@ -144,6 +169,7 @@ export function exportPerformanceRecords(params: Record<string, unknown>) {
 export function adjustPerformanceRecord(recordId: number, data: {
   afterPerformance: string;
   adjustReason?: string;
+  operatorAdminId?: number;
   operatorAdminName?: string;
   operatorMobile?: string;
 }) {
