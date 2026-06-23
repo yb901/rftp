@@ -21,7 +21,8 @@
 
 前端流水线还需要配置：
 
-- `CDN_BASE_URL`：当前前端应用的完整 CDN 前缀，例如 `https://cdn.zcglhr.com/rf-mng-node/`、`https://cdn.zcglhr.com/rf-h5/`。
+- `CDN_BASE_URL`：CDN 根地址或当前前端应用的完整 CDN 前缀，例如 `https://cdn.zcglhr.com`、`https://cdn.zcglhr.com/rf-mng-node/`、`https://cdn.zcglhr.com/rf-h5-node/`。流水线会按 `APP_CDN_NAME` 自动补齐应用路径。
+- `APP_CDN_NAME`：前端应用在 CDN/OSS 下的项目目录名；管理端默认 `rf-mng-node`，员工端 H5 默认 `rf-h5-node`。构建资源前缀和 OSS 上传目录都从该变量派生，必须保持一致。
 - `API_BASE_URL`：当前前端应用访问后端 API 的根地址，例如管理端 `https://mng.zcglhr.com`；H5 默认留空，直接请求同域 `/performance/*`，由外层网关转发到 `rf-performance`。
 - `OSS_ENDPOINT`：OSS endpoint。
 - `OSS_BUCKET`：静态资源 bucket。

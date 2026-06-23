@@ -122,18 +122,27 @@ stages:
                 echo "进入前端目录"
                 cd frontend/rf-mng-node
 
-                APP_CDN_NAME="rf-mng-node"
-                CDN_BASE_URL="${CDN_BASE_URL%/}/"
+                APP_CDN_NAME="${APP_CDN_NAME:-rf-mng-node}"
+                CDN_BASE_ORIGIN="${CDN_BASE_URL%/}"
+                case "$CDN_BASE_ORIGIN" in
+                  */${APP_CDN_NAME})
+                    APP_CDN_BASE_URL="${CDN_BASE_ORIGIN}/"
+                    ;;
+                  *)
+                    APP_CDN_BASE_URL="${CDN_BASE_ORIGIN}/${APP_CDN_NAME}/"
+                    ;;
+                esac
                 OSS_PREFIX="${APP_CDN_NAME}/"
                 OSS_ASSETS_PATH="oss://${OSS_BUCKET}/${OSS_PREFIX}assets"
                 OSS_FAVICON_PATH="oss://${OSS_BUCKET}/${OSS_PREFIX}favicon.png"
                 OSS_ICONS_PATH="oss://${OSS_BUCKET}/${OSS_PREFIX}icons"
-                export CDN_BASE_URL
+                export CDN_BASE_URL="$APP_CDN_BASE_URL"
                 export API_BASE_URL
 
                 echo "管理后台静态资源配置"
                 echo "API_BASE_URL=$API_BASE_URL"
                 echo "APP_CDN_NAME=$APP_CDN_NAME"
+                echo "CDN_BASE_ORIGIN=$CDN_BASE_ORIGIN"
                 echo "CDN_BASE_URL=$CDN_BASE_URL"
                 echo "OSS_BUCKET=$OSS_BUCKET"
                 echo "OSS_PREFIX=$OSS_PREFIX"

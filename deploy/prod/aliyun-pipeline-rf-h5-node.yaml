@@ -122,16 +122,36 @@ stages:
                 echo "进入 H5 前端目录"
                 cd frontend/rf-h5-node
 
-                APP_CDN_NAME="rf-h5"
-                CDN_BASE_URL="${CDN_BASE_URL%/}/"
+                APP_CDN_NAME="${APP_CDN_NAME:-rf-h5-node}"
+                CDN_BASE_ORIGIN="${CDN_BASE_URL%/}"
+                case "$CDN_BASE_ORIGIN" in
+                  */${APP_CDN_NAME})
+                    APP_CDN_BASE_URL="${CDN_BASE_ORIGIN}/"
+                    ;;
+                  *)
+                    APP_CDN_BASE_URL="${CDN_BASE_ORIGIN}/${APP_CDN_NAME}/"
+                    ;;
+                esac
                 OSS_PREFIX="${APP_CDN_NAME}/"
                 OSS_ASSETS_PATH="oss://${OSS_BUCKET}/${OSS_PREFIX}assets"
-                export CDN_BASE_URL
+                case "$APP_CDN_BASE_URL" in
+                  */${APP_CDN_NAME}/) ;;
+                  *)
+                    echo "APP_CDN_BASE_URL 必须和 H5 OSS 上传目录一致，并以 /${APP_CDN_NAME}/ 结尾"
+                    echo "当前 CDN_BASE_URL=$CDN_BASE_URL"
+                    echo "当前 APP_CDN_NAME=$APP_CDN_NAME"
+                    echo "当前 APP_CDN_BASE_URL=$APP_CDN_BASE_URL"
+                    echo "示例：https://cdn.zcglhr.com/${APP_CDN_NAME}/"
+                    exit 1
+                    ;;
+                esac
+                export CDN_BASE_URL="$APP_CDN_BASE_URL"
                 export API_BASE_URL="${API_BASE_URL:-}"
 
                 echo "H5 静态资源配置"
                 echo "API_BASE_URL=$API_BASE_URL"
                 echo "APP_CDN_NAME=$APP_CDN_NAME"
+                echo "CDN_BASE_ORIGIN=$CDN_BASE_ORIGIN"
                 echo "CDN_BASE_URL=$CDN_BASE_URL"
                 echo "OSS_BUCKET=$OSS_BUCKET"
                 echo "OSS_PREFIX=$OSS_PREFIX"
