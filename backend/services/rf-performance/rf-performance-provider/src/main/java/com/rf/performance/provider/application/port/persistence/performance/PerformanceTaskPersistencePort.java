@@ -28,6 +28,14 @@ public interface PerformanceTaskPersistencePort {
     List<PerformanceTaskRecord> listByIds(List<Long> ids);
 
     /**
+     * 判断绩效任务描述是否已存在。
+     *
+     * @param performanceDescription 绩效描述
+     * @return 是否已存在
+     */
+    boolean existsByPerformanceDescription(String performanceDescription);
+
+    /**
      * 按条件统计绩效任务。
      *
      * @param query 查询条件

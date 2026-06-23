@@ -30,6 +30,14 @@ public interface PerformanceTaskMapper {
     List<PerformanceTaskEntity> listByIds(@Param("ids") List<Long> ids);
 
     /**
+     * 按绩效描述统计任务。
+     *
+     * @param performanceDescription 绩效描述
+     * @return 总数
+     */
+    long countByPerformanceDescription(@Param("performanceDescription") String performanceDescription);
+
+    /**
      * 按条件统计绩效任务。
      *
      * @param query 查询条件

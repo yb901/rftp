@@ -13,6 +13,7 @@ import com.zy.common.core.bo.PageResp;
 import com.zy.common.core.enums.ErrorCode;
 import com.zy.common.core.exception.BusinessException;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +48,8 @@ public class PerformanceTaskManagerImpl implements PerformanceTaskManager {
         PerformanceTaskCreateCommand safeCommand = command == null ? new PerformanceTaskCreateCommand() : command;
         fillDefaultSecondConfirmDeadlineTime(safeCommand);
         validateCreateCommand(safeCommand);
-        PerformanceTaskRecord record = performanceTaskPersistencePort.insert(toData(safeCommand));
+        ensurePerformanceDescriptionUnique(safeCommand.getPerformanceDescription());
+        PerformanceTaskRecord record = insertTask(safeCommand);
         PerformanceTaskResult result = BeanUtil.copyProperties(record, PerformanceTaskResult.class);
         result.setStatusCode(record.getStatus());
         return result;
@@ -136,6 +138,7 @@ public class PerformanceTaskManagerImpl implements PerformanceTaskManager {
         if (StringUtils.isBlank(command.getPerformanceDescription())) {
             throw new BusinessException(ErrorCode.E999001, "绩效描述不能为空");
         }
+        command.setPerformanceDescription(command.getPerformanceDescription().trim());
         if (command.getPeriodStartDate() == null || command.getPeriodEndDate() == null) {
             throw new BusinessException(ErrorCode.E999001, "评价周期不能为空");
         }
@@ -148,6 +151,32 @@ public class PerformanceTaskManagerImpl implements PerformanceTaskManager {
         if (command.getSecondConfirmDeadlineTime() != null
                 && command.getSecondConfirmDeadlineTime().isBefore(command.getConfirmDeadlineTime())) {
             throw new BusinessException(ErrorCode.E999001, "二次确认截止时间不能早于首次确认截止时间");
+        }
+    }
+
+    /**
+     * 确保绩效描述未被任务占用。
+     *
+     * @param performanceDescription 绩效描述
+     */
+    private void ensurePerformanceDescriptionUnique(String performanceDescription) {
+        boolean exists = performanceTaskPersistencePort.existsByPerformanceDescription(performanceDescription);
+        if (exists) {
+            throw new BusinessException(ErrorCode.E999001, "绩效描述已存在");
+        }
+    }
+
+    /**
+     * 新增绩效任务并转换唯一键冲突。
+     *
+     * @param command 绩效任务创建命令
+     * @return 绩效任务读取记录
+     */
+    private PerformanceTaskRecord insertTask(PerformanceTaskCreateCommand command) {
+        try {
+            return performanceTaskPersistencePort.insert(toData(command));
+        } catch (DuplicateKeyException exception) {
+            throw new BusinessException(ErrorCode.E999001, "绩效描述已存在");
         }
     }
 

@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS `tb_employee_performance_task` (
   `gmt_modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
   `is_deleted` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否删除',
   PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_performance_description` (`performance_description`),
   KEY `idx_period` (`period_start_date`, `period_end_date`),
   KEY `idx_status_deadline` (`status`, `confirm_deadline_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='员工绩效任务';

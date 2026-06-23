@@ -36,6 +36,12 @@
           AND is_deleted = 0
     </select>
 
+    <select id="countByPerformanceDescription" resultType="long">
+        SELECT COUNT(1)
+        FROM tb_employee_performance_task
+        WHERE performance_description = #{performanceDescription}
+    </select>
+
     <sql id="TaskWhere">
         <where>
             is_deleted = 0

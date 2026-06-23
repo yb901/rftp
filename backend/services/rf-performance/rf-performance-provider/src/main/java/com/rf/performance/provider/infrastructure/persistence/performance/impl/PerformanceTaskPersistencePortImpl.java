@@ -55,6 +55,17 @@ public class PerformanceTaskPersistencePortImpl implements PerformanceTaskPersis
     }
 
     /**
+     * 判断绩效任务描述是否已存在。
+     *
+     * @param performanceDescription 绩效描述
+     * @return 是否已存在
+     */
+    @Override
+    public boolean existsByPerformanceDescription(String performanceDescription) {
+        return performanceTaskMapper.countByPerformanceDescription(performanceDescription) > 0;
+    }
+
+    /**
      * 按条件统计绩效任务。
      *
      * @param query 查询条件
