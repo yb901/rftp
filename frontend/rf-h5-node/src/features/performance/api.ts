@@ -10,7 +10,7 @@ export const performanceApi = {
    * 查询当前登录态。
    */
   me() {
-    return apiGet<PerformanceLoginResult>('/performance/employee/auth/me');
+    return apiGet<PerformanceLoginResult>('/performance/employee/auth/me', { silentError: true });
   },
 
   /**
