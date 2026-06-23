@@ -62,6 +62,26 @@ public class EmployeePerformanceGatewayImpl implements EmployeePerformanceGatewa
     }
 
     /**
+     * 启用绩效任务。
+     *
+     * @param taskId 绩效任务 ID
+     */
+    @Override
+    public void enableTask(Long taskId) {
+        remotePerformanceTaskService.enableTask(taskId);
+    }
+
+    /**
+     * 停用绩效任务。
+     *
+     * @param taskId 绩效任务 ID
+     */
+    @Override
+    public void disableTask(Long taskId) {
+        remotePerformanceTaskService.disableTask(taskId);
+    }
+
+    /**
      * 删除绩效任务。
      *
      * @param taskId 绩效任务 ID

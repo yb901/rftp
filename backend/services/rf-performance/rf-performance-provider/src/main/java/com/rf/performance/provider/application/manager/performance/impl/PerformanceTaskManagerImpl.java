@@ -79,6 +79,28 @@ public class PerformanceTaskManagerImpl implements PerformanceTaskManager {
     }
 
     /**
+     * 启用绩效任务。
+     *
+     * @param taskId 绩效任务 ID
+     */
+    @Override
+    @Transactional(transactionManager = "transactionManager", rollbackFor = Exception.class)
+    public void enableTask(Long taskId) {
+        updateTaskStatus(taskId, PerformanceTaskStatus.OPEN);
+    }
+
+    /**
+     * 停用绩效任务。
+     *
+     * @param taskId 绩效任务 ID
+     */
+    @Override
+    @Transactional(transactionManager = "transactionManager", rollbackFor = Exception.class)
+    public void disableTask(Long taskId) {
+        updateTaskStatus(taskId, PerformanceTaskStatus.CLOSED);
+    }
+
+    /**
      * 删除绩效任务。
      *
      * @param taskId 绩效任务 ID
@@ -93,8 +115,8 @@ public class PerformanceTaskManagerImpl implements PerformanceTaskManager {
         if (taskRecord == null || Integer.valueOf(1).equals(taskRecord.getIsDeleted())) {
             throw new BusinessException(ErrorCode.E999001, "绩效任务不存在");
         }
-        if (!PerformanceTaskStatus.DRAFT.getCode().equals(taskRecord.getStatus())) {
-            throw new BusinessException(ErrorCode.E999001, "仅草稿状态的绩效任务支持删除");
+        if (!PerformanceTaskStatus.isClosed(taskRecord.getStatus())) {
+            throw new BusinessException(ErrorCode.E999001, "仅关闭状态的绩效任务支持删除");
         }
         if (taskRecord.getTotalCount() != null && taskRecord.getTotalCount() > 0) {
             throw new BusinessException(ErrorCode.E999001, "已导入员工记录的绩效任务不支持删除");
@@ -137,8 +159,42 @@ public class PerformanceTaskManagerImpl implements PerformanceTaskManager {
      */
     private PerformanceTaskData toData(PerformanceTaskCreateCommand command) {
         PerformanceTaskData data = BeanUtil.copyProperties(command, PerformanceTaskData.class);
-        data.setStatus(PerformanceTaskStatus.DRAFT.getCode());
+        data.setStatus(PerformanceTaskStatus.CLOSED.getCode());
         return data;
+    }
+
+    /**
+     * 更新绩效任务状态。
+     *
+     * @param taskId 绩效任务 ID
+     * @param status 目标状态
+     */
+    private void updateTaskStatus(Long taskId, PerformanceTaskStatus status) {
+        PerformanceTaskRecord taskRecord = requireTask(taskId);
+        if (status.getCode().equals(taskRecord.getStatus())) {
+            return;
+        }
+        boolean updated = performanceTaskPersistencePort.updateStatus(taskId, status.getCode());
+        if (!updated) {
+            throw new BusinessException(ErrorCode.E999001, "绩效任务状态更新失败");
+        }
+    }
+
+    /**
+     * 要求绩效任务存在。
+     *
+     * @param taskId 绩效任务 ID
+     * @return 绩效任务记录
+     */
+    private PerformanceTaskRecord requireTask(Long taskId) {
+        if (taskId == null) {
+            throw new BusinessException(ErrorCode.E999001, "绩效任务ID不能为空");
+        }
+        PerformanceTaskRecord taskRecord = performanceTaskPersistencePort.getById(taskId);
+        if (taskRecord == null || Integer.valueOf(1).equals(taskRecord.getIsDeleted())) {
+            throw new BusinessException(ErrorCode.E999001, "绩效任务不存在");
+        }
+        return taskRecord;
     }
 
     /**

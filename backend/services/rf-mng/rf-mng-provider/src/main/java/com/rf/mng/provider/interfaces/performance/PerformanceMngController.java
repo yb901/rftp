@@ -83,6 +83,30 @@ public class PerformanceMngController {
     }
 
     /**
+     * 启用绩效任务。
+     *
+     * @param taskId 绩效任务 ID
+     * @return 启用结果
+     */
+    @PostMapping("/tasks/{taskId}/enable")
+    public Result<Void> enableTask(@PathVariable Long taskId) {
+        performanceMngManager.enableTask(taskId);
+        return Result.success();
+    }
+
+    /**
+     * 停用绩效任务。
+     *
+     * @param taskId 绩效任务 ID
+     * @return 停用结果
+     */
+    @PostMapping("/tasks/{taskId}/disable")
+    public Result<Void> disableTask(@PathVariable Long taskId) {
+        performanceMngManager.disableTask(taskId);
+        return Result.success();
+    }
+
+    /**
      * 删除绩效任务。
      *
      * @param taskId 绩效任务 ID

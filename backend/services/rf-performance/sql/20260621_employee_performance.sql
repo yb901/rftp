@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `tb_employee_performance_task` (
   `period_end_date` date NOT NULL COMMENT '评价周期结束日期',
   `confirm_deadline_time` datetime NOT NULL COMMENT '首次确认截止时间',
   `second_confirm_deadline_time` datetime DEFAULT NULL COMMENT '二次确认截止时间',
-  `status` varchar(32) NOT NULL DEFAULT 'DRAFT' COMMENT '任务状态',
+  `status` varchar(32) NOT NULL DEFAULT 'CLOSED' COMMENT '任务状态：OPEN-开启，CLOSED-关闭',
   `total_count` int NOT NULL DEFAULT 0 COMMENT '员工绩效总数',
   `confirmed_count` int NOT NULL DEFAULT 0 COMMENT '确认数量',
   `feedback_count` int NOT NULL DEFAULT 0 COMMENT '反馈数量',

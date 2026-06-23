@@ -49,6 +49,26 @@ public class PerformanceMngManagerImpl implements PerformanceMngManager {
     }
 
     /**
+     * 启用绩效任务。
+     *
+     * @param taskId 绩效任务 ID
+     */
+    @Override
+    public void enableTask(Long taskId) {
+        employeePerformanceGateway.enableTask(taskId);
+    }
+
+    /**
+     * 停用绩效任务。
+     *
+     * @param taskId 绩效任务 ID
+     */
+    @Override
+    public void disableTask(Long taskId) {
+        employeePerformanceGateway.disableTask(taskId);
+    }
+
+    /**
      * 删除绩效任务。
      *
      * @param taskId 绩效任务 ID

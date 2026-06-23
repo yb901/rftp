@@ -21,6 +21,7 @@ import com.rf.performance.provider.application.result.performance.h5.Performance
 import com.rf.performance.provider.common.config.PerformanceSmsProperties;
 import com.rf.performance.provider.domain.performance.PerformanceConfirmStatus;
 import com.rf.performance.provider.domain.performance.PerformanceFeedbackStatus;
+import com.rf.performance.provider.domain.performance.PerformanceTaskStatus;
 import com.zy.common.core.enums.ErrorCode;
 import com.zy.common.core.exception.BusinessException;
 import org.apache.commons.lang3.StringUtils;
@@ -363,7 +364,7 @@ public class EmployeePerformanceH5ManagerImpl implements EmployeePerformanceH5Ma
         List<EmployeePerformanceH5Record> result = new ArrayList<>();
         for (EmployeePerformanceH5Record record : records) {
             PerformanceTaskRecord task = taskMap.get(record.getTaskId());
-            if (task == null) {
+            if (task == null || !PerformanceTaskStatus.isOpen(task.getStatus())) {
                 continue;
             }
             fillTaskInfo(record, task);
@@ -382,6 +383,9 @@ public class EmployeePerformanceH5ManagerImpl implements EmployeePerformanceH5Ma
         PerformanceTaskRecord task = performanceTaskPersistencePort.getById(record.getTaskId());
         if (task == null || task.getId() == null || Integer.valueOf(1).equals(task.getIsDeleted())) {
             throw new BusinessException(ErrorCode.E999001, "绩效任务不存在");
+        }
+        if (!PerformanceTaskStatus.isOpen(task.getStatus())) {
+            throw new BusinessException(ErrorCode.E999001, "绩效任务未开启");
         }
         fillTaskInfo(record, task);
         return record;

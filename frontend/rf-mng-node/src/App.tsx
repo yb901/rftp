@@ -37,8 +37,10 @@ import {
   createBatch,
   createPerformanceTask,
   deletePerformanceTask,
+  disablePerformanceTask,
   deleteAdmin,
   disableAdminTotp,
+  enablePerformanceTask,
   exportPerformanceRecords,
   fetchBatches,
   fetchAdmins,
@@ -75,6 +77,10 @@ const statusColor: Record<string, string> = {
   SECOND_AUTO_CONFIRMED: 'warning',
   NONE: 'default',
   HANDLED_ADJUSTED: 'success',
+  OPEN: 'success',
+  CLOSED: 'default',
+  DRAFT: 'default',
+  CONFIRMING: 'success',
 };
 
 const confirmStatusText: Record<string, string> = {
@@ -101,10 +107,16 @@ const socialTaskStatusText: Record<string, string> = {
 };
 
 const performanceTaskStatusText: Record<string, string> = {
-  DRAFT: '草稿',
-  CONFIRMING: '确认中',
-  CLOSED: '已截止',
+  OPEN: '开启',
+  CLOSED: '关闭',
+  DRAFT: '关闭',
+  CONFIRMING: '开启',
 };
+
+const performanceTaskStatusOptions = [
+  { value: 'OPEN', label: '开启' },
+  { value: 'CLOSED', label: '关闭' },
+];
 
 const adminRoleOptions = [
   { value: 1, label: '超级管理员' },
@@ -141,6 +153,7 @@ function App() {
   const [importOpen, setImportOpen] = useState(false);
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [performanceTabKey, setPerformanceTabKey] = useState('performanceTasks');
   const [adminOpen, setAdminOpen] = useState(false);
   const [adminTotpOpen, setAdminTotpOpen] = useState(false);
   const [currentRecord, setCurrentRecord] = useState<EmployeePerformanceRecord | null>(null);
@@ -331,30 +344,40 @@ function App() {
     { title: '绩效描述', dataIndex: 'performanceDescription', width: 220, ellipsis: true },
     { title: '评价周期', width: 230, render: (_, row) => formatPeriodRange(row.periodStartDate, row.periodEndDate) },
     { title: '确认截止', dataIndex: 'confirmDeadlineTime', width: 180, render: (value) => formatDateTime(value) },
-    { title: '二次截止', dataIndex: 'secondConfirmDeadlineTime', width: 180, render: (value) => formatDateTime(value) },
     {
       title: '状态',
       dataIndex: 'statusCode',
       width: 110,
-      render: (value) => <Tag color={statusColor[value] || 'default'}>{performanceTaskStatusText[value || 'DRAFT'] || value || '草稿'}</Tag>,
+      render: (value) => <Tag color={statusColor[value] || 'default'}>{performanceTaskStatusText[value || 'CLOSED'] || value || '关闭'}</Tag>,
     },
     { title: '人数', width: 170, render: (_, row) => `${row.confirmedCount || 0}/${row.totalCount || 0} 确认，${row.feedbackCount || 0} 反馈` },
     {
       title: '操作',
-      width: 250,
+      width: 330,
       fixed: 'right',
       render: (_, row) => (
         <Space className="table-action-group" wrap>
+          <Popconfirm
+            title={isPerformanceTaskOpen(row.statusCode) ? '确定停用该绩效任务？' : '确定启用该绩效任务？'}
+            description={isPerformanceTaskOpen(row.statusCode) ? '停用后员工端将不可查看该任务。' : '启用后员工端可查看并确认该任务。'}
+            onConfirm={() => void togglePerformanceTaskEnabled(row)}
+          >
+            <Button size="small" type={isPerformanceTaskOpen(row.statusCode) ? 'default' : 'primary'}>
+              {isPerformanceTaskOpen(row.statusCode) ? '停用' : '启用'}
+            </Button>
+          </Popconfirm>
           <Button
             size="small"
             type="primary"
             ghost
+            icon={<EyeOutlined />}
             onClick={() => {
               performanceQueryForm.setFieldValue('taskId', row.id);
+              setPerformanceTabKey('performanceRecords');
               void loadPerformanceRecords(1, performanceRecordPage.size);
             }}
           >
-            查记录
+            员工记录
           </Button>
           <Button
             size="small"
@@ -366,13 +389,13 @@ function App() {
           >
             导入
           </Button>
-          <Popconfirm title="确定删除该绩效任务？" description="仅支持删除未导入员工记录的草稿任务。" onConfirm={() => void removePerformanceTask(row)}>
+          <Popconfirm title="确定删除该绩效任务？" description="仅支持删除未导入员工记录的关闭任务。" onConfirm={() => void removePerformanceTask(row)}>
             <Button size="small" danger icon={<DeleteOutlined />}>删除</Button>
           </Popconfirm>
         </Space>
       ),
     },
-  ], [importForm, performanceQueryForm, performanceRecordPage.size]);
+  ], [importForm, performanceQueryForm, performanceRecordPage.size, performanceTaskPage.page, performanceTaskPage.size]);
 
   const adminColumns: ColumnsType<AdminUser> = useMemo(() => [
     { title: 'ID', dataIndex: 'id', width: 80 },
@@ -460,6 +483,17 @@ function App() {
       performanceQueryForm.setFieldValue('taskId', undefined);
     }
     await Promise.all([loadPerformanceTasks(1, performanceTaskPage.size), loadPerformanceRecords(1, performanceRecordPage.size)]);
+  };
+
+  const togglePerformanceTaskEnabled = async (task: PerformanceTask) => {
+    if (isPerformanceTaskOpen(task.statusCode)) {
+      await disablePerformanceTask(task.id);
+      message.success('绩效任务已停用');
+    } else {
+      await enablePerformanceTask(task.id);
+      message.success('绩效任务已启用');
+    }
+    await loadPerformanceTasks(performanceTaskPage.page, performanceTaskPage.size);
   };
 
   const submitImport = async () => {
@@ -687,6 +721,8 @@ function App() {
             <div className="page-panel performance-panel">
               <Card size="small">
                 <Tabs
+                  activeKey={performanceTabKey}
+                  onChange={setPerformanceTabKey}
                   items={[
                     {
                       key: 'performanceTasks',
@@ -707,7 +743,7 @@ function App() {
                                 allowClear
                                 placeholder="全部状态"
                                 style={{ width: 140 }}
-                                options={Object.entries(performanceTaskStatusText).map(([value, label]) => ({ value, label }))}
+                                options={performanceTaskStatusOptions}
                               />
                             </Form.Item>
                             <Button type="primary" onClick={() => loadPerformanceTasks(1, performanceTaskPage.size)}>查询</Button>
@@ -718,7 +754,7 @@ function App() {
                             columns={performanceTaskColumns}
                             dataSource={performanceTaskList}
                             size="small"
-                            scroll={{ x: 1200 }}
+                            scroll={{ x: 1100 }}
                             pagination={{
                               current: performanceTaskPage.page,
                               pageSize: performanceTaskPage.size,
@@ -1039,19 +1075,40 @@ function trimObject(values: Record<string, unknown>) {
   );
 }
 
-function formatPeriodRange(startDate?: string, endDate?: string) {
-  return `${startDate || '-'} ~ ${endDate || '-'}`;
+type BackendDateValue = string | number | number[] | undefined;
+
+function isPerformanceTaskOpen(status?: string) {
+  return status === 'OPEN' || status === 'CONFIRMING';
 }
 
-function formatDateTime(value?: string | number | number[]) {
+function formatPeriodRange(startDate?: BackendDateValue, endDate?: BackendDateValue) {
+  return `${formatDate(startDate)} ~ ${formatDate(endDate)}`;
+}
+
+function formatDate(value?: BackendDateValue) {
+  if (!value) {
+    return '-';
+  }
+  if (Array.isArray(value)) {
+    const [year = 0, month = 1, day = 1] = value;
+    return [year, month, day].map((item) => String(item).padStart(2, '0')).join('-');
+  }
+  const parsed = dayjs(value);
+  return parsed.isValid() ? parsed.format('YYYY-MM-DD') : String(value);
+}
+
+function formatDateTime(value?: BackendDateValue) {
   if (!value) {
     return '-';
   }
   if (Array.isArray(value)) {
     const [year = 0, month = 1, day = 1, hour = 0, minute = 0, second = 0] = value;
-    return dayjs(`${year}-${month}-${day} ${hour}:${minute}:${second}`).format('YYYY-MM-DD HH:mm:ss');
+    const date = [year, month, day].map((item) => String(item).padStart(2, '0')).join('-');
+    const time = [hour, minute, second].map((item) => String(item).padStart(2, '0')).join(':');
+    return `${date} ${time}`;
   }
-  return dayjs(value).format('YYYY-MM-DD HH:mm:ss');
+  const parsed = dayjs(value);
+  return parsed.isValid() ? parsed.format('YYYY-MM-DD HH:mm:ss') : String(value);
 }
 
 function parseImportRecords(text: string): EmployeePerformanceImportItem[] {

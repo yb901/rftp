@@ -68,6 +68,15 @@ public interface PerformanceTaskPersistencePort {
     PerformanceTaskRecord insert(PerformanceTaskData data);
 
     /**
+     * 更新绩效任务状态。
+     *
+     * @param id 绩效任务 ID
+     * @param status 任务状态编码
+     * @return 是否更新成功
+     */
+    boolean updateStatus(Long id, String status);
+
+    /**
      * 增加绩效任务员工数量。
      *
      * @param id 绩效任务 ID

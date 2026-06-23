@@ -204,6 +204,14 @@ export function deletePerformanceTask(taskId: number) {
   return unwrap<void>(request.post(`/api/performance/tasks/${taskId}/delete`));
 }
 
+export function enablePerformanceTask(taskId: number) {
+  return unwrap<void>(request.post(`/api/performance/tasks/${taskId}/enable`));
+}
+
+export function disablePerformanceTask(taskId: number) {
+  return unwrap<void>(request.post(`/api/performance/tasks/${taskId}/disable`));
+}
+
 export function importPerformanceRecords(taskId: number, records: EmployeePerformanceImportItem[]) {
   return unwrap<EmployeePerformanceImportResult>(request.post(`/api/performance/tasks/${taskId}/records/import`, { records }));
 }

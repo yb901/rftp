@@ -9,19 +9,14 @@ import lombok.Getter;
 public enum PerformanceTaskStatus {
 
     /**
-     * 草稿。
+     * 开启，员工端可查看和确认。
      */
-    DRAFT("DRAFT", "草稿"),
+    OPEN("OPEN", "开启"),
 
     /**
-     * 确认中。
+     * 关闭，员工端不可见。
      */
-    CONFIRMING("CONFIRMING", "确认中"),
-
-    /**
-     * 已截止。
-     */
-    CLOSED("CLOSED", "已截止");
+    CLOSED("CLOSED", "关闭");
 
     /**
      * 状态编码。
@@ -42,5 +37,25 @@ public enum PerformanceTaskStatus {
     PerformanceTaskStatus(String code, String name) {
         this.code = code;
         this.name = name;
+    }
+
+    /**
+     * 判断任务状态是否为开启。
+     *
+     * @param status 状态编码
+     * @return 是否开启
+     */
+    public static boolean isOpen(String status) {
+        return OPEN.code.equals(status) || "CONFIRMING".equals(status);
+    }
+
+    /**
+     * 判断任务状态是否为关闭。
+     *
+     * @param status 状态编码
+     * @return 是否关闭
+     */
+    public static boolean isClosed(String status) {
+        return CLOSED.code.equals(status) || "DRAFT".equals(status);
     }
 }

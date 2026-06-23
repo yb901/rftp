@@ -42,7 +42,13 @@
             <if test="query.performanceDescription != null and query.performanceDescription != ''">
                 AND performance_description LIKE CONCAT('%', #{query.performanceDescription}, '%')
             </if>
-            <if test="query.status != null and query.status != ''">
+            <if test="query.status == 'OPEN'">
+                AND status IN ('OPEN', 'CONFIRMING')
+            </if>
+            <if test="query.status == 'CLOSED'">
+                AND status IN ('CLOSED', 'DRAFT')
+            </if>
+            <if test="query.status != null and query.status != '' and query.status != 'OPEN' and query.status != 'CLOSED'">
                 AND status = #{query.status}
             </if>
         </where>
@@ -66,6 +72,7 @@
         SELECT id
         FROM tb_employee_performance_task
         WHERE confirm_deadline_time &lt; NOW()
+          AND status IN ('OPEN', 'CONFIRMING')
           AND is_deleted = 0
         ORDER BY id ASC
         LIMIT #{limit}
@@ -76,6 +83,7 @@
         FROM tb_employee_performance_task
         WHERE second_confirm_deadline_time IS NOT NULL
           AND second_confirm_deadline_time &lt; NOW()
+          AND status IN ('OPEN', 'CONFIRMING')
           AND is_deleted = 0
         ORDER BY id ASC
         LIMIT #{limit}
@@ -91,6 +99,13 @@
          #{secondConfirmDeadlineTime}, #{status}, #{totalCount}, #{confirmedCount}, #{feedbackCount},
          #{autoConfirmedCount}, #{createAdminId}, #{createAdminName}, #{isDeleted})
     </insert>
+
+    <update id="updateStatus">
+        UPDATE tb_employee_performance_task
+        SET status = #{status}
+        WHERE id = #{id}
+          AND is_deleted = 0
+    </update>
 
     <update id="increaseTotalCount">
         UPDATE tb_employee_performance_task

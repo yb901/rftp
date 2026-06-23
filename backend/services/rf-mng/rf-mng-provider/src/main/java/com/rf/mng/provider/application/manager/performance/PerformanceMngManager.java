@@ -33,6 +33,20 @@ public interface PerformanceMngManager {
     PageResp<PerformanceTaskResult> pageTasks(PerformanceTaskPageQuery query);
 
     /**
+     * 启用绩效任务。
+     *
+     * @param taskId 绩效任务 ID
+     */
+    void enableTask(Long taskId);
+
+    /**
+     * 停用绩效任务。
+     *
+     * @param taskId 绩效任务 ID
+     */
+    void disableTask(Long taskId);
+
+    /**
      * 删除绩效任务。
      *
      * @param taskId 绩效任务 ID
