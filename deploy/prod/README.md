@@ -46,18 +46,19 @@ ACK/K8s 基础资源复用 `zy_qy`：
 - Nacos Config 入口：`qy-backend-nacos-config`
 - 配置密文解密密钥：`qy-backend-config-crypto-secret`
 
-`rf-mng` 和 `rf-performance` 的本地 `application.properties` 只保留启动引导配置，真实配置按 `zy_qy` 的两层结构放入 Nacos：
+`rf-mng` 和 `rf-performance` 的本地 `application.properties` 只保留启动引导配置，真实配置按 `zy_qy` 的两层结构从 Nacos 读取：
 
-1. `common-backend-prod.properties`：后端公共基础设施配置。
+1. `common-backend-prod.properties`：直接复用 `zy_qy` 已维护的后端公共基础设施配置，不在 `rf` 仓库单独维护样例。
 2. `${spring.application.name}-prod.properties`：项目自己的配置。
 
-生产需要在 Nacos 创建：
+生产只需要在 Nacos 新增 `rf` 自己的服务配置：
 
 | Data ID | 说明 | 样例 |
 | --- | --- | --- |
-| `common-backend-prod.properties` | Dubbo、XXL-JOB 等公共配置 | `backend/docs/config/common-backend-prod.properties` |
 | `rf-mng-prod.properties` | 管理端后端数据库、ID 编解码、Cookie、tax-browser-worker、Dubbo、数据库字段加密配置 | `backend/docs/config/rf-mng-prod.properties` |
 | `rf-performance-prod.properties` | 员工绩效后端数据库、短信、验证码、XXL-JOB 执行器配置 | `backend/docs/config/rf-performance-prod.properties` |
+
+Dubbo 注册、配置和元数据中心复用 `zy_qy` 公共配置里的 `ns-qy-dubbo` 命名空间；应用配置仍放在 `ns-qy-appconf`。如果服务启动后 Nacos 看不到 provider，优先确认当前环境实际读取的是 `zy_qy` 已维护的 `common-backend-prod.properties`。
 
 敏感值使用 `SM4_密文`，解密密钥复用 `zy_qy` 的 `QY_CONFIG_CRYPTO_SECRET_KEY` 注入方式，不再为 rf 单独创建数据库、短信、Cookie 等 K8s Secret。
 
@@ -84,8 +85,11 @@ kubectl -n prod get deploy rf-mng rf-performance -o yaml | grep -n "rf-platform-
 - `rf-mng` 生产配置需要在 `rf-mng-prod.properties` 中设置：
   - `id-codec.enabled=true`：启用 ID 编解码自动配置；接口字段仍需要在代码中使用 `@IdEncode` / `@IdDecode` 标注才会实际生效。
   - `db.encrypt.enabled=true`、`db.encrypt.secrets.S1=SM4_密文` 和 `db.encrypt.tables.tb_admin.columns.otp_secret.*`：启用 `tb_admin.otp_secret` 字段透明加解密。
-  - `dubbo.protocol.port=20891`、`dubbo.application.qos-port=22221`：避免与其他生产服务默认端口冲突。
+  - `dubbo.protocol.id=dubbo`、`dubbo.protocol.port=20891`、`dubbo.application.qos-port=22221`、`dubbo.scan.base-packages=com.rf.mng.provider.interfaces.remoteserviceimpl`：避免与其他生产服务默认端口冲突，并对齐 `zy_qy` 的 Dubbo 扫描配置。
 - `rf-performance` 生产配置需要在 `rf-performance-prod.properties` 中设置：
+  - `dubbo.protocol.id=dubbo`
+  - `dubbo.protocol.port=20893`
+  - `dubbo.scan.base-packages=com.rf.performance.provider.interfaces.remoteserviceimpl`
   - `rf-performance.sms.mock-enabled=false`
   - `rf-performance.sms.access-key-id=SM4_密文`
   - `rf-performance.sms.access-key-secret=SM4_密文`

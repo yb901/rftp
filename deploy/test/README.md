@@ -35,7 +35,7 @@ vi deploy/test/.env
 - `common-backend-test.properties`
 - `rf-mng-test.properties`
 
-配置内容可参考生产样例 `backend/docs/config/common-backend-prod.properties` 和 `backend/docs/config/rf-mng-prod.properties`。
+公共配置直接复用 `zy_qy` 的 `common-backend-test.properties`；`rf` 自己的配置内容可参考生产样例 `backend/docs/config/rf-mng-prod.properties` 和 `backend/docs/config/rf-performance-prod.properties`。
 
 ## 启动
 
