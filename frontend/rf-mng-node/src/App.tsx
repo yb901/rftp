@@ -822,12 +822,10 @@ function App() {
           <Form.Item name="confirmDeadlineTime" label="确认截止时间" rules={[{ required: true }]}>
             <DatePicker className="full-width" />
           </Form.Item>
-          <Form.Item label="二次确认截止时间">
-            <Text className="readonly-field">{secondConfirmDeadlineText}</Text>
-          </Form.Item>
-          <Form.Item label="创建人">
-            <Text className="readonly-field">{currentAdminName(loginUser)}</Text>
-          </Form.Item>
+          <div className="deadline-summary">
+            <Text type="secondary" className="deadline-summary-label">二次确认截止时间</Text>
+            <Text strong className="deadline-summary-value">{secondConfirmDeadlineText}</Text>
+          </div>
         </Form>
       </Modal>
 
