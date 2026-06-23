@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS `tb_employee_performance_sms_evidence` (
   `scene` varchar(32) NOT NULL COMMENT '短信场景',
   `sms_code` varchar(16) DEFAULT NULL COMMENT '短信验证码',
   `sms_send_biz_id` varchar(128) DEFAULT NULL COMMENT '短信发送业务流水号',
-  `captcha_trace_id` varchar(128) DEFAULT NULL COMMENT '图形验证码凭证',
+  `captcha_trace_id` varchar(2048) DEFAULT NULL COMMENT '图形验证码凭证',
   `ip_address` varchar(64) DEFAULT NULL COMMENT '请求IP',
   `user_agent` varchar(512) DEFAULT NULL COMMENT '浏览器User-Agent',
   `sent_at` datetime DEFAULT NULL COMMENT '发送时间',

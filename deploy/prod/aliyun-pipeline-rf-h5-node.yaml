@@ -124,6 +124,19 @@ stages:
 
                 APP_CDN_NAME="${APP_CDN_NAME:-rf-h5-node}"
                 CDN_BASE_ORIGIN="${CDN_BASE_URL%/}"
+                CDN_BASE_HOST_AND_PATH="${CDN_BASE_ORIGIN#*://}"
+                case "$CDN_BASE_HOST_AND_PATH" in
+                  */*) CDN_BASE_PATH="${CDN_BASE_HOST_AND_PATH#*/}" ;;
+                  *) CDN_BASE_PATH="" ;;
+                esac
+                if [ -n "$CDN_BASE_PATH" ] && [ "$CDN_BASE_PATH" != "$APP_CDN_NAME" ]; then
+                  echo "CDN_BASE_URL 已包含应用路径时，必须和 APP_CDN_NAME 一致"
+                  echo "当前 CDN_BASE_URL=$CDN_BASE_URL"
+                  echo "当前 CDN_BASE_PATH=$CDN_BASE_PATH"
+                  echo "当前 APP_CDN_NAME=$APP_CDN_NAME"
+                  echo "建议：CDN_BASE_URL=https://cdn.zcglhr.com，APP_CDN_NAME=$APP_CDN_NAME"
+                  exit 1
+                fi
                 case "$CDN_BASE_ORIGIN" in
                   */${APP_CDN_NAME})
                     APP_CDN_BASE_URL="${CDN_BASE_ORIGIN}/"
