@@ -20,6 +20,8 @@ import com.rf.mng.provider.application.result.performance.item.EmployeePerforman
 import com.rf.mng.provider.application.result.performance.PerformanceTaskResult;
 import com.rf.mng.provider.common.auth.MngModule;
 import com.rf.mng.provider.common.auth.MngPermission;
+import com.rf.mng.provider.common.oss.OssUploadResult;
+import com.rf.mng.provider.common.oss.PrimaryOssUploadService;
 import com.rf.mng.provider.interfaces.performance.param.EmployeePerformanceImportCtrlParam;
 import com.rf.mng.provider.interfaces.performance.param.admin.EmployeePerformanceAdjustCtrlParam;
 import com.rf.mng.provider.interfaces.performance.param.admin.EmployeePerformanceFeedbackHandleCtrlParam;
@@ -68,11 +70,21 @@ import java.util.Map;
 @MngPermission(MngModule.PERFORMANCE)
 public class PerformanceMngController {
 
+    /** 导入原始文件 OSS 对象前缀。 */
+    private static final String IMPORT_ORIGINAL_OBJECT_PREFIX = "performance/import/original";
+
+    /** 导入失败明细 OSS 对象前缀。 */
+    private static final String IMPORT_FAILURE_OBJECT_PREFIX = "performance/import/failure";
+
     /**
      * 员工绩效管理应用编排。
      */
     @Resource
     private PerformanceMngManager performanceMngManager;
+
+    /** Primary OSS 上传服务。 */
+    @Resource
+    private PrimaryOssUploadService primaryOssUploadService;
 
     /**
      * 创建绩效任务。
@@ -224,7 +236,8 @@ public class PerformanceMngController {
     @GetMapping("/records/import-uploads/{uploadId}/original")
     public void downloadImportOriginal(@PathVariable Long uploadId, HttpServletResponse response) throws IOException {
         EmployeePerformanceImportUploadResult upload = getImportUploadForDownload(uploadId);
-        writeBinary(response, upload.getOriginalContentType(), upload.getFileName(), upload.getOriginalFileContent());
+        byte[] content = primaryOssUploadService.getObjectContentByUrl(upload.getOriginalFileUrl());
+        writeBinary(response, upload.getOriginalContentType(), upload.getFileName(), content);
     }
 
     /**
@@ -237,10 +250,11 @@ public class PerformanceMngController {
     @GetMapping("/records/import-uploads/{uploadId}/failure")
     public void downloadImportFailure(@PathVariable Long uploadId, HttpServletResponse response) throws IOException {
         EmployeePerformanceImportUploadResult upload = getImportUploadForDownload(uploadId);
-        if (upload.getFailureFileContent() == null || upload.getFailureFileContent().length == 0) {
+        if (!hasText(upload.getFailureFileUrl())) {
             throw new BusinessException(ErrorCode.E999001, "暂无失败明细文件");
         }
-        writeBinary(response, "application/vnd.ms-excel;charset=UTF-8", upload.getFailureFileName(), upload.getFailureFileContent());
+        byte[] content = primaryOssUploadService.getObjectContentByUrl(upload.getFailureFileUrl());
+        writeBinary(response, "application/vnd.ms-excel;charset=UTF-8", upload.getFailureFileName(), content);
     }
 
     /**
@@ -386,8 +400,10 @@ public class PerformanceMngController {
         upload.setFailCount(failCount);
         upload.setStatus(importStatus(successCount, failCount));
         if (failCount > 0) {
-            upload.setFailureFileName(failureFileName(file.getOriginalFilename()));
-            upload.setFailureFileContent(buildFailureExcel(errors));
+            String failureFileName = failureFileName(file.getOriginalFilename());
+            OssUploadResult failureUploadResult = primaryOssUploadService.upload(IMPORT_FAILURE_OBJECT_PREFIX, failureFileName, buildFailureExcel(errors));
+            upload.setFailureFileName(failureFileName);
+            upload.setFailureFileUrl(failureUploadResult.getUrl());
         }
         return upload;
     }
@@ -438,7 +454,8 @@ public class PerformanceMngController {
         upload.setTaskName(limitText(taskName, 255));
         upload.setFileName(limitText(file.getOriginalFilename(), 255));
         upload.setOriginalContentType(file.getContentType());
-        upload.setOriginalFileContent(fileBytes);
+        OssUploadResult originalUploadResult = primaryOssUploadService.upload(IMPORT_ORIGINAL_OBJECT_PREFIX, file.getOriginalFilename(), fileBytes);
+        upload.setOriginalFileUrl(originalUploadResult.getUrl());
         upload.setCreateAdminId((Long) request.getAttribute("adminId"));
         upload.setCreateAdminName(limitText((String) request.getAttribute("adminName"), 64));
         return upload;
@@ -518,9 +535,19 @@ public class PerformanceMngController {
      */
     private EmployeePerformanceImportUploadVo toImportUploadVo(EmployeePerformanceImportUploadResult result) {
         EmployeePerformanceImportUploadVo vo = BeanUtil.copyProperties(result, EmployeePerformanceImportUploadVo.class);
-        vo.setHasOriginalFile(result.getOriginalFileContent() != null && result.getOriginalFileContent().length > 0);
-        vo.setHasFailureFile(result.getFailureFileContent() != null && result.getFailureFileContent().length > 0);
+        vo.setHasOriginalFile(hasText(result.getOriginalFileUrl()));
+        vo.setHasFailureFile(hasText(result.getFailureFileUrl()));
         return vo;
+    }
+
+    /**
+     * 判断文本是否存在。
+     *
+     * @param value 文本
+     * @return 是否存在文本
+     */
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 
     /**

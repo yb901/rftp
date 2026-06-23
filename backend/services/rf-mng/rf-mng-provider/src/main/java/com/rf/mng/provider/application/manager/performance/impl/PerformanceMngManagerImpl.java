@@ -190,9 +190,9 @@ public class PerformanceMngManagerImpl implements PerformanceMngManager {
             data.setTaskName(result.getTaskName());
             data.setFileName(result.getFileName());
             data.setOriginalContentType(result.getOriginalContentType());
-            data.setOriginalFileContent(result.getOriginalFileContent());
+            data.setOriginalFileUrl(result.getOriginalFileUrl());
             data.setFailureFileName(result.getFailureFileName());
-            data.setFailureFileContent(result.getFailureFileContent());
+            data.setFailureFileUrl(result.getFailureFileUrl());
             data.setTotalCount(result.getTotalCount());
             data.setSuccessCount(result.getSuccessCount());
             data.setFailCount(result.getFailCount());
@@ -216,9 +216,9 @@ public class PerformanceMngManagerImpl implements PerformanceMngManager {
             result.setTaskName(record.getTaskName());
             result.setFileName(record.getFileName());
             result.setOriginalContentType(record.getOriginalContentType());
-            result.setOriginalFileContent(record.getOriginalFileContent());
+            result.setOriginalFileUrl(record.getOriginalFileUrl());
             result.setFailureFileName(record.getFailureFileName());
-            result.setFailureFileContent(record.getFailureFileContent());
+            result.setFailureFileUrl(record.getFailureFileUrl());
             result.setTotalCount(record.getTotalCount());
             result.setSuccessCount(record.getSuccessCount());
             result.setFailCount(record.getFailCount());

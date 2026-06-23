@@ -26,12 +26,12 @@ public class EmployeePerformanceImportUploadEntity implements Serializable {
     private String fileName;
     /** 原始文件Content-Type。 */
     private String originalContentType;
-    /** 原始文件内容。 */
-    private byte[] originalFileContent;
+    /** 原始文件 OSS 访问地址。 */
+    private String originalFileUrl;
     /** 失败明细文件名。 */
     private String failureFileName;
-    /** 失败明细文件内容。 */
-    private byte[] failureFileContent;
+    /** 失败明细文件 OSS 访问地址。 */
+    private String failureFileUrl;
     /** 总条数。 */
     private Integer totalCount;
     /** 成功条数。 */

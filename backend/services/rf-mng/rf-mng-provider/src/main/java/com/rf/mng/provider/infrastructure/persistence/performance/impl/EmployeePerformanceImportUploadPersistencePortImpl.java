@@ -74,9 +74,9 @@ public class EmployeePerformanceImportUploadPersistencePortImpl implements Emplo
         entity.setTaskName(data.getTaskName());
         entity.setFileName(data.getFileName());
         entity.setOriginalContentType(data.getOriginalContentType());
-        entity.setOriginalFileContent(data.getOriginalFileContent());
+        entity.setOriginalFileUrl(data.getOriginalFileUrl());
         entity.setFailureFileName(data.getFailureFileName());
-        entity.setFailureFileContent(data.getFailureFileContent());
+        entity.setFailureFileUrl(data.getFailureFileUrl());
         entity.setTotalCount(data.getTotalCount());
         entity.setSuccessCount(data.getSuccessCount());
         entity.setFailCount(data.getFailCount());
@@ -100,9 +100,9 @@ public class EmployeePerformanceImportUploadPersistencePortImpl implements Emplo
         record.setTaskName(entity.getTaskName());
         record.setFileName(entity.getFileName());
         record.setOriginalContentType(entity.getOriginalContentType());
-        record.setOriginalFileContent(entity.getOriginalFileContent());
+        record.setOriginalFileUrl(entity.getOriginalFileUrl());
         record.setFailureFileName(entity.getFailureFileName());
-        record.setFailureFileContent(entity.getFailureFileContent());
+        record.setFailureFileUrl(entity.getFailureFileUrl());
         record.setTotalCount(entity.getTotalCount());
         record.setSuccessCount(entity.getSuccessCount());
         record.setFailCount(entity.getFailCount());

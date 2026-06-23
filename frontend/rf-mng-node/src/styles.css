@@ -21,7 +21,8 @@ body { margin: 0; background: #f5f7fb; color: #1f2937; font-family: -apple-syste
 .performance-panel .ant-tabs-nav { margin-bottom: 8px !important; }
 .ant-tabs-nav { margin-bottom: 12px !important; }
 .full-width { width: 100%; }
-.query-bar { padding: 12px 12px 0; background: #f8fafc; border: 1px solid #eef2f7; border-radius: 8px; }
+.query-bar { padding: 18px 16px; row-gap: 18px; column-gap: 24px; background: #f8fafc; border: 1px solid #eef2f7; border-radius: 8px; }
+.query-bar .ant-form-item { margin-inline-end: 0; margin-bottom: 0; }
 .toolbar-row { display: flex; align-items: center; justify-content: space-between; }
 .table-action-group .ant-btn { border-radius: 6px; }
 .modal-toolbar { margin-bottom: 12px; display: flex; justify-content: flex-end; }

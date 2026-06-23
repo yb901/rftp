@@ -62,7 +62,7 @@ import {
 } from './api';
 
 const { Header, Content, Sider } = Layout;
-const { Text } = Typography;
+const { Link, Text } = Typography;
 
 const statusColor: Record<string, string> = {
   SUBMITTED: 'processing',
@@ -326,7 +326,7 @@ function App() {
     { title: '月份', dataIndex: 'periodMonth', width: 120 },
     { title: '状态', dataIndex: 'status', width: 130, render: (value) => <Tag color={statusColor[value] || 'default'}>{value}</Tag> },
     { title: '任务', width: 170, render: (_, row) => `${row.successCount || 0}/${row.totalCount || 0} 成功，${row.failedCount || 0} 失败` },
-    { title: '创建时间', dataIndex: 'gmtCreate', width: 190 },
+    { title: '创建时间', dataIndex: 'gmtCreate', width: 190, render: (value) => formatDateTime(value) },
   ], []);
 
   const taskColumns: ColumnsType<TaskRecord> = useMemo(() => [
@@ -501,7 +501,7 @@ function App() {
       width: 110,
       render: (value: boolean) => <Tag color={value ? 'success' : 'default'}>{value ? '已启用' : '未启用'}</Tag>,
     },
-    { title: '创建时间', dataIndex: 'gmtCreate', width: 190 },
+    { title: '创建时间', dataIndex: 'gmtCreate', width: 190, render: (value) => formatDateTime(value) },
     {
       title: '操作',
       width: 300,
@@ -1043,7 +1043,9 @@ function App() {
             />
           </Form.Item>
           <div className="modal-toolbar">
-            <Button icon={<DownloadOutlined />} onClick={downloadImportTemplate}>下载导入模板</Button>
+            <Link onClick={downloadImportTemplate}>
+              <DownloadOutlined /> 下载导入模板
+            </Link>
             <Upload
               accept=".xlsx,.xls"
               maxCount={1}
@@ -1291,8 +1293,39 @@ function formatDateTime(value?: BackendDateValue) {
     const time = [hour, minute, second].map((item) => String(item).padStart(2, '0')).join(':');
     return `${date} ${time}`;
   }
+  const compactParsed = parseCompactDateTime(value);
+  if (compactParsed) {
+    return compactParsed.format('YYYY-MM-DD HH:mm:ss');
+  }
   const parsed = dayjs(value);
   return parsed.isValid() ? parsed.format('YYYY-MM-DD HH:mm:ss') : String(value);
+}
+
+function parseCompactDateTime(value: string | number) {
+  const raw = String(value);
+  if (!/^\d{12,14}$/.test(raw)) {
+    return undefined;
+  }
+  const year = Number(raw.slice(0, 4));
+  const datePart = raw.slice(4, -6);
+  const hour = Number(raw.slice(-6, -4));
+  const minute = Number(raw.slice(-4, -2));
+  const second = Number(raw.slice(-2));
+  const candidates = datePart.length === 4
+    ? [[Number(datePart.slice(0, 2)), Number(datePart.slice(2))]]
+    : datePart.length === 3
+      ? [
+          [Number(datePart.slice(0, 1)), Number(datePart.slice(1))],
+          [Number(datePart.slice(0, 2)), Number(datePart.slice(2))],
+        ]
+      : [[Number(datePart.slice(0, 1)), Number(datePart.slice(1))]];
+  for (const [month, day] of candidates) {
+    const parsed = dayjs(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`);
+    if (parsed.isValid() && parsed.year() === year && parsed.month() + 1 === month && parsed.date() === day) {
+      return parsed;
+    }
+  }
+  return undefined;
 }
 
 function downloadImportTemplate() {

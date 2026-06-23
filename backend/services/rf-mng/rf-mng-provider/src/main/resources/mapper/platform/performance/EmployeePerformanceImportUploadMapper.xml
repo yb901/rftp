@@ -7,9 +7,9 @@
         <result property="taskName" column="task_name"/>
         <result property="fileName" column="file_name"/>
         <result property="originalContentType" column="original_content_type"/>
-        <result property="originalFileContent" column="original_file_content"/>
+        <result property="originalFileUrl" column="original_file_url"/>
         <result property="failureFileName" column="failure_file_name"/>
-        <result property="failureFileContent" column="failure_file_content"/>
+        <result property="failureFileUrl" column="failure_file_url"/>
         <result property="totalCount" column="total_count"/>
         <result property="successCount" column="success_count"/>
         <result property="failCount" column="fail_count"/>
@@ -23,15 +23,15 @@
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO tb_employee_performance_import_upload
-        (task_id, task_name, file_name, original_content_type, original_file_content, failure_file_name, failure_file_content,
+        (task_id, task_name, file_name, original_content_type, original_file_url, failure_file_name, failure_file_url,
          total_count, success_count, fail_count, status, error_message, create_admin_id, create_admin_name)
         VALUES
-        (#{taskId}, #{taskName}, #{fileName}, #{originalContentType}, #{originalFileContent}, #{failureFileName}, #{failureFileContent},
+        (#{taskId}, #{taskName}, #{fileName}, #{originalContentType}, #{originalFileUrl}, #{failureFileName}, #{failureFileUrl},
          #{totalCount}, #{successCount}, #{failCount}, #{status}, #{errorMessage}, #{createAdminId}, #{createAdminName})
     </insert>
 
     <select id="listRecent" resultMap="UploadMap">
-        SELECT id, task_id, task_name, file_name, original_content_type, failure_file_name,
+        SELECT id, task_id, task_name, file_name, original_content_type, original_file_url, failure_file_name, failure_file_url,
                total_count, success_count, fail_count, status, error_message, create_admin_id, create_admin_name,
                gmt_create, gmt_modified
         FROM tb_employee_performance_import_upload
