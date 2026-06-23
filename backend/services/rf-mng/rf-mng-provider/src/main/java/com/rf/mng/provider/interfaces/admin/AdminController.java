@@ -6,6 +6,8 @@ import com.rf.mng.provider.application.command.admin.AdminSaveCommand;
 import com.rf.mng.provider.application.manager.admin.AdminManager;
 import com.rf.mng.provider.application.query.admin.AdminPageQuery;
 import com.rf.mng.provider.application.result.admin.AdminResult;
+import com.rf.mng.provider.common.auth.MngModule;
+import com.rf.mng.provider.common.auth.MngPermission;
 import com.rf.mng.provider.interfaces.admin.param.AdminIdCtrlParam;
 import com.rf.mng.provider.interfaces.admin.param.AdminPageCtrlParam;
 import com.rf.mng.provider.interfaces.admin.param.AdminSaveCtrlParam;
@@ -27,6 +29,7 @@ import java.util.ArrayList;
  */
 @RestController
 @RequestMapping("/mng/admin")
+@MngPermission(MngModule.ADMIN)
 public class AdminController {
 
     /** 管理员应用管理器。 */

@@ -2,6 +2,8 @@ package com.rf.mng.provider.interfaces.socialsecurity;
 
 import com.zy.common.core.bo.PageResp;
 import com.zy.common.core.bo.Result;
+import com.rf.mng.provider.common.auth.MngModule;
+import com.rf.mng.provider.common.auth.MngPermission;
 import com.rf.mng.provider.application.command.socialsecurity.SocialSecurityPaymentBatchCreateCommand;
 import com.rf.mng.provider.application.command.socialsecurity.SocialSecurityPaymentTaskRetryCommand;
 import com.rf.mng.provider.application.manager.socialsecurity.SocialSecurityPaymentManager;
@@ -25,6 +27,7 @@ import javax.annotation.Resource;
  */
 @RestController
 @RequestMapping("/api/social-security-payments")
+@MngPermission(MngModule.SOCIAL_SECURITY)
 public class SocialSecurityPaymentController {
 
     /** 社保缴费应用管理器。 */

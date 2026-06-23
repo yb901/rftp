@@ -4,8 +4,6 @@ import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
-import com.zy.common.core.bo.PageResp;
-import com.zy.common.core.bo.Result;
 import com.rf.mng.provider.application.command.performance.EmployeePerformanceImportCommand;
 import com.rf.mng.provider.application.command.performance.admin.EmployeePerformanceAdjustCommand;
 import com.rf.mng.provider.application.command.performance.admin.EmployeePerformanceFeedbackHandleCommand;
@@ -20,6 +18,8 @@ import com.rf.mng.provider.application.result.performance.admin.EmployeePerforma
 import com.rf.mng.provider.application.result.performance.admin.EmployeePerformanceRecordResult;
 import com.rf.mng.provider.application.result.performance.item.EmployeePerformanceImportErrorResult;
 import com.rf.mng.provider.application.result.performance.PerformanceTaskResult;
+import com.rf.mng.provider.common.auth.MngModule;
+import com.rf.mng.provider.common.auth.MngPermission;
 import com.rf.mng.provider.interfaces.performance.param.EmployeePerformanceImportCtrlParam;
 import com.rf.mng.provider.interfaces.performance.param.admin.EmployeePerformanceAdjustCtrlParam;
 import com.rf.mng.provider.interfaces.performance.param.admin.EmployeePerformanceFeedbackHandleCtrlParam;
@@ -35,6 +35,8 @@ import com.rf.mng.provider.interfaces.performance.vo.item.EmployeePerformanceImp
 import com.rf.mng.provider.interfaces.performance.vo.PerformanceTaskVo;
 import com.zy.common.core.enums.ErrorCode;
 import com.zy.common.core.exception.BusinessException;
+import com.zy.common.core.bo.PageResp;
+import com.zy.common.core.bo.Result;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -63,6 +65,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/performance")
+@MngPermission(MngModule.PERFORMANCE)
 public class PerformanceMngController {
 
     /**

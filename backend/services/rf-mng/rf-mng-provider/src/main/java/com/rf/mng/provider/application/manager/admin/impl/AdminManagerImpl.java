@@ -9,6 +9,7 @@ import com.rf.mng.provider.application.port.persistence.admin.record.AdminRecord
 import com.rf.mng.provider.application.query.admin.AdminPageQuery;
 import com.rf.mng.provider.application.result.admin.AdminResult;
 import com.rf.mng.provider.application.result.admin.AdminTotpResult;
+import com.rf.mng.provider.common.auth.AdminRole;
 import com.zy.common.core.bo.PageResp;
 import com.zy.common.core.enums.ErrorCode;
 import com.zy.common.core.exception.BusinessException;
@@ -230,6 +231,9 @@ public class AdminManagerImpl implements AdminManager {
         }
         if (command.getRole() == null) {
             throw new BusinessException(ErrorCode.E999001, "角色不能为空");
+        }
+        if (!AdminRole.valid(command.getRole())) {
+            throw new BusinessException(ErrorCode.E999001, "角色不合法");
         }
     }
 

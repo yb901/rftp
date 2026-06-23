@@ -131,15 +131,19 @@ const performanceImportTemplateUrl = 'https://static.zcglhr.com/qy-mng/upload-ta
 const adminRoleOptions = [
   { value: 1, label: '超级管理员' },
   { value: 2, label: '管理员' },
-  { value: 3, label: '运营负责人' },
-  { value: 4, label: '商务负责人' },
-  { value: 5, label: '运营' },
-  { value: 6, label: '商务' },
-  { value: 7, label: '客服' },
-  { value: 8, label: '研发' },
+  { value: 3, label: '社保专员' },
+  { value: 4, label: '绩效专员' },
 ];
 
+type ModuleKey = 'social' | 'performance' | 'admin';
 type PageKey = 'socialBatches' | 'socialTasks' | 'enterprise' | 'region' | 'performance' | 'admin';
+
+const roleModules: Record<number, ModuleKey[]> = {
+  1: ['social', 'performance', 'admin'],
+  2: ['social', 'performance'],
+  3: ['social'],
+  4: ['performance'],
+};
 
 function App() {
   const [loginUser, setLoginUser] = useState<LoginUser | null>(() => readLoginUser());
@@ -286,14 +290,30 @@ function App() {
     if (!loginUser) {
       return;
     }
-    void loadBatches();
-    void loadTasks();
-    void loadPerformanceTasks(1, 10);
-    void loadPerformanceRecords();
-    void loadAdmins(1, 10);
+    if (canAccessModule(loginUser, 'social')) {
+      void loadBatches();
+      void loadTasks();
+    }
+    if (canAccessModule(loginUser, 'performance')) {
+      void loadPerformanceTasks(1, 10);
+      void loadPerformanceRecords();
+    }
+    if (canAccessModule(loginUser, 'admin')) {
+      void loadAdmins(1, 10);
+    }
   }, [loginUser]);
 
   useEffect(() => {
+    if (!loginUser || canAccessPage(loginUser, pageKey)) {
+      return;
+    }
+    navigateToPage(getFirstAccessiblePage(loginUser), pageKey, setPageKey);
+  }, [loginUser, pageKey]);
+
+  useEffect(() => {
+    if (!loginUser || !canAccessModule(loginUser, 'performance')) {
+      return;
+    }
     if (!importOpen) {
       return;
     }
@@ -728,6 +748,8 @@ function App() {
       const result = await login(values);
       setLoginUser(result.user);
       window.localStorage.setItem('rf_mng_login_user', JSON.stringify(result.user));
+      const landingPageKey = canAccessPage(result.user, pageKey) ? pageKey : getFirstAccessiblePage(result.user);
+      navigateToPage(landingPageKey, pageKey, setPageKey);
       message.success('登录成功');
     } catch (error) {
       message.error(getRequestErrorMessage(error, '登录失败，请检查账号、密码或动态验证码'));
@@ -744,21 +766,7 @@ function App() {
   };
 
   const pageMeta = getPageMeta(pageKey);
-  const menuItems: MenuProps['items'] = [
-    {
-      key: 'social',
-      icon: <BankOutlined />,
-      label: '社保缴费',
-      children: [
-        { key: 'socialBatches', label: '缴费批次' },
-        { key: 'socialTasks', label: '任务明细' },
-        { key: 'enterprise', label: '企业维护' },
-        { key: 'region', label: '地区配置' },
-      ],
-    },
-    { key: 'performance', icon: <TeamOutlined />, label: '员工绩效' },
-    { key: 'admin', icon: <UserSwitchOutlined />, label: '系统管理员' },
-  ];
+  const menuItems = buildMenuItems(loginUser);
 
   if (!loginUser) {
     return (
@@ -794,7 +802,7 @@ function App() {
           mode="inline"
           items={menuItems}
           selectedKeys={[pageKey]}
-          defaultOpenKeys={['social']}
+          defaultOpenKeys={canAccessModule(loginUser, 'social') ? ['social'] : []}
           onClick={({ key }) => navigateToPage(key as PageKey, pageKey, setPageKey)}
         />
       </Sider>
@@ -1181,6 +1189,64 @@ function navigateToPage(nextPageKey: PageKey, currentPageKey: PageKey, setPageKe
   const nextPath = getPagePath(nextPageKey);
   window.history.pushState({}, '', nextPath);
   setPageKey(nextPageKey);
+}
+
+function buildMenuItems(user: LoginUser | null): MenuProps['items'] {
+  const items: MenuProps['items'] = [];
+  if (canAccessModule(user, 'social')) {
+    items.push({
+      key: 'social',
+      icon: <BankOutlined />,
+      label: '社保缴费',
+      children: [
+        { key: 'socialBatches', label: '缴费批次' },
+        { key: 'socialTasks', label: '任务明细' },
+        { key: 'enterprise', label: '企业维护' },
+        { key: 'region', label: '地区配置' },
+      ],
+    });
+  }
+  if (canAccessModule(user, 'performance')) {
+    items.push({ key: 'performance', icon: <TeamOutlined />, label: '员工绩效' });
+  }
+  if (canAccessModule(user, 'admin')) {
+    items.push({ key: 'admin', icon: <UserSwitchOutlined />, label: '系统管理员' });
+  }
+  return items;
+}
+
+function canAccessPage(user: LoginUser | null, pageKey: PageKey) {
+  return canAccessModule(user, getPageModule(pageKey));
+}
+
+function canAccessModule(user: LoginUser | null, moduleKey: ModuleKey) {
+  if (!user) {
+    return false;
+  }
+  return (roleModules[user.role] || []).includes(moduleKey);
+}
+
+function getPageModule(pageKey: PageKey): ModuleKey {
+  if (pageKey === 'performance') {
+    return 'performance';
+  }
+  if (pageKey === 'admin') {
+    return 'admin';
+  }
+  return 'social';
+}
+
+function getFirstAccessiblePage(user: LoginUser | null): PageKey {
+  if (canAccessModule(user, 'social')) {
+    return 'socialBatches';
+  }
+  if (canAccessModule(user, 'performance')) {
+    return 'performance';
+  }
+  if (canAccessModule(user, 'admin')) {
+    return 'admin';
+  }
+  return 'socialBatches';
 }
 
 function trimObject(values: Record<string, unknown>) {
