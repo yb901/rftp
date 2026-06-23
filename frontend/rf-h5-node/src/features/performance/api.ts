@@ -37,8 +37,8 @@ export const performanceApi = {
   /**
    * 查询当前员工绩效列表。
    */
-  listMine() {
-    return apiGet<EmployeePerformance[]>('/performance/h5/records/mine');
+  listMine(includeHistory = false) {
+    return apiGet<EmployeePerformance[]>('/performance/h5/records/mine', { params: { includeHistory } });
   },
 
   /**

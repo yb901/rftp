@@ -97,7 +97,7 @@ public class EmployeePerformanceH5ManagerImpl implements EmployeePerformanceH5Ma
         validateMobile(safeCommand.getMobile());
         String scene = StringUtils.defaultIfBlank(safeCommand.getScene(), "LOGIN");
         if (StringUtils.equals(scene, "LOGIN")) {
-            assertMobileInAvailablePerformanceList(safeCommand.getMobile());
+            assertMobileInPerformanceList(safeCommand.getMobile());
             verifyCaptcha(safeCommand.getCaptchaTraceId());
         }
         String code = createSmsCode();
@@ -129,7 +129,7 @@ public class EmployeePerformanceH5ManagerImpl implements EmployeePerformanceH5Ma
         PerformanceSmsEvidenceData smsEvidence = verifySmsCode(safeCommand.getMobile(), "LOGIN", safeCommand.getSmsCode());
         smsEvidence.setVerifiedAt(LocalDateTime.now());
         employeePerformanceH5PersistencePort.markSmsVerified(smsEvidence);
-        assertMobileInAvailablePerformanceList(safeCommand.getMobile());
+        assertMobileInPerformanceList(safeCommand.getMobile());
         PerformanceH5LoginResult result = new PerformanceH5LoginResult();
         result.setMobile(safeCommand.getMobile());
         return result;
@@ -142,9 +142,9 @@ public class EmployeePerformanceH5ManagerImpl implements EmployeePerformanceH5Ma
      * @return 员工绩效记录
      */
     @Override
-    public List<EmployeePerformanceH5Result> listMine(String mobile) {
+    public List<EmployeePerformanceH5Result> listMine(String mobile, boolean includeHistory) {
         validateMobile(mobile);
-        List<EmployeePerformanceH5Record> enrichedRecords = listAvailableRecordsByMobile(mobile);
+        List<EmployeePerformanceH5Record> enrichedRecords = includeHistory ? listAllRecordsByMobile(mobile) : listAvailableRecordsByMobile(mobile);
         return enrichedRecords.stream()
                 .sorted(Comparator.comparing(EmployeePerformanceH5Record::getPeriodStartDate,
                         Comparator.nullsLast(Comparator.reverseOrder())))
@@ -172,6 +172,7 @@ public class EmployeePerformanceH5ManagerImpl implements EmployeePerformanceH5Ma
         if (!employeePerformanceH5PersistencePort.markConfirmed(record.getId(), record.getMobile(), nextStatus)) {
             throw new BusinessException(ErrorCode.E999002, "绩效确认失败");
         }
+        performanceTaskPersistencePort.increaseConfirmedCount(record.getTaskId(), 1);
     }
 
     /**
@@ -204,6 +205,7 @@ public class EmployeePerformanceH5ManagerImpl implements EmployeePerformanceH5Ma
         if (!employeePerformanceH5PersistencePort.markFeedbackSubmitted(record.getId(), record.getMobile())) {
             throw new BusinessException(ErrorCode.E999002, "绩效反馈状态更新失败");
         }
+        performanceTaskPersistencePort.increaseFeedbackCount(record.getTaskId(), 1);
     }
 
     /**
@@ -267,7 +269,9 @@ public class EmployeePerformanceH5ManagerImpl implements EmployeePerformanceH5Ma
             logs.add(log);
         }
         employeePerformanceH5PersistencePort.batchInsertConfirmLog(logs);
-        return employeePerformanceH5PersistencePort.batchMarkAutoConfirmed(ids, confirmStatus);
+        int updatedCount = employeePerformanceH5PersistencePort.batchMarkAutoConfirmed(ids, confirmStatus);
+        increaseAutoConfirmTaskStats(records, updatedCount);
+        return updatedCount;
     }
 
     /**
@@ -279,6 +283,14 @@ public class EmployeePerformanceH5ManagerImpl implements EmployeePerformanceH5Ma
         PerformanceSmsEvidenceData evidence = employeePerformanceH5PersistencePort.getLatestSmsEvidence(mobile, scene);
         if (evidence == null || evidence.getId() == null) {
             throw new BusinessException(ErrorCode.E999001, "请先获取验证码");
+        }
+        if (evidence.getVerifiedAt() != null) {
+            throw new BusinessException(ErrorCode.E999001, "验证码已使用，请重新获取");
+        }
+        int expireMinutes = performanceSmsProperties.getCodeExpireMinutes() == null ? 5 : performanceSmsProperties.getCodeExpireMinutes();
+        if (evidence.getSentAt() == null
+                || evidence.getSentAt().plusMinutes(expireMinutes).isBefore(LocalDateTime.now())) {
+            throw new BusinessException(ErrorCode.E999001, "验证码已过期，请重新获取");
         }
         if (!StringUtils.equals(smsCode, evidence.getSmsCode())) {
             throw new BusinessException(ErrorCode.E999001, "验证码不正确");
@@ -344,13 +356,13 @@ public class EmployeePerformanceH5ManagerImpl implements EmployeePerformanceH5Ma
     }
 
     /**
-     * 校验手机号命中当前可评价名单。
+     * 校验手机号命中绩效名单。
      *
      * @param mobile 员工手机号
      */
-    private void assertMobileInAvailablePerformanceList(String mobile) {
-        if (listAvailableRecordsByMobile(mobile).isEmpty()) {
-            throw new BusinessException(ErrorCode.E999001, "当前手机号暂无可评价的绩效记录");
+    private void assertMobileInPerformanceList(String mobile) {
+        if (listAllRecordsByMobile(mobile).isEmpty()) {
+            throw new BusinessException(ErrorCode.E999001, "当前手机号暂无绩效记录");
         }
     }
 
@@ -361,12 +373,22 @@ public class EmployeePerformanceH5ManagerImpl implements EmployeePerformanceH5Ma
      * @return 当前可评价绩效记录
      */
     private List<EmployeePerformanceH5Record> listAvailableRecordsByMobile(String mobile) {
-        List<EmployeePerformanceH5Record> records = employeePerformanceH5PersistencePort.listByMobile(mobile);
-        List<EmployeePerformanceH5Record> enrichedRecords = enrichTaskInfo(records);
+        List<EmployeePerformanceH5Record> enrichedRecords = listAllRecordsByMobile(mobile);
         LocalDateTime now = LocalDateTime.now();
         return enrichedRecords.stream()
-                .filter(record -> isBeforeFeedbackDeadline(record, now))
+                .filter(record -> isCurrentRecord(record, now))
                 .toList();
+    }
+
+    /**
+     * 按手机号查询全部绩效记录。
+     *
+     * @param mobile 员工手机号
+     * @return 全部绩效记录
+     */
+    private List<EmployeePerformanceH5Record> listAllRecordsByMobile(String mobile) {
+        List<EmployeePerformanceH5Record> records = employeePerformanceH5PersistencePort.listByMobile(mobile);
+        return enrichTaskInfo(records);
     }
 
     /**
@@ -553,6 +575,17 @@ public class EmployeePerformanceH5ManagerImpl implements EmployeePerformanceH5Ma
     }
 
     /**
+     * 判断是否当前可处理绩效记录。
+     *
+     * @param record 员工绩效记录
+     * @param now 当前时间
+     * @return 是否当前可处理
+     */
+    private boolean isCurrentRecord(EmployeePerformanceH5Record record, LocalDateTime now) {
+        return isConfirmAvailable(record, now) || isFeedbackAvailable(record, now);
+    }
+
+    /**
      * 转换员工绩效 H5 返回对象。
      *
      * @param record 员工绩效记录
@@ -567,10 +600,14 @@ public class EmployeePerformanceH5ManagerImpl implements EmployeePerformanceH5Ma
         result.setConfirmStatus(record.getConfirmStatus());
         result.setConfirmStatusText(confirmStatusText(record.getConfirmStatus()));
         result.setFeedbackStatus(record.getFeedbackStatus());
+        result.setFeedbackStatusText(feedbackStatusText(record.getFeedbackStatus()));
         result.setConfirmDeadlineTime(formatDateTime(record.getConfirmDeadlineTime()));
+        result.setSecondConfirmDeadlineTime(formatDateTime(record.getSecondConfirmDeadlineTime()));
+        result.setActionDeadlineTime(formatDateTime(actionDeadlineTime(record)));
         LocalDateTime now = LocalDateTime.now();
         result.setConfirmAvailable(isConfirmAvailable(record, now));
         result.setFeedbackAvailable(isFeedbackAvailable(record, now));
+        result.setHistory(!isCurrentRecord(record, now));
         return result;
     }
 
@@ -582,8 +619,12 @@ public class EmployeePerformanceH5ManagerImpl implements EmployeePerformanceH5Ma
      * @return 是否允许确认
      */
     private boolean isConfirmAvailable(EmployeePerformanceH5Record record, LocalDateTime now) {
-        return PerformanceConfirmStatus.PENDING_CONFIRM.getCode().equals(record.getConfirmStatus())
-                && isBeforeFeedbackDeadline(record, now);
+        if (PerformanceConfirmStatus.PENDING_CONFIRM.getCode().equals(record.getConfirmStatus())) {
+            return isBeforeFeedbackDeadline(record, now);
+        }
+        return PerformanceConfirmStatus.PENDING_SECOND_CONFIRM.getCode().equals(record.getConfirmStatus())
+                && record.getSecondConfirmDeadlineTime() != null
+                && now.isBefore(record.getSecondConfirmDeadlineTime());
     }
 
     /**
@@ -612,6 +653,55 @@ public class EmployeePerformanceH5ManagerImpl implements EmployeePerformanceH5Ma
             }
         }
         return status;
+    }
+
+    /**
+     * 转换反馈状态文案。
+     *
+     * @param status 反馈状态编码
+     * @return 反馈状态文案
+     */
+    private String feedbackStatusText(String status) {
+        for (PerformanceFeedbackStatus item : PerformanceFeedbackStatus.values()) {
+            if (item.getCode().equals(status)) {
+                return item.getName();
+            }
+        }
+        return status;
+    }
+
+    /**
+     * 获取当前动作截止时间。
+     *
+     * @param record 员工绩效记录
+     * @return 当前动作截止时间
+     */
+    private LocalDateTime actionDeadlineTime(EmployeePerformanceH5Record record) {
+        if (PerformanceConfirmStatus.PENDING_SECOND_CONFIRM.getCode().equals(record.getConfirmStatus())) {
+            return record.getSecondConfirmDeadlineTime();
+        }
+        return record.getConfirmDeadlineTime();
+    }
+
+    /**
+     * 增加自动确认任务统计。
+     *
+     * @param records 自动确认候选记录
+     * @param updatedCount 更新成功数量
+     */
+    private void increaseAutoConfirmTaskStats(List<EmployeePerformanceH5Record> records, int updatedCount) {
+        if (updatedCount <= 0 || records == null || records.isEmpty()) {
+            return;
+        }
+        Map<Long, Integer> countMap = new HashMap<>();
+        for (int index = 0; index < Math.min(updatedCount, records.size()); index++) {
+            EmployeePerformanceH5Record record = records.get(index);
+            countMap.merge(record.getTaskId(), 1, Integer::sum);
+        }
+        for (Map.Entry<Long, Integer> entry : countMap.entrySet()) {
+            performanceTaskPersistencePort.increaseConfirmedCount(entry.getKey(), entry.getValue());
+            performanceTaskPersistencePort.increaseAutoConfirmedCount(entry.getKey(), entry.getValue());
+        }
     }
 
     /**

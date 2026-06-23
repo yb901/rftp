@@ -93,6 +93,28 @@ public interface EmployeePerformanceRecordMapper {
                              @Param("handleAdminName") String handleAdminName);
 
     /**
+     * 更新反馈为已处理未调整。
+     *
+     * @param recordId 员工绩效记录 ID
+     * @param handleOpinion 处理意见
+     * @param handleAdminId 处理管理员 ID
+     * @param handleAdminName 处理管理员名称
+     * @return 影响行数
+     */
+    int markFeedbackUnchanged(@Param("recordId") Long recordId,
+                              @Param("handleOpinion") String handleOpinion,
+                              @Param("handleAdminId") Long handleAdminId,
+                              @Param("handleAdminName") String handleAdminName);
+
+    /**
+     * 更新绩效记录为反馈已处理未调整。
+     *
+     * @param id 员工绩效记录 ID
+     * @return 影响行数
+     */
+    int markRecordFeedbackUnchanged(@Param("id") Long id);
+
+    /**
      * 新增调整留痕。
      *
      * @param entity 调整留痕实体

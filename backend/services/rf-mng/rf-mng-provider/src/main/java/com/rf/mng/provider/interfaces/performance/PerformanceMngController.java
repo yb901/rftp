@@ -5,6 +5,7 @@ import com.zy.common.core.bo.PageResp;
 import com.zy.common.core.bo.Result;
 import com.rf.mng.provider.application.command.performance.EmployeePerformanceImportCommand;
 import com.rf.mng.provider.application.command.performance.admin.EmployeePerformanceAdjustCommand;
+import com.rf.mng.provider.application.command.performance.admin.EmployeePerformanceFeedbackHandleCommand;
 import com.rf.mng.provider.application.command.performance.item.EmployeePerformanceImportItemCommand;
 import com.rf.mng.provider.application.command.performance.PerformanceTaskCreateCommand;
 import com.rf.mng.provider.application.manager.performance.PerformanceMngManager;
@@ -17,6 +18,7 @@ import com.rf.mng.provider.application.result.performance.item.EmployeePerforman
 import com.rf.mng.provider.application.result.performance.PerformanceTaskResult;
 import com.rf.mng.provider.interfaces.performance.param.EmployeePerformanceImportCtrlParam;
 import com.rf.mng.provider.interfaces.performance.param.admin.EmployeePerformanceAdjustCtrlParam;
+import com.rf.mng.provider.interfaces.performance.param.admin.EmployeePerformanceFeedbackHandleCtrlParam;
 import com.rf.mng.provider.interfaces.performance.param.admin.EmployeePerformancePageCtrlParam;
 import com.rf.mng.provider.interfaces.performance.param.item.EmployeePerformanceImportItemCtrlParam;
 import com.rf.mng.provider.interfaces.performance.param.PerformanceTaskCreateCtrlParam;
@@ -189,6 +191,23 @@ public class PerformanceMngController {
     }
 
     /**
+     * 处理反馈且不调整绩效。
+     *
+     * @param recordId 员工绩效记录 ID
+     * @param param 反馈处理参数
+     * @return 空结果
+     */
+    @PostMapping("/records/{recordId}/feedback/unchanged")
+    public Result<Void> handleFeedbackUnchanged(@PathVariable Long recordId,
+                                                @RequestBody EmployeePerformanceFeedbackHandleCtrlParam param) {
+        EmployeePerformanceFeedbackHandleCtrlParam safeParam = param == null ? new EmployeePerformanceFeedbackHandleCtrlParam() : param;
+        EmployeePerformanceFeedbackHandleCommand command = BeanUtil.copyProperties(safeParam, EmployeePerformanceFeedbackHandleCommand.class);
+        command.setRecordId(recordId);
+        performanceMngManager.handleFeedbackUnchanged(command);
+        return Result.success();
+    }
+
+    /**
      * 转换员工绩效导入明细命令。
      *
      * @param records HTTP 导入明细
@@ -270,13 +289,66 @@ public class PerformanceMngController {
                     record.getProjectDepartment(),
                     record.getPositionName(),
                     record.getPerformance(),
-                    record.getConfirmStatus(),
-                    record.getFeedbackStatus(),
+                    confirmStatusText(record.getConfirmStatus()),
+                    feedbackStatusText(record.getFeedbackStatus()),
                     record.getFeedbackContent(),
                     record.getFeedbackHandleOpinion(),
                     record.getFeedbackHandleAdminName()));
         }
         response.getWriter().write(builder.toString());
+    }
+
+    /**
+     * 转换确认状态文案。
+     *
+     * @param status 确认状态编码
+     * @return 确认状态文案
+     */
+    private String confirmStatusText(String status) {
+        if ("PENDING_CONFIRM".equals(status)) {
+            return "待确认";
+        }
+        if ("CONFIRMED".equals(status)) {
+            return "已确认";
+        }
+        if ("AUTO_CONFIRMED".equals(status)) {
+            return "超时自动确认";
+        }
+        if ("FEEDBACK_SUBMITTED".equals(status)) {
+            return "已反馈";
+        }
+        if ("PENDING_SECOND_CONFIRM".equals(status)) {
+            return "待二次确认";
+        }
+        if ("SECOND_CONFIRMED".equals(status)) {
+            return "二次已确认";
+        }
+        if ("SECOND_AUTO_CONFIRMED".equals(status)) {
+            return "二次超时自动确认";
+        }
+        return status;
+    }
+
+    /**
+     * 转换反馈状态文案。
+     *
+     * @param status 反馈状态编码
+     * @return 反馈状态文案
+     */
+    private String feedbackStatusText(String status) {
+        if ("NONE".equals(status)) {
+            return "无反馈";
+        }
+        if ("PENDING".equals(status)) {
+            return "待处理";
+        }
+        if ("HANDLED_ADJUSTED".equals(status)) {
+            return "已调整";
+        }
+        if ("HANDLED_UNCHANGED".equals(status)) {
+            return "已处理未调整";
+        }
+        return status;
     }
 
     /**

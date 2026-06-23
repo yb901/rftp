@@ -83,6 +83,25 @@ public interface EmployeePerformanceRecordPersistencePort {
     boolean markFeedbackAdjusted(Long recordId, String handleOpinion, Long handleAdminId, String handleAdminName);
 
     /**
+     * 更新反馈为已处理未调整。
+     *
+     * @param recordId 员工绩效记录 ID
+     * @param handleOpinion 处理意见
+     * @param handleAdminId 处理管理员 ID
+     * @param handleAdminName 处理管理员名称
+     * @return 是否更新成功
+     */
+    boolean markFeedbackUnchanged(Long recordId, String handleOpinion, Long handleAdminId, String handleAdminName);
+
+    /**
+     * 更新绩效记录为反馈已处理未调整。
+     *
+     * @param id 员工绩效记录 ID
+     * @return 是否更新成功
+     */
+    boolean markRecordFeedbackUnchanged(Long id);
+
+    /**
      * 新增调整留痕。
      *
      * @param data 调整留痕写入数据

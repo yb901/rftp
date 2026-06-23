@@ -117,6 +117,29 @@
           AND is_deleted = 0
     </update>
 
+    <update id="markFeedbackUnchanged">
+        UPDATE tb_employee_performance_feedback
+        SET status = 'HANDLED_UNCHANGED',
+            handle_opinion = #{handleOpinion},
+            handle_admin_id = #{handleAdminId},
+            handle_admin_name = #{handleAdminName},
+            handled_at = NOW()
+        WHERE record_id = #{recordId}
+          AND is_deleted = 0
+          AND status = 'PENDING'
+    </update>
+
+    <update id="markRecordFeedbackUnchanged">
+        UPDATE tb_employee_performance_record
+        SET confirm_status = 'CONFIRMED',
+            feedback_status = 'HANDLED_UNCHANGED',
+            last_confirm_time = NOW()
+        WHERE id = #{id}
+          AND is_deleted = 0
+          AND confirm_status = 'FEEDBACK_SUBMITTED'
+          AND feedback_status = 'PENDING'
+    </update>
+
     <insert id="insertAdjustLog">
         INSERT INTO tb_employee_performance_adjust_log
         (task_id, record_id, mobile, before_performance, after_performance, adjust_reason,

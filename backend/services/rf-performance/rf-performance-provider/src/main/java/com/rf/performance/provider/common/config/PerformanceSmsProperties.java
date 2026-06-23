@@ -25,6 +25,11 @@ public class PerformanceSmsProperties {
     private String mockCode = "123456";
 
     /**
+     * 短信验证码有效分钟数。
+     */
+    private Integer codeExpireMinutes = 5;
+
+    /**
      * 阿里云短信地域。
      */
     private String regionId = "cn-hangzhou";

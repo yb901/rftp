@@ -234,6 +234,14 @@ export function adjustPerformanceRecord(recordId: number, data: {
   return unwrap<void>(request.post(`/api/performance/records/${recordId}/adjust`, data));
 }
 
+export function handlePerformanceFeedbackUnchanged(recordId: number, data: {
+  handleOpinion: string;
+  operatorAdminId?: number;
+  operatorAdminName?: string;
+}) {
+  return unwrap<void>(request.post(`/api/performance/records/${recordId}/feedback/unchanged`, data));
+}
+
 export function fetchAdmins(params: Record<string, unknown>) {
   return unwrap<PageResp<AdminUser>>(request.get('/mng/admin/list', { params }));
 }

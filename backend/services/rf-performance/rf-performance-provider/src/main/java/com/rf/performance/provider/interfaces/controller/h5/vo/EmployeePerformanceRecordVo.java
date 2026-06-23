@@ -55,6 +55,26 @@ public class EmployeePerformanceRecordVo implements Serializable {
     private String confirmDeadlineTime;
 
     /**
+     * 二次确认截止时间展示文本。
+     */
+    private String secondConfirmDeadlineTime;
+
+    /**
+     * 当前动作截止时间展示文本。
+     */
+    private String actionDeadlineTime;
+
+    /**
+     * 反馈状态展示文本。
+     */
+    private String feedbackStatusText;
+
+    /**
+     * 是否历史绩效。
+     */
+    private Boolean history;
+
+    /**
      * 是否允许确认。
      */
     private Boolean confirmAvailable;

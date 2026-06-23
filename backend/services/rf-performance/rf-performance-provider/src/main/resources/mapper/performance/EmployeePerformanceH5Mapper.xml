@@ -141,8 +141,10 @@
         WHERE id = #{id}
           AND mobile = #{mobile}
           AND is_deleted = 0
-          AND confirm_status IN ('PENDING_CONFIRM', 'PENDING_SECOND_CONFIRM')
-          AND feedback_status = 'NONE'
+          AND (
+            (confirm_status = 'PENDING_CONFIRM' AND feedback_status = 'NONE')
+            OR (confirm_status = 'PENDING_SECOND_CONFIRM' AND feedback_status = 'HANDLED_ADJUSTED')
+          )
     </update>
 
     <update id="batchMarkAutoConfirmed">

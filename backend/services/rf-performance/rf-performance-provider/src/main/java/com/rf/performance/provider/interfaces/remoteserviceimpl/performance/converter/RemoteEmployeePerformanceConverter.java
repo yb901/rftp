@@ -7,9 +7,11 @@ import com.rf.performance.api.dto.performance.admin.EmployeePerformanceRecordDto
 import com.rf.performance.api.dto.performance.item.EmployeePerformanceImportErrorDto;
 import com.rf.performance.api.param.performance.EmployeePerformanceImportParam;
 import com.rf.performance.api.param.performance.admin.EmployeePerformanceAdjustParam;
+import com.rf.performance.api.param.performance.admin.EmployeePerformanceFeedbackHandleParam;
 import com.rf.performance.api.param.performance.item.EmployeePerformanceImportItemParam;
 import com.rf.performance.api.query.performance.EmployeePerformancePageParam;
 import com.rf.performance.provider.application.command.performance.admin.EmployeePerformanceAdjustCommand;
+import com.rf.performance.provider.application.command.performance.admin.EmployeePerformanceFeedbackHandleCommand;
 import com.rf.performance.provider.application.command.performance.EmployeePerformanceImportCommand;
 import com.rf.performance.provider.application.command.performance.item.EmployeePerformanceImportItemCommand;
 import com.rf.performance.provider.application.query.performance.EmployeePerformancePageQuery;
@@ -67,6 +69,16 @@ public final class RemoteEmployeePerformanceConverter {
      */
     public static EmployeePerformanceAdjustCommand toAdjustCommand(EmployeePerformanceAdjustParam param) {
         return BeanUtil.copyProperties(param, EmployeePerformanceAdjustCommand.class);
+    }
+
+    /**
+     * 转换反馈处理命令。
+     *
+     * @param param RPC 反馈处理入参
+     * @return 应用层反馈处理命令
+     */
+    public static EmployeePerformanceFeedbackHandleCommand toFeedbackHandleCommand(EmployeePerformanceFeedbackHandleParam param) {
+        return BeanUtil.copyProperties(param, EmployeePerformanceFeedbackHandleCommand.class);
     }
 
     /**

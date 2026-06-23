@@ -3,6 +3,7 @@ package com.rf.mng.provider.application.port.gateway.performance;
 import com.rf.mng.provider.application.command.performance.EmployeePerformanceImportCommand;
 import com.rf.mng.provider.application.command.performance.PerformanceTaskCreateCommand;
 import com.rf.mng.provider.application.command.performance.admin.EmployeePerformanceAdjustCommand;
+import com.rf.mng.provider.application.command.performance.admin.EmployeePerformanceFeedbackHandleCommand;
 import com.rf.mng.provider.application.query.performance.EmployeePerformancePageQuery;
 import com.rf.mng.provider.application.query.performance.PerformanceTaskPageQuery;
 import com.rf.mng.provider.application.result.performance.EmployeePerformanceImportResult;
@@ -76,4 +77,11 @@ public interface EmployeePerformanceGateway {
      * @return 调整结果
      */
     EmployeePerformanceAdjustResult adjustPerformance(EmployeePerformanceAdjustCommand command);
+
+    /**
+     * 处理反馈且不调整绩效。
+     *
+     * @param command 员工绩效反馈处理命令
+     */
+    void handleFeedbackUnchanged(EmployeePerformanceFeedbackHandleCommand command);
 }

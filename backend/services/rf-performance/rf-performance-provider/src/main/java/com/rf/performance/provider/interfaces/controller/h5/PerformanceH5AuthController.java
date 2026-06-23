@@ -130,7 +130,7 @@ public class PerformanceH5AuthController {
      * @param mobile 手机号
      */
     private void setLoginCookie(HttpServletResponse response, String mobile) {
-        Cookie cookie = new Cookie(PerformanceWebAuthProperties.COOKIE_NAME, mobile);
+        Cookie cookie = new Cookie(PerformanceWebAuthProperties.COOKIE_NAME, performanceH5RequestContext.createLoginToken(mobile));
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         cookie.setMaxAge(performanceWebAuthProperties.getCookieMaxAgeSeconds());

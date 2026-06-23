@@ -94,6 +94,33 @@ public interface PerformanceTaskPersistencePort {
     boolean increaseTotalCount(Long id, int count);
 
     /**
+     * 增加绩效任务确认数量。
+     *
+     * @param id 绩效任务 ID
+     * @param count 增加数量
+     * @return 是否更新成功
+     */
+    boolean increaseConfirmedCount(Long id, int count);
+
+    /**
+     * 增加绩效任务反馈数量。
+     *
+     * @param id 绩效任务 ID
+     * @param count 增加数量
+     * @return 是否更新成功
+     */
+    boolean increaseFeedbackCount(Long id, int count);
+
+    /**
+     * 增加绩效任务自动确认数量。
+     *
+     * @param id 绩效任务 ID
+     * @param count 增加数量
+     * @return 是否更新成功
+     */
+    boolean increaseAutoConfirmedCount(Long id, int count);
+
+    /**
      * 删除绩效任务。
      *
      * @param id 绩效任务 ID

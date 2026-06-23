@@ -3,6 +3,7 @@ package com.rf.mng.provider.application.manager.performance.impl;
 import com.rf.mng.provider.application.command.performance.EmployeePerformanceImportCommand;
 import com.rf.mng.provider.application.command.performance.PerformanceTaskCreateCommand;
 import com.rf.mng.provider.application.command.performance.admin.EmployeePerformanceAdjustCommand;
+import com.rf.mng.provider.application.command.performance.admin.EmployeePerformanceFeedbackHandleCommand;
 import com.rf.mng.provider.application.manager.performance.PerformanceMngManager;
 import com.rf.mng.provider.application.port.gateway.performance.EmployeePerformanceGateway;
 import com.rf.mng.provider.application.query.performance.EmployeePerformancePageQuery;
@@ -109,5 +110,15 @@ public class PerformanceMngManagerImpl implements PerformanceMngManager {
     @Override
     public EmployeePerformanceAdjustResult adjustPerformance(EmployeePerformanceAdjustCommand command) {
         return employeePerformanceGateway.adjustPerformance(command);
+    }
+
+    /**
+     * 处理反馈且不调整绩效。
+     *
+     * @param command 员工绩效反馈处理命令
+     */
+    @Override
+    public void handleFeedbackUnchanged(EmployeePerformanceFeedbackHandleCommand command) {
+        employeePerformanceGateway.handleFeedbackUnchanged(command);
     }
 }

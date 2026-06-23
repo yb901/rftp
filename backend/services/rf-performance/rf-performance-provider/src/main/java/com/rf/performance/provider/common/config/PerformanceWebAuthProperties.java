@@ -23,4 +23,9 @@ public class PerformanceWebAuthProperties {
      * 登录 Cookie 有效秒数。
      */
     private Integer cookieMaxAgeSeconds = 7 * 24 * 60 * 60;
+
+    /**
+     * 登录 Cookie 签名密钥。
+     */
+    private String cookieSecret = "rf-performance-change-me";
 }

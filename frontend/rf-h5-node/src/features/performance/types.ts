@@ -9,7 +9,11 @@ export interface EmployeePerformance {
   confirmStatus: string;
   confirmStatusText: string;
   feedbackStatus: string;
+  feedbackStatusText?: string;
   confirmDeadlineTime: string;
+  secondConfirmDeadlineTime?: string;
+  actionDeadlineTime?: string;
+  history?: boolean;
   confirmAvailable: boolean;
   feedbackAvailable: boolean;
 }

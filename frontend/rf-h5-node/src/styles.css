@@ -58,6 +58,12 @@ body {
   opacity: 0.9;
 }
 
+.record-tabs {
+  margin-bottom: 10px;
+  border-radius: 8px;
+  background: #fff;
+}
+
 .login-panel {
   padding: 18px;
   border-radius: 8px;

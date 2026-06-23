@@ -100,6 +100,33 @@ public interface PerformanceTaskMapper {
     int increaseTotalCount(@Param("id") Long id, @Param("count") int count);
 
     /**
+     * 增加绩效任务确认数量。
+     *
+     * @param id 绩效任务 ID
+     * @param count 增加数量
+     * @return 影响行数
+     */
+    int increaseConfirmedCount(@Param("id") Long id, @Param("count") int count);
+
+    /**
+     * 增加绩效任务反馈数量。
+     *
+     * @param id 绩效任务 ID
+     * @param count 增加数量
+     * @return 影响行数
+     */
+    int increaseFeedbackCount(@Param("id") Long id, @Param("count") int count);
+
+    /**
+     * 增加绩效任务自动确认数量。
+     *
+     * @param id 绩效任务 ID
+     * @param count 增加数量
+     * @return 影响行数
+     */
+    int increaseAutoConfirmedCount(@Param("id") Long id, @Param("count") int count);
+
+    /**
      * 逻辑删除绩效任务。
      *
      * @param id 绩效任务 ID

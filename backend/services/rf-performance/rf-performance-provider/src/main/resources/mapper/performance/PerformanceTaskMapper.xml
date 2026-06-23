@@ -120,6 +120,27 @@
           AND is_deleted = 0
     </update>
 
+    <update id="increaseConfirmedCount">
+        UPDATE tb_employee_performance_task
+        SET confirmed_count = confirmed_count + #{count}
+        WHERE id = #{id}
+          AND is_deleted = 0
+    </update>
+
+    <update id="increaseFeedbackCount">
+        UPDATE tb_employee_performance_task
+        SET feedback_count = feedback_count + #{count}
+        WHERE id = #{id}
+          AND is_deleted = 0
+    </update>
+
+    <update id="increaseAutoConfirmedCount">
+        UPDATE tb_employee_performance_task
+        SET auto_confirmed_count = auto_confirmed_count + #{count}
+        WHERE id = #{id}
+          AND is_deleted = 0
+    </update>
+
     <update id="deleteById">
         UPDATE tb_employee_performance_task
         SET is_deleted = 1

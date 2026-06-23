@@ -154,6 +154,42 @@ public class PerformanceTaskPersistencePortImpl implements PerformanceTaskPersis
     }
 
     /**
+     * 增加绩效任务确认数量。
+     *
+     * @param id 绩效任务 ID
+     * @param count 增加数量
+     * @return 是否更新成功
+     */
+    @Override
+    public boolean increaseConfirmedCount(Long id, int count) {
+        return performanceTaskMapper.increaseConfirmedCount(id, count) > 0;
+    }
+
+    /**
+     * 增加绩效任务反馈数量。
+     *
+     * @param id 绩效任务 ID
+     * @param count 增加数量
+     * @return 是否更新成功
+     */
+    @Override
+    public boolean increaseFeedbackCount(Long id, int count) {
+        return performanceTaskMapper.increaseFeedbackCount(id, count) > 0;
+    }
+
+    /**
+     * 增加绩效任务自动确认数量。
+     *
+     * @param id 绩效任务 ID
+     * @param count 增加数量
+     * @return 是否更新成功
+     */
+    @Override
+    public boolean increaseAutoConfirmedCount(Long id, int count) {
+        return performanceTaskMapper.increaseAutoConfirmedCount(id, count) > 0;
+    }
+
+    /**
      * 删除绩效任务。
      *
      * @param id 绩效任务 ID

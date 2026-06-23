@@ -3,6 +3,7 @@ package com.rf.performance.provider.application.manager.performance.impl;
 import cn.hutool.core.bean.BeanUtil;
 import com.rf.performance.provider.application.command.performance.EmployeePerformanceImportCommand;
 import com.rf.performance.provider.application.command.performance.admin.EmployeePerformanceAdjustCommand;
+import com.rf.performance.provider.application.command.performance.admin.EmployeePerformanceFeedbackHandleCommand;
 import com.rf.performance.provider.application.command.performance.item.EmployeePerformanceImportItemCommand;
 import com.rf.performance.provider.application.manager.performance.EmployeePerformanceManager;
 import com.rf.performance.provider.application.port.persistence.performance.EmployeePerformanceRecordPersistencePort;
@@ -118,6 +119,10 @@ public class EmployeePerformanceManagerImpl implements EmployeePerformanceManage
         if (record == null || record.getId() == null) {
             throw new BusinessException(ErrorCode.E999001, "绩效记录不存在");
         }
+        if (!PerformanceConfirmStatus.FEEDBACK_SUBMITTED.getCode().equals(record.getConfirmStatus())
+                || !PerformanceFeedbackStatus.PENDING.getCode().equals(record.getFeedbackStatus())) {
+            throw new BusinessException(ErrorCode.E999001, "仅待处理反馈支持绩效调整");
+        }
         EmployeePerformanceAdjustLogData logData = toAdjustLogData(safeCommand, record);
         if (!employeePerformanceRecordPersistencePort.insertAdjustLog(logData)) {
             throw new BusinessException(ErrorCode.E999002, "绩效调整留痕失败");
@@ -132,6 +137,34 @@ public class EmployeePerformanceManagerImpl implements EmployeePerformanceManage
         result.setBeforePerformance(record.getPerformance());
         result.setAfterPerformance(safeCommand.getAfterPerformance());
         return result;
+    }
+
+    /**
+     * 处理反馈且不调整绩效。
+     *
+     * @param command 员工绩效反馈处理命令
+     */
+    @Override
+    @Transactional(transactionManager = "transactionManager", rollbackFor = Exception.class)
+    public void handleFeedbackUnchanged(EmployeePerformanceFeedbackHandleCommand command) {
+        EmployeePerformanceFeedbackHandleCommand safeCommand = command == null ? new EmployeePerformanceFeedbackHandleCommand() : command;
+        validateFeedbackHandleCommand(safeCommand);
+        EmployeePerformanceAdminRecord record = employeePerformanceRecordPersistencePort.getById(safeCommand.getRecordId());
+        if (record == null || record.getId() == null) {
+            throw new BusinessException(ErrorCode.E999001, "绩效记录不存在");
+        }
+        if (!PerformanceConfirmStatus.FEEDBACK_SUBMITTED.getCode().equals(record.getConfirmStatus())
+                || !PerformanceFeedbackStatus.PENDING.getCode().equals(record.getFeedbackStatus())) {
+            throw new BusinessException(ErrorCode.E999001, "仅待处理反馈支持处理");
+        }
+        if (!employeePerformanceRecordPersistencePort.markFeedbackUnchanged(record.getId(), safeCommand.getHandleOpinion(),
+                safeCommand.getOperatorAdminId(), safeCommand.getOperatorAdminName())) {
+            throw new BusinessException(ErrorCode.E999002, "绩效反馈处理失败");
+        }
+        if (!employeePerformanceRecordPersistencePort.markRecordFeedbackUnchanged(record.getId())) {
+            throw new BusinessException(ErrorCode.E999002, "绩效记录状态更新失败");
+        }
+        performanceTaskPersistencePort.increaseConfirmedCount(record.getTaskId(), 1);
     }
 
     /**
@@ -211,6 +244,20 @@ public class EmployeePerformanceManagerImpl implements EmployeePerformanceManage
         }
         if (StringUtils.isBlank(command.getAfterPerformance())) {
             throw new BusinessException(ErrorCode.E999001, "调整后绩效不能为空");
+        }
+    }
+
+    /**
+     * 校验反馈处理命令。
+     *
+     * @param command 员工绩效反馈处理命令
+     */
+    private void validateFeedbackHandleCommand(EmployeePerformanceFeedbackHandleCommand command) {
+        if (command.getRecordId() == null) {
+            throw new BusinessException(ErrorCode.E999001, "绩效记录ID不能为空");
+        }
+        if (StringUtils.isBlank(command.getHandleOpinion())) {
+            throw new BusinessException(ErrorCode.E999001, "处理意见不能为空");
         }
     }
 

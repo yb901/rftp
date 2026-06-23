@@ -31,12 +31,13 @@ public interface EmployeePerformanceH5Manager {
     PerformanceH5LoginResult login(PerformanceH5LoginCommand command);
 
     /**
-     * 查询当前员工绩效记录。
+     * 查询员工绩效记录。
      *
      * @param mobile 登录手机号
+     * @param includeHistory 是否包含历史记录
      * @return 员工绩效记录
      */
-    List<EmployeePerformanceH5Result> listMine(String mobile);
+    List<EmployeePerformanceH5Result> listMine(String mobile, boolean includeHistory);
 
     /**
      * 确认绩效。

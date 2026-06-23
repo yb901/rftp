@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.rf.mng.provider.application.command.performance.EmployeePerformanceImportCommand;
 import com.rf.mng.provider.application.command.performance.PerformanceTaskCreateCommand;
 import com.rf.mng.provider.application.command.performance.admin.EmployeePerformanceAdjustCommand;
+import com.rf.mng.provider.application.command.performance.admin.EmployeePerformanceFeedbackHandleCommand;
 import com.rf.mng.provider.application.command.performance.item.EmployeePerformanceImportItemCommand;
 import com.rf.mng.provider.application.port.gateway.performance.EmployeePerformanceGateway;
 import com.rf.mng.provider.application.query.performance.EmployeePerformancePageQuery;
@@ -21,6 +22,7 @@ import com.rf.performance.api.dto.performance.item.EmployeePerformanceImportErro
 import com.rf.performance.api.param.performance.EmployeePerformanceImportParam;
 import com.rf.performance.api.param.performance.PerformanceTaskCreateParam;
 import com.rf.performance.api.param.performance.admin.EmployeePerformanceAdjustParam;
+import com.rf.performance.api.param.performance.admin.EmployeePerformanceFeedbackHandleParam;
 import com.rf.performance.api.param.performance.item.EmployeePerformanceImportItemParam;
 import com.rf.performance.api.query.performance.EmployeePerformancePageParam;
 import com.rf.performance.api.query.performance.PerformanceTaskPageParam;
@@ -114,6 +116,17 @@ public class EmployeePerformanceGatewayImpl implements EmployeePerformanceGatewa
         EmployeePerformanceAdjustParam param = BeanUtil.copyProperties(command, EmployeePerformanceAdjustParam.class);
         EmployeePerformanceAdjustDto dto = remoteEmployeePerformanceService.adjustPerformance(param);
         return BeanUtil.copyProperties(dto, EmployeePerformanceAdjustResult.class);
+    }
+
+    /**
+     * 处理反馈且不调整绩效。
+     *
+     * @param command 员工绩效反馈处理命令
+     */
+    @Override
+    public void handleFeedbackUnchanged(EmployeePerformanceFeedbackHandleCommand command) {
+        EmployeePerformanceFeedbackHandleParam param = BeanUtil.copyProperties(command, EmployeePerformanceFeedbackHandleParam.class);
+        remoteEmployeePerformanceService.handleFeedbackUnchanged(param);
     }
 
     private List<EmployeePerformanceImportItemParam> toImportItemParams(List<EmployeePerformanceImportItemCommand> records) {

@@ -2,6 +2,7 @@ package com.rf.performance.provider.application.manager.performance;
 
 import com.rf.performance.provider.application.command.performance.EmployeePerformanceImportCommand;
 import com.rf.performance.provider.application.command.performance.admin.EmployeePerformanceAdjustCommand;
+import com.rf.performance.provider.application.command.performance.admin.EmployeePerformanceFeedbackHandleCommand;
 import com.rf.performance.provider.application.query.performance.EmployeePerformancePageQuery;
 import com.rf.performance.provider.application.result.performance.EmployeePerformanceImportResult;
 import com.rf.performance.provider.application.result.performance.admin.EmployeePerformanceAdjustResult;
@@ -36,4 +37,11 @@ public interface EmployeePerformanceManager {
      * @return 员工绩效调整结果
      */
     EmployeePerformanceAdjustResult adjustPerformance(EmployeePerformanceAdjustCommand command);
+
+    /**
+     * 处理反馈且不调整绩效。
+     *
+     * @param command 员工绩效反馈处理命令
+     */
+    void handleFeedbackUnchanged(EmployeePerformanceFeedbackHandleCommand command);
 }

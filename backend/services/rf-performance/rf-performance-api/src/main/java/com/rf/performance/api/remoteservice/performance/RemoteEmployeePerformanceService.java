@@ -5,6 +5,7 @@ import com.rf.performance.api.dto.performance.admin.EmployeePerformanceAdjustDto
 import com.rf.performance.api.dto.performance.admin.EmployeePerformanceRecordDto;
 import com.rf.performance.api.param.performance.EmployeePerformanceImportParam;
 import com.rf.performance.api.param.performance.admin.EmployeePerformanceAdjustParam;
+import com.rf.performance.api.param.performance.admin.EmployeePerformanceFeedbackHandleParam;
 import com.rf.performance.api.query.performance.EmployeePerformancePageParam;
 import com.zy.common.core.bo.PageResp;
 
@@ -36,4 +37,11 @@ public interface RemoteEmployeePerformanceService {
      * @return 员工绩效调整结果
      */
     EmployeePerformanceAdjustDto adjustPerformance(EmployeePerformanceAdjustParam param);
+
+    /**
+     * 处理反馈且不调整绩效。
+     *
+     * @param param 反馈处理入参
+     */
+    void handleFeedbackUnchanged(EmployeePerformanceFeedbackHandleParam param);
 }

@@ -18,7 +18,7 @@ import {
   UserSwitchOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Avatar, Breadcrumb, Button, Card, DatePicker, Descriptions, Form, Input, Layout, Menu, Modal, Popconfirm, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd';
+import { Avatar, Breadcrumb, Button, Card, DatePicker, Descriptions, Form, Input, Layout, Menu, Modal, Popconfirm, Select, Space, Table, Tabs, Tag, Typography, Upload, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { MenuProps } from 'antd';
 import dayjs from 'dayjs';
@@ -49,6 +49,7 @@ import {
   fetchTasks,
   generateAdminTotp,
   getRequestErrorMessage,
+  handlePerformanceFeedbackUnchanged,
   importPerformanceRecords,
   login,
   logout,
@@ -72,11 +73,13 @@ const statusColor: Record<string, string> = {
   PENDING_CONFIRM: 'processing',
   CONFIRMED: 'success',
   AUTO_CONFIRMED: 'warning',
+  FEEDBACK_SUBMITTED: 'warning',
   PENDING_SECOND_CONFIRM: 'processing',
   SECOND_CONFIRMED: 'success',
   SECOND_AUTO_CONFIRMED: 'warning',
   NONE: 'default',
   HANDLED_ADJUSTED: 'success',
+  HANDLED_UNCHANGED: 'success',
   OPEN: 'success',
   CLOSED: 'default',
   DRAFT: 'default',
@@ -87,6 +90,7 @@ const confirmStatusText: Record<string, string> = {
   PENDING_CONFIRM: '待确认',
   CONFIRMED: '已确认',
   AUTO_CONFIRMED: '超时自动确认',
+  FEEDBACK_SUBMITTED: '已反馈',
   PENDING_SECOND_CONFIRM: '待二次确认',
   SECOND_CONFIRMED: '二次已确认',
   SECOND_AUTO_CONFIRMED: '二次超时自动确认',
@@ -96,6 +100,7 @@ const feedbackStatusText: Record<string, string> = {
   NONE: '无反馈',
   PENDING: '待处理',
   HANDLED_ADJUSTED: '已调整',
+  HANDLED_UNCHANGED: '已处理未调整',
 };
 
 const socialTaskStatusText: Record<string, string> = {
@@ -334,7 +339,8 @@ function App() {
       render: (_, row) => (
         <Space>
           <Button size="small" icon={<EyeOutlined />} disabled={!row.feedbackContent} onClick={() => openFeedback(row)}>反馈</Button>
-          <Button size="small" icon={<EditOutlined />} onClick={() => openAdjust(row)}>调整</Button>
+          <Button size="small" icon={<EditOutlined />} disabled={!canAdjustPerformance(row)} onClick={() => openAdjust(row)}>调整</Button>
+          <Button size="small" disabled={!canAdjustPerformance(row)} onClick={() => closeFeedbackUnchanged(row)}>无需调整</Button>
         </Space>
       ),
     },
@@ -520,6 +526,12 @@ function App() {
     await Promise.all([loadPerformanceTasks(performanceTaskPage.page, performanceTaskPage.size), loadPerformanceRecords(1, performanceRecordPage.size)]);
   };
 
+  const fillImportRecordsFromFile = async (file: File) => {
+    const content = await readTextFile(file);
+    importForm.setFieldValue('recordsText', content);
+    message.success('导入文件已读取，请确认后提交');
+  };
+
   const openFeedback = (record: EmployeePerformanceRecord) => {
     setCurrentRecord(record);
     setFeedbackOpen(true);
@@ -542,6 +554,37 @@ function App() {
     adjustForm.resetFields();
     setCurrentRecord(null);
     await loadPerformanceRecords(performanceRecordPage.page, performanceRecordPage.size);
+  };
+
+  const closeFeedbackUnchanged = (record: EmployeePerformanceRecord) => {
+    let handleOpinion = '';
+    Modal.confirm({
+      title: '确认无需调整？',
+      content: (
+        <Input.TextArea
+          rows={4}
+          placeholder="请输入处理意见"
+          onChange={(event) => {
+            handleOpinion = event.target.value;
+          }}
+        />
+      ),
+      okText: '确认处理',
+      cancelText: '取消',
+      onOk: async () => {
+        if (!handleOpinion.trim()) {
+          message.error('请输入处理意见');
+          throw new Error('请输入处理意见');
+        }
+        await handlePerformanceFeedbackUnchanged(record.id, {
+          handleOpinion,
+          operatorAdminId: loginUser?.id,
+          operatorAdminName: currentAdminName(loginUser),
+        });
+        message.success('反馈已处理');
+        await loadPerformanceRecords(performanceRecordPage.page, performanceRecordPage.size);
+      },
+    });
   };
 
   const openAdminCreate = () => {
@@ -938,6 +981,17 @@ function App() {
           </Form.Item>
           <div className="modal-toolbar">
             <Button icon={<DownloadOutlined />} onClick={downloadImportTemplate}>下载导入模板</Button>
+            <Upload
+              accept=".csv,.txt"
+              maxCount={1}
+              showUploadList={false}
+              beforeUpload={(file) => {
+                void fillImportRecordsFromFile(file);
+                return false;
+              }}
+            >
+              <Button icon={<UploadOutlined />}>上传CSV</Button>
+            </Upload>
           </div>
           <Form.Item name="recordsText" label="导入明细" rules={[{ required: true }]}>
             <Input.TextArea
@@ -1075,6 +1129,10 @@ function trimObject(values: Record<string, unknown>) {
   );
 }
 
+function canAdjustPerformance(record: EmployeePerformanceRecord) {
+  return record.confirmStatus === 'FEEDBACK_SUBMITTED' && record.feedbackStatus === 'PENDING';
+}
+
 type BackendDateValue = string | number | number[] | undefined;
 
 function isPerformanceTaskOpen(status?: string) {
@@ -1137,6 +1195,15 @@ function downloadImportTemplate() {
   link.download = '员工绩效导入模板.csv';
   link.click();
   window.URL.revokeObjectURL(url);
+}
+
+async function readTextFile(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || '').replace(/^\uFEFF/, ''));
+    reader.onerror = () => reject(new Error('文件读取失败'));
+    reader.readAsText(file);
+  });
 }
 
 function readLoginUser(): LoginUser | null {

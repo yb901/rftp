@@ -1,4 +1,4 @@
-import { Button, Dialog, Empty, Form, Input, List, NavBar, Space, Tag, TextArea, Toast } from 'antd-mobile';
+import { Button, Dialog, Empty, Form, Input, List, NavBar, Space, Tabs, Tag, TextArea, Toast } from 'antd-mobile';
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react';
 import { performanceApi } from '../features/performance/api';
 import type { EmployeePerformance, PerformanceCaptchaConfig } from '../features/performance/types';
@@ -40,6 +40,7 @@ export function PerformanceHomePage() {
   const [smsCode, setSmsCode] = useState('');
   const [loginMobile, setLoginMobile] = useState('');
   const [records, setRecords] = useState<EmployeePerformance[]>([]);
+  const [includeHistory, setIncludeHistory] = useState(false);
   const [loading, setLoading] = useState(false);
   const [smsSending, setSmsSending] = useState(false);
   const [captchaConfig, setCaptchaConfig] = useState<PerformanceCaptchaConfig | null>(null);
@@ -51,7 +52,7 @@ export function PerformanceHomePage() {
     performanceApi.me().then((data) => {
       setLoginMobile(data.mobile);
       setMobile(data.mobile);
-      loadRecords();
+      loadRecords(false);
     }).catch(() => {
       setLoginMobile('');
     });
@@ -115,8 +116,8 @@ export function PerformanceHomePage() {
     };
   }, [handleCaptchaVerified]);
 
-  const loadRecords = async () => {
-    const data = await performanceApi.listMine();
+  const loadRecords = async (history = includeHistory) => {
+    const data = await performanceApi.listMine(history);
     setRecords(data);
   };
 
@@ -160,7 +161,8 @@ export function PerformanceHomePage() {
     try {
       const result = await performanceApi.login({ mobile, smsCode });
       setLoginMobile(result.mobile);
-      await loadRecords();
+      setIncludeHistory(false);
+      await loadRecords(false);
       Toast.show({ icon: 'success', content: '登录成功' });
     } finally {
       setLoading(false);
@@ -234,14 +236,27 @@ export function PerformanceHomePage() {
       <main className="content">
         <section className="summary-band">
           <div>
-            <p className="summary-label">当前可评价</p>
+            <p className="summary-label">{includeHistory ? '绩效记录' : '当前可评价'}</p>
             <h1>{records.length}</h1>
           </div>
-          <span>选择一项绩效评价后完成确认或反馈</span>
+          <span>{includeHistory ? '历史记录仅展示状态和处理结果' : '选择一项绩效评价后完成确认或反馈'}</span>
         </section>
 
+        <Tabs
+          className="record-tabs"
+          activeKey={includeHistory ? 'history' : 'current'}
+          onChange={(key) => {
+            const nextIncludeHistory = key === 'history';
+            setIncludeHistory(nextIncludeHistory);
+            void loadRecords(nextIncludeHistory);
+          }}
+        >
+          <Tabs.Tab title="当前" key="current" />
+          <Tabs.Tab title="历史" key="history" />
+        </Tabs>
+
         {records.length === 0 ? (
-          <Empty description="暂无可评价绩效" />
+          <Empty description={includeHistory ? '暂无历史绩效' : '暂无可评价绩效'} />
         ) : (
           <List className="record-list">
             {records.map((record) => (
@@ -250,10 +265,11 @@ export function PerformanceHomePage() {
                 description={
                   <div className="record-meta">
                     <span>{record.periodText}</span>
-                    <span>截止：{record.confirmDeadlineTime}</span>
+                    <span>截止：{record.actionDeadlineTime || record.confirmDeadlineTime}</span>
+                    {record.feedbackStatusText && <span>反馈：{record.feedbackStatusText}</span>}
                   </div>
                 }
-                extra={<Tag color="warning">{record.confirmStatusText}</Tag>}
+                extra={<Tag color={record.history ? 'default' : 'warning'}>{record.confirmStatusText}</Tag>}
               >
                 <div className="record-title">{record.performanceDescription}</div>
                 <div className="record-score">绩效：{record.performance}</div>

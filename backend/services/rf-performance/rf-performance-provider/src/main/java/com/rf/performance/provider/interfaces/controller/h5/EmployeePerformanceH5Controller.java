@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -47,9 +48,10 @@ public class EmployeePerformanceH5Controller {
      * @return 当前员工绩效记录列表
      */
     @GetMapping("/mine")
-    public Result<List<EmployeePerformanceRecordVo>> listMine(HttpServletRequest request) {
+    public Result<List<EmployeePerformanceRecordVo>> listMine(@RequestParam(required = false, defaultValue = "false") Boolean includeHistory,
+                                                              HttpServletRequest request) {
         String mobile = performanceH5RequestContext.requireMobile(request);
-        List<EmployeePerformanceH5Result> results = employeePerformanceH5Manager.listMine(mobile);
+        List<EmployeePerformanceH5Result> results = employeePerformanceH5Manager.listMine(mobile, Boolean.TRUE.equals(includeHistory));
         return Result.success(BeanUtil.copyToList(results, EmployeePerformanceRecordVo.class));
     }
 

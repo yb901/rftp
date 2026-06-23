@@ -5,6 +5,7 @@ import com.rf.performance.api.dto.performance.admin.EmployeePerformanceAdjustDto
 import com.rf.performance.api.dto.performance.admin.EmployeePerformanceRecordDto;
 import com.rf.performance.api.param.performance.EmployeePerformanceImportParam;
 import com.rf.performance.api.param.performance.admin.EmployeePerformanceAdjustParam;
+import com.rf.performance.api.param.performance.admin.EmployeePerformanceFeedbackHandleParam;
 import com.rf.performance.api.query.performance.EmployeePerformancePageParam;
 import com.rf.performance.api.remoteservice.performance.RemoteEmployeePerformanceService;
 import com.rf.performance.provider.application.manager.performance.EmployeePerformanceManager;
@@ -61,5 +62,15 @@ public class RemoteEmployeePerformanceServiceImpl implements RemoteEmployeePerfo
     public EmployeePerformanceAdjustDto adjustPerformance(EmployeePerformanceAdjustParam param) {
         return RemoteEmployeePerformanceConverter.toAdjustDto(
                 employeePerformanceManager.adjustPerformance(RemoteEmployeePerformanceConverter.toAdjustCommand(param)));
+    }
+
+    /**
+     * 处理反馈且不调整绩效。
+     *
+     * @param param 反馈处理入参
+     */
+    @Override
+    public void handleFeedbackUnchanged(EmployeePerformanceFeedbackHandleParam param) {
+        employeePerformanceManager.handleFeedbackUnchanged(RemoteEmployeePerformanceConverter.toFeedbackHandleCommand(param));
     }
 }
