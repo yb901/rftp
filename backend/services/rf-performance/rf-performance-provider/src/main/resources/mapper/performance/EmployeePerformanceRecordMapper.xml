@@ -104,6 +104,8 @@
             last_adjust_time = NOW()
         WHERE id = #{id}
           AND is_deleted = 0
+          AND confirm_status = 'FEEDBACK_SUBMITTED'
+          AND feedback_status = 'PENDING'
     </update>
 
     <update id="markFeedbackAdjusted">
@@ -115,6 +117,7 @@
             handled_at = NOW()
         WHERE record_id = #{recordId}
           AND is_deleted = 0
+          AND status = 'PENDING'
     </update>
 
     <update id="markFeedbackUnchanged">

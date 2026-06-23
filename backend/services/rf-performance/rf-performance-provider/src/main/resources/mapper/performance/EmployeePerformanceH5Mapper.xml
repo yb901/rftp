@@ -156,6 +156,14 @@
             #{id}
         </foreach>
           AND is_deleted = 0
+          <if test="confirmStatus == 'AUTO_CONFIRMED'">
+          AND confirm_status = 'PENDING_CONFIRM'
+          AND feedback_status = 'NONE'
+          </if>
+          <if test="confirmStatus == 'SECOND_AUTO_CONFIRMED'">
+          AND confirm_status = 'PENDING_SECOND_CONFIRM'
+          AND feedback_status = 'HANDLED_ADJUSTED'
+          </if>
     </update>
 
     <insert id="insertFeedback">

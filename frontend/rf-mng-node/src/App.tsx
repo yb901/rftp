@@ -28,7 +28,7 @@ import {
   AdminSaveParam,
   AdminUser,
   BatchRecord,
-  EmployeePerformanceImportItem,
+  EmployeePerformanceImportUpload,
   EmployeePerformanceRecord,
   LoginUser,
   PerformanceTask,
@@ -44,15 +44,18 @@ import {
   exportPerformanceRecords,
   fetchBatches,
   fetchAdmins,
+  fetchPerformanceImportUploads,
   fetchPerformanceRecords,
   fetchPerformanceTasks,
   fetchTasks,
   generateAdminTotp,
   getRequestErrorMessage,
   handlePerformanceFeedbackUnchanged,
-  importPerformanceRecords,
+  importPerformanceRecordsFile,
   login,
   logout,
+  performanceImportFailureDownloadUrl,
+  performanceImportOriginalDownloadUrl,
   retryTask,
   saveAdmin,
   updateAdmin,
@@ -123,6 +126,8 @@ const performanceTaskStatusOptions = [
   { value: 'CLOSED', label: '关闭' },
 ];
 
+const performanceImportTemplateUrl = 'https://static.zcglhr.com/qy-mng/upload-task/%E5%91%98%E5%B7%A5%E7%BB%A9%E6%95%88%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF-20260623.xlsx';
+
 const adminRoleOptions = [
   { value: 1, label: '超级管理员' },
   { value: 2, label: '管理员' },
@@ -144,11 +149,13 @@ function App() {
   const [taskList, setTaskList] = useState<TaskRecord[]>([]);
   const [performanceTaskList, setPerformanceTaskList] = useState<PerformanceTask[]>([]);
   const [performanceList, setPerformanceList] = useState<EmployeePerformanceRecord[]>([]);
+  const [performanceImportUploads, setPerformanceImportUploads] = useState<EmployeePerformanceImportUpload[]>([]);
   const [adminList, setAdminList] = useState<AdminUser[]>([]);
   const [batchLoading, setBatchLoading] = useState(false);
   const [taskLoading, setTaskLoading] = useState(false);
   const [performanceTaskLoading, setPerformanceTaskLoading] = useState(false);
   const [performanceLoading, setPerformanceLoading] = useState(false);
+  const [importUploadLoading, setImportUploadLoading] = useState(false);
   const [adminLoading, setAdminLoading] = useState(false);
   const [performanceTaskPage, setPerformanceTaskPage] = useState({ page: 1, size: 10, total: 0 });
   const [performanceRecordPage, setPerformanceRecordPage] = useState({ page: 1, size: 50, total: 0 });
@@ -156,6 +163,7 @@ function App() {
   const [createOpen, setCreateOpen] = useState(false);
   const [performanceTaskOpen, setPerformanceTaskOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [importUploading, setImportUploading] = useState(false);
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [performanceTabKey, setPerformanceTabKey] = useState('performanceTasks');
@@ -174,6 +182,7 @@ function App() {
   const [performanceTaskQueryForm] = Form.useForm();
   const [adminQueryForm] = Form.useForm();
   const confirmDeadlineTime = Form.useWatch('confirmDeadlineTime', performanceTaskForm);
+  const importTaskId = Form.useWatch('taskId', importForm);
   const secondConfirmDeadlineText = useMemo(() => {
     if (!confirmDeadlineTime) {
       return '确认截止后 3 天';
@@ -233,6 +242,16 @@ function App() {
     }
   };
 
+  const loadPerformanceImportUploads = async (taskId?: number) => {
+    setImportUploadLoading(true);
+    try {
+      const data = await fetchPerformanceImportUploads({ taskId, limit: 50 });
+      setPerformanceImportUploads(data || []);
+    } finally {
+      setImportUploadLoading(false);
+    }
+  };
+
   const loadAdmins = async (page = adminPage.page, size = adminPage.size) => {
     setAdminLoading(true);
     try {
@@ -273,6 +292,13 @@ function App() {
     void loadPerformanceRecords();
     void loadAdmins(1, 10);
   }, [loginUser]);
+
+  useEffect(() => {
+    if (!importOpen) {
+      return;
+    }
+    void loadPerformanceImportUploads(importTaskId ? Number(importTaskId) : undefined);
+  }, [importOpen, importTaskId]);
 
   const batchColumns: ColumnsType<BatchRecord> = useMemo(() => [
     { title: '批次', dataIndex: 'id', width: 90 },
@@ -403,6 +429,36 @@ function App() {
     },
   ], [importForm, performanceQueryForm, performanceRecordPage.size, performanceTaskPage.page, performanceTaskPage.size]);
 
+  const performanceImportColumns: ColumnsType<EmployeePerformanceImportUpload> = useMemo(() => [
+    { title: '上传时间', dataIndex: 'gmtCreate', width: 170, render: (value) => formatDateTime(value) },
+    { title: '绩效任务', dataIndex: 'taskName', width: 240, ellipsis: true, render: (value, row) => value || String(row.taskId) },
+    { title: '原始文件', dataIndex: 'fileName', width: 220, ellipsis: true },
+    {
+      title: '状态',
+      dataIndex: 'status',
+      width: 110,
+      render: (value) => <Tag color={statusColor[value] || 'default'}>{value === 'SUCCESS' ? '成功' : value === 'FAILED' ? '失败' : '部分成功'}</Tag>,
+    },
+    { title: '总数', dataIndex: 'totalCount', width: 80 },
+    { title: '成功', dataIndex: 'successCount', width: 90 },
+    { title: '失败', dataIndex: 'failCount', width: 90 },
+    { title: '上传人', dataIndex: 'createAdminName', width: 120, render: (value) => value || '-' },
+    { title: '失败原因', dataIndex: 'errorMessage', width: 180, ellipsis: true, render: (value) => value || '-' },
+    {
+      title: '文件',
+      width: 210,
+      fixed: 'right',
+      render: (_, row) => (
+        <Space>
+          <Button size="small" disabled={!row.hasOriginalFile} onClick={() => downloadUrl(performanceImportOriginalDownloadUrl(row.id), row.fileName)}>原始文件</Button>
+          <Button size="small" disabled={!row.hasFailureFile} onClick={() => downloadUrl(performanceImportFailureDownloadUrl(row.id), row.failureFileName || `${row.fileName}-失败明细.xls`)}>
+            失败Excel
+          </Button>
+        </Space>
+      ),
+    },
+  ], []);
+
   const adminColumns: ColumnsType<AdminUser> = useMemo(() => [
     { title: 'ID', dataIndex: 'id', width: 80 },
     { title: '用户名', dataIndex: 'username', width: 150 },
@@ -502,34 +558,33 @@ function App() {
     await loadPerformanceTasks(performanceTaskPage.page, performanceTaskPage.size);
   };
 
-  const submitImport = async () => {
-    const values = await importForm.validateFields();
-    const records = parseImportRecords(values.recordsText);
-    const result = await importPerformanceRecords(Number(values.taskId), records);
-    if (result.errors?.length) {
-      Modal.error({
-        title: '导入失败',
-        content: (
-          <div className="error-list">
-            {result.errors.map((item, index) => (
-              <div key={`${item.rowNo || index}-${item.mobile || ''}`}>第 {item.rowNo || '-'} 行 {item.mobile || ''}：{item.errorMessage}</div>
-            ))}
-          </div>
-        ),
-      });
-      return;
+  const uploadPerformanceImportFile = async (file: File) => {
+    const values = await importForm.validateFields(['taskId']);
+    const taskId = Number(values.taskId);
+    const task = performanceTaskList.find((item) => item.id === taskId);
+    const taskName = task ? `${task.performanceDescription || '未命名任务'}（${formatPeriodRange(task.periodStartDate, task.periodEndDate)}）` : String(taskId);
+    setImportUploading(true);
+    try {
+      const result = await importPerformanceRecordsFile(taskId, file, taskName);
+      const failCount = result.failCount || 0;
+      const successCount = result.successCount || 0;
+      if (failCount > 0) {
+        message.warning(`导入完成，成功 ${successCount} 条，失败 ${failCount} 条`);
+      } else {
+        message.success(`导入成功 ${successCount} 条`);
+      }
+      performanceQueryForm.setFieldValue('taskId', taskId);
+      await Promise.all([
+        loadPerformanceTasks(performanceTaskPage.page, performanceTaskPage.size),
+        loadPerformanceRecords(1, performanceRecordPage.size),
+        loadPerformanceImportUploads(taskId),
+      ]);
+    } catch (error) {
+      message.error(getRequestErrorMessage(error, '导入失败'));
+      await loadPerformanceImportUploads(taskId);
+    } finally {
+      setImportUploading(false);
     }
-    message.success(`导入成功 ${result.successCount || records.length} 条`);
-    setImportOpen(false);
-    importForm.resetFields();
-    performanceQueryForm.setFieldValue('taskId', Number(values.taskId));
-    await Promise.all([loadPerformanceTasks(performanceTaskPage.page, performanceTaskPage.size), loadPerformanceRecords(1, performanceRecordPage.size)]);
-  };
-
-  const fillImportRecordsFromFile = async (file: File) => {
-    const content = await readTextFile(file);
-    importForm.setFieldValue('recordsText', content);
-    message.success('导入文件已读取，请确认后提交');
   };
 
   const openFeedback = (record: EmployeePerformanceRecord) => {
@@ -966,7 +1021,7 @@ function App() {
         </Form>
       </Modal>
 
-      <Modal title="导入员工绩效" open={importOpen} onCancel={() => setImportOpen(false)} onOk={submitImport} okText="导入" width={720}>
+      <Modal title="导入员工绩效" open={importOpen} onCancel={() => setImportOpen(false)} footer={<Button onClick={() => setImportOpen(false)}>关闭</Button>} width={980}>
         <Form layout="vertical" form={importForm}>
           <Form.Item name="taskId" label="绩效任务" rules={[{ required: true, message: '请选择绩效任务' }]}>
             <Select
@@ -982,24 +1037,29 @@ function App() {
           <div className="modal-toolbar">
             <Button icon={<DownloadOutlined />} onClick={downloadImportTemplate}>下载导入模板</Button>
             <Upload
-              accept=".csv,.txt"
+              accept=".xlsx,.xls"
               maxCount={1}
               showUploadList={false}
               beforeUpload={(file) => {
-                void fillImportRecordsFromFile(file);
+                void uploadPerformanceImportFile(file);
                 return false;
               }}
             >
-              <Button icon={<UploadOutlined />}>上传CSV</Button>
+              <Button type="primary" loading={importUploading} icon={<UploadOutlined />}>上传记录</Button>
             </Upload>
           </div>
-          <Form.Item name="recordsText" label="导入明细" rules={[{ required: true }]}>
-            <Input.TextArea
-              rows={10}
-              placeholder={'支持 JSON 数组，或每行：姓名,手机号,绩效,工号,项目/部门,岗位\n张三,13800138000,A,001,客服一部,客服专员'}
-            />
-          </Form.Item>
         </Form>
+        <Table
+          rowKey="id"
+          className="import-record-table"
+          columns={performanceImportColumns}
+          dataSource={performanceImportUploads}
+          loading={importUploadLoading}
+          size="small"
+          scroll={{ x: 1320 }}
+          pagination={{ pageSize: 5 }}
+          locale={{ emptyText: '暂无上传记录' }}
+        />
       </Modal>
 
       <Modal title="反馈详情" open={feedbackOpen} onCancel={() => setFeedbackOpen(false)} footer={<Button onClick={() => setFeedbackOpen(false)}>关闭</Button>}>
@@ -1169,41 +1229,20 @@ function formatDateTime(value?: BackendDateValue) {
   return parsed.isValid() ? parsed.format('YYYY-MM-DD HH:mm:ss') : String(value);
 }
 
-function parseImportRecords(text: string): EmployeePerformanceImportItem[] {
-  const source = text.trim();
-  if (!source) {
-    throw new Error('导入明细不能为空');
-  }
-  if (source.startsWith('[')) {
-    return JSON.parse(source) as EmployeePerformanceImportItem[];
-  }
-  return source
-    .split('\n')
-    .map((line, index) => {
-      const [employeeName, mobile, performance, employeeNo, projectDepartment, positionName] = line.split(/,|，/).map((item) => item.trim());
-      return { rowNo: index + 1, employeeName, mobile, performance, employeeNo, projectDepartment, positionName };
-    })
-    .filter((item) => item.employeeName || item.mobile || item.performance);
+function downloadImportTemplate() {
+  const link = document.createElement('a');
+  link.href = performanceImportTemplateUrl;
+  link.download = '员工绩效导入模板-20260623.xlsx';
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.click();
 }
 
-function downloadImportTemplate() {
-  const content = '\uFEFF姓名,手机号,绩效,工号,项目/部门,岗位\n张三,13800138000,A,001,客服一部,客服专员\n';
-  const blob = new Blob([content], { type: 'text/csv;charset=utf-8' });
-  const url = window.URL.createObjectURL(blob);
+function downloadUrl(url: string, fileName: string) {
   const link = document.createElement('a');
   link.href = url;
-  link.download = '员工绩效导入模板.csv';
+  link.download = fileName;
   link.click();
-  window.URL.revokeObjectURL(url);
-}
-
-async function readTextFile(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || '').replace(/^\uFEFF/, ''));
-    reader.onerror = () => reject(new Error('文件读取失败'));
-    reader.readAsText(file);
-  });
 }
 
 function readLoginUser(): LoginUser | null {

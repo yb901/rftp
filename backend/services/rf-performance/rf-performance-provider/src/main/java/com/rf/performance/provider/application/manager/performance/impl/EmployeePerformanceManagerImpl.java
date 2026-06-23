@@ -130,8 +130,10 @@ public class EmployeePerformanceManagerImpl implements EmployeePerformanceManage
         if (!employeePerformanceRecordPersistencePort.updatePerformanceForSecondConfirm(record.getId(), safeCommand.getAfterPerformance())) {
             throw new BusinessException(ErrorCode.E999002, "绩效调整失败");
         }
-        employeePerformanceRecordPersistencePort.markFeedbackAdjusted(record.getId(), safeCommand.getAdjustReason(),
-                safeCommand.getOperatorAdminId(), safeCommand.getOperatorAdminName());
+        if (!employeePerformanceRecordPersistencePort.markFeedbackAdjusted(record.getId(), safeCommand.getAdjustReason(),
+                safeCommand.getOperatorAdminId(), safeCommand.getOperatorAdminName())) {
+            throw new BusinessException(ErrorCode.E999002, "绩效反馈处理失败");
+        }
         EmployeePerformanceAdjustResult result = new EmployeePerformanceAdjustResult();
         result.setRecordId(record.getId());
         result.setBeforePerformance(record.getPerformance());

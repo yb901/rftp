@@ -1,6 +1,9 @@
 package com.rf.mng.provider.interfaces.performance;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.event.AnalysisEventListener;
 import com.zy.common.core.bo.PageResp;
 import com.zy.common.core.bo.Result;
 import com.rf.mng.provider.application.command.performance.EmployeePerformanceImportCommand;
@@ -12,6 +15,7 @@ import com.rf.mng.provider.application.manager.performance.PerformanceMngManager
 import com.rf.mng.provider.application.query.performance.EmployeePerformancePageQuery;
 import com.rf.mng.provider.application.query.performance.PerformanceTaskPageQuery;
 import com.rf.mng.provider.application.result.performance.EmployeePerformanceImportResult;
+import com.rf.mng.provider.application.result.performance.EmployeePerformanceImportUploadResult;
 import com.rf.mng.provider.application.result.performance.admin.EmployeePerformanceAdjustResult;
 import com.rf.mng.provider.application.result.performance.admin.EmployeePerformanceRecordResult;
 import com.rf.mng.provider.application.result.performance.item.EmployeePerformanceImportErrorResult;
@@ -24,10 +28,13 @@ import com.rf.mng.provider.interfaces.performance.param.item.EmployeePerformance
 import com.rf.mng.provider.interfaces.performance.param.PerformanceTaskCreateCtrlParam;
 import com.rf.mng.provider.interfaces.performance.param.PerformanceTaskPageCtrlParam;
 import com.rf.mng.provider.interfaces.performance.vo.EmployeePerformanceImportResultVo;
+import com.rf.mng.provider.interfaces.performance.vo.EmployeePerformanceImportUploadVo;
 import com.rf.mng.provider.interfaces.performance.vo.admin.EmployeePerformanceAdjustVo;
 import com.rf.mng.provider.interfaces.performance.vo.admin.EmployeePerformanceRecordVo;
 import com.rf.mng.provider.interfaces.performance.vo.item.EmployeePerformanceImportErrorVo;
 import com.rf.mng.provider.interfaces.performance.vo.PerformanceTaskVo;
+import com.zy.common.core.enums.ErrorCode;
+import com.zy.common.core.exception.BusinessException;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,15 +42,21 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 员工绩效管理后台接口。
@@ -141,6 +154,93 @@ public class PerformanceMngController {
     }
 
     /**
+     * 上传 Excel 导入员工绩效记录。
+     *
+     * @param taskId 绩效任务 ID
+     * @param file 导入文件
+     * @param taskName 绩效任务名称快照
+     * @param request HTTP 请求
+     * @return 员工绩效导入上传记录
+     * @throws IOException 文件读取失败
+     */
+    @PostMapping(value = "/tasks/{taskId}/records/import-file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Result<EmployeePerformanceImportUploadVo> importRecordsByFile(@PathVariable Long taskId,
+                                                                         @RequestPart("file") MultipartFile file,
+                                                                         @RequestParam(value = "taskName", required = false) String taskName,
+                                                                         HttpServletRequest request) throws IOException {
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException(ErrorCode.E999001, "导入文件不能为空");
+        }
+        byte[] fileBytes = file.getBytes();
+        List<EmployeePerformanceImportItemCommand> records;
+        try {
+            records = parseImportFile(fileBytes);
+        } catch (RuntimeException exception) {
+            EmployeePerformanceImportUploadResult upload = buildFailedUpload(taskId, taskName, file, fileBytes, request,
+                    "导入文件解析失败：" + exception.getMessage());
+            performanceMngManager.saveImportUpload(upload);
+            throw exception;
+        }
+        EmployeePerformanceImportCommand command = new EmployeePerformanceImportCommand();
+        command.setTaskId(taskId);
+        command.setRecords(records);
+        try {
+            EmployeePerformanceImportResult result = performanceMngManager.importRecords(command);
+            EmployeePerformanceImportUploadResult upload = buildImportUpload(taskId, taskName, file, fileBytes, records.size(), result, request);
+            performanceMngManager.saveImportUpload(upload);
+            return Result.success(toImportUploadVo(upload));
+        } catch (RuntimeException exception) {
+            EmployeePerformanceImportUploadResult upload = buildFailedUpload(taskId, taskName, file, fileBytes, request, exception.getMessage());
+            upload.setTotalCount(records.size());
+            performanceMngManager.saveImportUpload(upload);
+            throw exception;
+        }
+    }
+
+    /**
+     * 查询员工绩效导入上传记录。
+     *
+     * @param taskId 绩效任务ID
+     * @param limit 查询数量
+     * @return 上传记录列表
+     */
+    @GetMapping("/records/import-uploads")
+    public Result<List<EmployeePerformanceImportUploadVo>> listImportUploads(@RequestParam(value = "taskId", required = false) Long taskId,
+                                                                             @RequestParam(value = "limit", defaultValue = "50") Integer limit) {
+        List<EmployeePerformanceImportUploadResult> results = performanceMngManager.listImportUploads(taskId, Math.min(Math.max(limit == null ? 50 : limit, 1), 100));
+        return Result.success(results.stream().map(this::toImportUploadVo).toList());
+    }
+
+    /**
+     * 下载导入原始文件。
+     *
+     * @param uploadId 上传记录ID
+     * @param response HTTP 响应
+     * @throws IOException 写入响应失败
+     */
+    @GetMapping("/records/import-uploads/{uploadId}/original")
+    public void downloadImportOriginal(@PathVariable Long uploadId, HttpServletResponse response) throws IOException {
+        EmployeePerformanceImportUploadResult upload = getImportUploadForDownload(uploadId);
+        writeBinary(response, upload.getOriginalContentType(), upload.getFileName(), upload.getOriginalFileContent());
+    }
+
+    /**
+     * 下载导入失败明细文件。
+     *
+     * @param uploadId 上传记录ID
+     * @param response HTTP 响应
+     * @throws IOException 写入响应失败
+     */
+    @GetMapping("/records/import-uploads/{uploadId}/failure")
+    public void downloadImportFailure(@PathVariable Long uploadId, HttpServletResponse response) throws IOException {
+        EmployeePerformanceImportUploadResult upload = getImportUploadForDownload(uploadId);
+        if (upload.getFailureFileContent() == null || upload.getFailureFileContent().length == 0) {
+            throw new BusinessException(ErrorCode.E999001, "暂无失败明细文件");
+        }
+        writeBinary(response, "application/vnd.ms-excel;charset=UTF-8", upload.getFailureFileName(), upload.getFailureFileContent());
+    }
+
+    /**
      * 分页查询员工绩效记录。
      *
      * @param param 分页查询参数
@@ -218,6 +318,281 @@ public class PerformanceMngController {
             return new ArrayList<>();
         }
         return BeanUtil.copyToList(records, EmployeePerformanceImportItemCommand.class);
+    }
+
+    /**
+     * 解析员工绩效导入 Excel。
+     *
+     * @param fileBytes 上传文件内容
+     * @return 员工绩效导入明细
+     */
+    private List<EmployeePerformanceImportItemCommand> parseImportFile(byte[] fileBytes) {
+        if (fileBytes == null || fileBytes.length == 0) {
+            return new ArrayList<>();
+        }
+        List<EmployeePerformanceImportItemCommand> records = new ArrayList<>();
+        EasyExcel.read(new ByteArrayInputStream(fileBytes), new AnalysisEventListener<Map<Integer, String>>() {
+            @Override
+            public void invoke(Map<Integer, String> row, AnalysisContext context) {
+                EmployeePerformanceImportItemCommand item = new EmployeePerformanceImportItemCommand();
+                item.setRowNo(context.readRowHolder().getRowIndex() + 1);
+                item.setEmployeeName(cell(row, 0));
+                item.setMobile(cell(row, 1));
+                item.setPerformance(cell(row, 2));
+                item.setEmployeeNo(cell(row, 3));
+                item.setProjectDepartment(cell(row, 4));
+                item.setPositionName(cell(row, 5));
+                if (hasImportValue(item)) {
+                    records.add(item);
+                }
+            }
+
+            @Override
+            public void doAfterAllAnalysed(AnalysisContext context) {
+                // 读取完成后无额外处理。
+            }
+        }).headRowNumber(1).sheet().doRead();
+        return records;
+    }
+
+    /**
+     * 构建导入上传记录。
+     *
+     * @param taskId 绩效任务ID
+     * @param taskName 绩效任务名称快照
+     * @param file 上传文件
+     * @param fileBytes 原始文件内容
+     * @param totalCount 总条数
+     * @param result 导入结果
+     * @param request HTTP 请求
+     * @return 上传记录
+     */
+    private EmployeePerformanceImportUploadResult buildImportUpload(Long taskId,
+                                                                    String taskName,
+                                                                    MultipartFile file,
+                                                                    byte[] fileBytes,
+                                                                    int totalCount,
+                                                                    EmployeePerformanceImportResult result,
+                                                                    HttpServletRequest request) {
+        int successCount = result == null || result.getSuccessCount() == null ? 0 : result.getSuccessCount();
+        List<EmployeePerformanceImportErrorResult> errors = result == null ? new ArrayList<>() : result.getErrors();
+        int failCount = errors == null ? Math.max(totalCount - successCount, 0) : errors.size();
+        EmployeePerformanceImportUploadResult upload = baseUpload(taskId, taskName, file, fileBytes, request);
+        upload.setTotalCount(totalCount);
+        upload.setSuccessCount(successCount);
+        upload.setFailCount(failCount);
+        upload.setStatus(importStatus(successCount, failCount));
+        if (failCount > 0) {
+            upload.setFailureFileName(failureFileName(file.getOriginalFilename()));
+            upload.setFailureFileContent(buildFailureExcel(errors));
+        }
+        return upload;
+    }
+
+    /**
+     * 构建失败上传记录。
+     *
+     * @param taskId 绩效任务ID
+     * @param taskName 绩效任务名称快照
+     * @param file 上传文件
+     * @param fileBytes 原始文件内容
+     * @param request HTTP 请求
+     * @param errorMessage 失败原因
+     * @return 上传记录
+     */
+    private EmployeePerformanceImportUploadResult buildFailedUpload(Long taskId,
+                                                                    String taskName,
+                                                                    MultipartFile file,
+                                                                    byte[] fileBytes,
+                                                                    HttpServletRequest request,
+                                                                    String errorMessage) {
+        EmployeePerformanceImportUploadResult upload = baseUpload(taskId, taskName, file, fileBytes, request);
+        upload.setTotalCount(0);
+        upload.setSuccessCount(0);
+        upload.setFailCount(0);
+        upload.setStatus("FAILED");
+        upload.setErrorMessage(limitText(errorMessage, 1024));
+        return upload;
+    }
+
+    /**
+     * 构建上传记录基础信息。
+     *
+     * @param taskId 绩效任务ID
+     * @param taskName 绩效任务名称快照
+     * @param file 上传文件
+     * @param fileBytes 原始文件内容
+     * @param request HTTP 请求
+     * @return 上传记录
+     */
+    private EmployeePerformanceImportUploadResult baseUpload(Long taskId,
+                                                            String taskName,
+                                                            MultipartFile file,
+                                                            byte[] fileBytes,
+                                                            HttpServletRequest request) {
+        EmployeePerformanceImportUploadResult upload = new EmployeePerformanceImportUploadResult();
+        upload.setTaskId(taskId);
+        upload.setTaskName(limitText(taskName, 255));
+        upload.setFileName(limitText(file.getOriginalFilename(), 255));
+        upload.setOriginalContentType(file.getContentType());
+        upload.setOriginalFileContent(fileBytes);
+        upload.setCreateAdminId((Long) request.getAttribute("adminId"));
+        upload.setCreateAdminName(limitText((String) request.getAttribute("adminName"), 64));
+        return upload;
+    }
+
+    /**
+     * 转换导入状态。
+     *
+     * @param successCount 成功条数
+     * @param failCount 失败条数
+     * @return 导入状态
+     */
+    private String importStatus(int successCount, int failCount) {
+        if (failCount <= 0) {
+            return "SUCCESS";
+        }
+        if (successCount <= 0) {
+            return "FAILED";
+        }
+        return "PARTIAL_SUCCESS";
+    }
+
+    /**
+     * 生成失败明细 Excel 文件内容。
+     *
+     * @param errors 错误明细
+     * @return 失败明细文件内容
+     */
+    private byte[] buildFailureExcel(List<EmployeePerformanceImportErrorResult> errors) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("<html><head><meta charset=\"utf-8\" /></head><body><table>");
+        builder.append("<tr><th>行号</th><th>手机号</th><th>失败原因</th></tr>");
+        for (EmployeePerformanceImportErrorResult error : errors == null ? new ArrayList<EmployeePerformanceImportErrorResult>() : errors) {
+            builder.append("<tr><td>").append(htmlValue(error.getRowNo())).append("</td><td>")
+                    .append(htmlValue(error.getMobile())).append("</td><td>")
+                    .append(htmlValue(error.getErrorMessage())).append("</td></tr>");
+        }
+        builder.append("</table></body></html>");
+        return builder.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    /**
+     * 转义 HTML 单元格。
+     *
+     * @param value 单元格值
+     * @return 转义后文本
+     */
+    private String htmlValue(Object value) {
+        if (value == null) {
+            return "";
+        }
+        return String.valueOf(value)
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
+    }
+
+    /**
+     * 构建失败明细文件名。
+     *
+     * @param originalFileName 原始文件名
+     * @return 失败明细文件名
+     */
+    private String failureFileName(String originalFileName) {
+        String safeName = originalFileName == null || originalFileName.isBlank() ? "员工绩效导入" : originalFileName;
+        int dotIndex = safeName.lastIndexOf('.');
+        String prefix = dotIndex > 0 ? safeName.substring(0, dotIndex) : safeName;
+        return limitText(prefix + "-失败明细.xls", 255);
+    }
+
+    /**
+     * 转换上传记录 VO。
+     *
+     * @param result 应用层上传记录
+     * @return HTTP 上传记录
+     */
+    private EmployeePerformanceImportUploadVo toImportUploadVo(EmployeePerformanceImportUploadResult result) {
+        EmployeePerformanceImportUploadVo vo = BeanUtil.copyProperties(result, EmployeePerformanceImportUploadVo.class);
+        vo.setHasOriginalFile(result.getOriginalFileContent() != null && result.getOriginalFileContent().length > 0);
+        vo.setHasFailureFile(result.getFailureFileContent() != null && result.getFailureFileContent().length > 0);
+        return vo;
+    }
+
+    /**
+     * 获取用于下载的上传记录。
+     *
+     * @param uploadId 上传记录ID
+     * @return 上传记录
+     */
+    private EmployeePerformanceImportUploadResult getImportUploadForDownload(Long uploadId) {
+        EmployeePerformanceImportUploadResult upload = performanceMngManager.getImportUpload(uploadId);
+        if (upload == null) {
+            throw new BusinessException(ErrorCode.E999001, "上传记录不存在");
+        }
+        return upload;
+    }
+
+    /**
+     * 写出二进制文件。
+     *
+     * @param response HTTP 响应
+     * @param contentType 文件类型
+     * @param fileName 文件名
+     * @param content 文件内容
+     * @throws IOException 写入响应失败
+     */
+    private void writeBinary(HttpServletResponse response, String contentType, String fileName, byte[] content) throws IOException {
+        if (content == null || content.length == 0) {
+            throw new BusinessException(ErrorCode.E999001, "文件不存在");
+        }
+        String safeFileName = fileName == null || fileName.isBlank() ? "download" : fileName;
+        String encodedFileName = URLEncoder.encode(safeFileName, StandardCharsets.UTF_8).replace("+", "%20");
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.setContentType(contentType == null || contentType.isBlank() ? "application/octet-stream" : contentType);
+        response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + encodedFileName);
+        response.getOutputStream().write(content);
+    }
+
+    /**
+     * 截断文本。
+     *
+     * @param value 原始文本
+     * @param maxLength 最大长度
+     * @return 截断后文本
+     */
+    private String limitText(String value, int maxLength) {
+        if (value == null) {
+            return null;
+        }
+        return value.length() <= maxLength ? value : value.substring(0, maxLength);
+    }
+
+    /**
+     * 读取单元格文本。
+     *
+     * @param row 行数据
+     * @param index 单元格下标
+     * @return 单元格文本
+     */
+    private String cell(Map<Integer, String> row, int index) {
+        if (row == null || row.get(index) == null) {
+            return null;
+        }
+        String value = row.get(index).trim();
+        return value.isEmpty() ? null : value;
+    }
+
+    /**
+     * 判断导入行是否包含有效内容。
+     *
+     * @param item 导入行
+     * @return 是否包含有效内容
+     */
+    private boolean hasImportValue(EmployeePerformanceImportItemCommand item) {
+        return item.getEmployeeName() != null || item.getMobile() != null || item.getPerformance() != null
+                || item.getEmployeeNo() != null || item.getProjectDepartment() != null || item.getPositionName() != null;
     }
 
     /**

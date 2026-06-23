@@ -7,10 +7,13 @@ import com.rf.mng.provider.application.command.performance.admin.EmployeePerform
 import com.rf.mng.provider.application.query.performance.EmployeePerformancePageQuery;
 import com.rf.mng.provider.application.query.performance.PerformanceTaskPageQuery;
 import com.rf.mng.provider.application.result.performance.EmployeePerformanceImportResult;
+import com.rf.mng.provider.application.result.performance.EmployeePerformanceImportUploadResult;
 import com.rf.mng.provider.application.result.performance.PerformanceTaskResult;
 import com.rf.mng.provider.application.result.performance.admin.EmployeePerformanceAdjustResult;
 import com.rf.mng.provider.application.result.performance.admin.EmployeePerformanceRecordResult;
 import com.zy.common.core.bo.PageResp;
+
+import java.util.List;
 
 /**
  * 管理端员工绩效应用编排。
@@ -61,6 +64,31 @@ public interface PerformanceMngManager {
      * @return 员工绩效导入结果
      */
     EmployeePerformanceImportResult importRecords(EmployeePerformanceImportCommand command);
+
+    /**
+     * 保存员工绩效导入上传记录。
+     *
+     * @param result 上传记录
+     * @return 上传记录结果
+     */
+    EmployeePerformanceImportUploadResult saveImportUpload(EmployeePerformanceImportUploadResult result);
+
+    /**
+     * 查询员工绩效导入上传记录。
+     *
+     * @param taskId 绩效任务ID，可为空
+     * @param limit 查询数量
+     * @return 上传记录列表
+     */
+    List<EmployeePerformanceImportUploadResult> listImportUploads(Long taskId, int limit);
+
+    /**
+     * 获取员工绩效导入上传记录。
+     *
+     * @param uploadId 上传记录ID
+     * @return 上传记录
+     */
+    EmployeePerformanceImportUploadResult getImportUpload(Long uploadId);
 
     /**
      * 分页查询员工绩效记录。

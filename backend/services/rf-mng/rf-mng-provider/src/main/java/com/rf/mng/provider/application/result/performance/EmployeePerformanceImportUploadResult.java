@@ -1,0 +1,51 @@
+package com.rf.mng.provider.application.result.performance;
+
+import lombok.Data;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
+/**
+ * 员工绩效导入上传记录结果。
+ */
+@Data
+public class EmployeePerformanceImportUploadResult implements Serializable {
+
+    /** 序列化版本号。 */
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    /** 主键ID。 */
+    private Long id;
+    /** 绩效任务ID。 */
+    private Long taskId;
+    /** 绩效任务名称快照。 */
+    private String taskName;
+    /** 原始文件名。 */
+    private String fileName;
+    /** 原始文件Content-Type。 */
+    private String originalContentType;
+    /** 原始文件内容。 */
+    private byte[] originalFileContent;
+    /** 失败明细文件名。 */
+    private String failureFileName;
+    /** 失败明细文件内容。 */
+    private byte[] failureFileContent;
+    /** 总条数。 */
+    private Integer totalCount;
+    /** 成功条数。 */
+    private Integer successCount;
+    /** 失败条数。 */
+    private Integer failCount;
+    /** 导入状态。 */
+    private String status;
+    /** 失败原因。 */
+    private String errorMessage;
+    /** 创建管理员ID。 */
+    private Long createAdminId;
+    /** 创建管理员名称。 */
+    private String createAdminName;
+    /** 上传时间。 */
+    private LocalDateTime gmtCreate;
+}

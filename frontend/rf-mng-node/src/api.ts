@@ -80,6 +80,24 @@ export interface EmployeePerformanceImportResult {
   errors?: Array<{ rowNo?: number; mobile?: string; errorMessage?: string }>;
 }
 
+export interface EmployeePerformanceImportUpload {
+  id: number;
+  taskId: number;
+  taskName?: string;
+  fileName: string;
+  hasOriginalFile?: boolean;
+  failureFileName?: string;
+  hasFailureFile?: boolean;
+  totalCount: number;
+  successCount: number;
+  failCount: number;
+  status: 'SUCCESS' | 'FAILED' | 'PARTIAL_SUCCESS';
+  errorMessage?: string;
+  createAdminId?: number;
+  createAdminName?: string;
+  gmtCreate?: string | number[];
+}
+
 export interface EmployeePerformanceRecord {
   id: number;
   taskId: number;
@@ -214,6 +232,27 @@ export function disablePerformanceTask(taskId: number) {
 
 export function importPerformanceRecords(taskId: number, records: EmployeePerformanceImportItem[]) {
   return unwrap<EmployeePerformanceImportResult>(request.post(`/api/performance/tasks/${taskId}/records/import`, { records }));
+}
+
+export function importPerformanceRecordsFile(taskId: number, file: File, taskName?: string) {
+  const formData = new FormData();
+  formData.append('file', file);
+  if (taskName) {
+    formData.append('taskName', taskName);
+  }
+  return unwrap<EmployeePerformanceImportUpload>(request.post(`/api/performance/tasks/${taskId}/records/import-file`, formData));
+}
+
+export function fetchPerformanceImportUploads(params: Record<string, unknown>) {
+  return unwrap<EmployeePerformanceImportUpload[]>(request.get('/api/performance/records/import-uploads', { params }));
+}
+
+export function performanceImportOriginalDownloadUrl(uploadId: number) {
+  return `/api/performance/records/import-uploads/${uploadId}/original`;
+}
+
+export function performanceImportFailureDownloadUrl(uploadId: number) {
+  return `/api/performance/records/import-uploads/${uploadId}/failure`;
 }
 
 export function fetchPerformanceRecords(params: Record<string, unknown>) {
