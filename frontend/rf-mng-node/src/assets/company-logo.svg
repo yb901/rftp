@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="4096" height="4096" role="img" aria-label="CFIE left logo redrawn vector with 5 percent border">
+  <rect width="1000" height="1000" fill="#ffffff"/>
+  <defs>
+    <linearGradient id="blueStroke" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0057b8"/>
+      <stop offset="1" stop-color="#00408f"/>
+    </linearGradient>
+  </defs>
+  <g transform="matrix(10.344828 0 0 10.344828 50 18.965517)" fill="none" stroke="url(#blueStroke)" stroke-width="7" stroke-linecap="butt" stroke-linejoin="miter">
+    <path d="M0 7 H38 V86 H0"/>
+    <path d="M0 18 H27 V77 H0"/>
+    <path d="M0 29 H16 V66 H0"/>
+    <path d="M87 7 H49 V86 H87"/>
+    <path d="M87 18 H60 V77 H87"/>
+    <path d="M87 29 H71 V66 H87"/>
+  </g>
+</svg>

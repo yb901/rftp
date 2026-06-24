@@ -23,6 +23,22 @@ body {
   padding: 12px;
 }
 
+.nav-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  font-weight: 600;
+}
+
+.nav-brand img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
 .summary-band {
   display: flex;
   align-items: center;
@@ -70,14 +86,34 @@ body {
   background: #fff;
 }
 
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.login-brand img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
 .login-panel h1 {
-  margin: 0 0 6px;
+  margin: 0 0 4px;
   font-size: 22px;
   line-height: 1.25;
 }
 
 .login-panel p {
   margin: 0 0 18px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.login-panel .login-brand p {
+  margin: 0;
   color: #6b7280;
   font-size: 14px;
 }

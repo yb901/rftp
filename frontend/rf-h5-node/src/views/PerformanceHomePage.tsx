@@ -2,6 +2,7 @@ import { Button, Dialog, Empty, Form, Input, List, NavBar, Space, Tabs, Tag, Tex
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react';
 import { performanceApi } from '../features/performance/api';
 import type { EmployeePerformance, PerformanceCaptchaConfig } from '../features/performance/types';
+import companyLogo from '../assets/company-logo.svg';
 
 interface AliyunCaptchaOptions {
   SceneId?: string;
@@ -192,10 +193,21 @@ export function PerformanceHomePage() {
   if (!loginMobile) {
     return (
       <div className="page-shell">
-        <NavBar back={null}>员工绩效确认</NavBar>
+        <NavBar back={null}>
+          <span className="nav-brand">
+            <img src={companyLogo} alt="中工经联" />
+            <span>员工绩效确认</span>
+          </span>
+        </NavBar>
         <main className="content">
           <section className="login-panel">
-            <h1>手机号登录</h1>
+            <div className="login-brand">
+              <img src={companyLogo} alt="中工经联" />
+              <div>
+                <h1>中工经联</h1>
+                <p>员工绩效确认</p>
+              </div>
+            </div>
             <p>请输入名单内且当前有待确认绩效的手机号。</p>
             <Form layout="vertical" footer={
               <Button block color="primary" loading={loading} onClick={login}>
@@ -230,7 +242,12 @@ export function PerformanceHomePage() {
 
   return (
     <div className="page-shell">
-      <NavBar back={null}>员工绩效确认</NavBar>
+      <NavBar back={null}>
+        <span className="nav-brand">
+          <img src={companyLogo} alt="中工经联" />
+          <span>员工绩效确认</span>
+        </span>
+      </NavBar>
       <main className="content">
         <section className="summary-band">
           <div>

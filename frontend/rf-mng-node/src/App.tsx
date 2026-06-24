@@ -24,6 +24,7 @@ import type { MenuProps } from 'antd';
 import dayjs from 'dayjs';
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
+import companyLogo from './assets/company-logo.svg';
 import {
   AdminSaveParam,
   AdminUser,
@@ -773,8 +774,13 @@ function App() {
     return (
       <div className="login-shell">
         <div className="login-panel">
-          <div className="login-title">rf-mng</div>
-          <div className="login-subtitle">管理后台登录</div>
+          <div className="login-brand">
+            <img src={companyLogo} alt="中工经联" />
+            <div>
+              <div className="login-title">中工经联</div>
+              <div className="login-subtitle">管理后台登录</div>
+            </div>
+          </div>
           <Form layout="vertical" form={loginForm} onFinish={submitLogin}>
             <Form.Item name="username" label="用户名" rules={[{ required: true, message: '请输入用户名' }]}>
               <Input prefix={<UserOutlined />} autoComplete="username" />
@@ -797,7 +803,10 @@ function App() {
   return (
     <Layout className="app-shell">
       <Sider width={220} className="app-sider">
-        <div className="brand">rf-mng</div>
+        <div className="brand">
+          <img src={companyLogo} alt="中工经联" />
+          <span>中工经联</span>
+        </div>
         <Menu
           theme="dark"
           mode="inline"
