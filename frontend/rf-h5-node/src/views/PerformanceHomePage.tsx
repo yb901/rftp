@@ -251,10 +251,10 @@ export function PerformanceHomePage() {
       <main className="content">
         <section className="summary-band">
           <div>
-            <p className="summary-label">{includeHistory ? '绩效记录' : '当前待确认绩效'}</p>
+            <p className="summary-label">{includeHistory ? '全部绩效记录' : '当前待确认绩效'}</p>
             <h1>{records.length}</h1>
           </div>
-          <span>{includeHistory ? '历史记录仅展示状态和处理结果' : '选择一项绩效进行确认或反馈'}</span>
+          <span>{includeHistory ? '展示当前和历史绩效记录' : '选择一项绩效进行确认或反馈'}</span>
         </section>
 
         <Tabs
@@ -267,11 +267,11 @@ export function PerformanceHomePage() {
           }}
         >
           <Tabs.Tab title="当前" key="current" />
-          <Tabs.Tab title="历史" key="history" />
+          <Tabs.Tab title="全部" key="history" />
         </Tabs>
 
         {records.length === 0 ? (
-          <Empty description={includeHistory ? '暂无历史绩效' : '暂无可确认绩效'} />
+          <Empty description={includeHistory ? '暂无绩效记录' : '暂无可确认绩效'} />
         ) : (
           <List className="record-list">
             {records.map((record) => (
@@ -281,7 +281,7 @@ export function PerformanceHomePage() {
                   <div className="record-meta">
                     <span>{record.periodText}</span>
                     <span className={record.history ? undefined : 'record-deadline-highlight'}>
-                      截止：{record.actionDeadlineTime || record.confirmDeadlineTime}
+                      截止：{formatDeadlineTime(record.actionDeadlineTime || record.confirmDeadlineTime)}
                     </span>
                     {record.feedbackStatusText && <span>反馈：{formatFeedbackStatusText(record.feedbackStatusText)}</span>}
                   </div>
@@ -428,6 +428,13 @@ function maskMobile(value: string) {
 
 function formatFeedbackStatusText(value: string) {
   return value === '无反馈' ? '无' : value;
+}
+
+function formatDeadlineTime(value: string) {
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(value)) {
+    return `${value}:59`;
+  }
+  return value;
 }
 
 function loadCaptchaScript(src: string) {
