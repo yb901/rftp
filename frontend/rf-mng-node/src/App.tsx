@@ -368,7 +368,7 @@ function App() {
   ], []);
 
   const performanceColumns: ColumnsType<EmployeePerformanceRecord> = useMemo(() => [
-    { title: '绩效描述', dataIndex: 'performanceDescription', width: 160, ellipsis: true },
+    { title: '绩效任务', dataIndex: 'performanceDescription', width: 160, ellipsis: true },
     { title: '姓名', dataIndex: 'employeeName', width: 100 },
     { title: '手机号', dataIndex: 'mobile', width: 130 },
     { title: '工号', dataIndex: 'employeeNo', width: 110 },

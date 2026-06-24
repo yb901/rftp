@@ -76,9 +76,9 @@
     <select id="listTaskStatsByTaskIds" resultMap="TaskStatMap">
         SELECT task_id,
                COUNT(1) AS total_count,
-               SUM(CASE WHEN confirm_status IN ('CONFIRMED', 'SECOND_CONFIRMED', 'AUTO_CONFIRMED', 'SECOND_AUTO_CONFIRMED') THEN 1 ELSE 0 END) AS confirmed_count,
-               SUM(CASE WHEN feedback_status != 'NONE' THEN 1 ELSE 0 END) AS feedback_count,
-               SUM(CASE WHEN confirm_status IN ('AUTO_CONFIRMED', 'SECOND_AUTO_CONFIRMED') THEN 1 ELSE 0 END) AS auto_confirmed_count
+               COUNT(CASE WHEN confirm_status IN ('CONFIRMED', 'SECOND_CONFIRMED', 'AUTO_CONFIRMED', 'SECOND_AUTO_CONFIRMED') THEN 1 END) AS confirmed_count,
+               COUNT(CASE WHEN feedback_status != 'NONE' THEN 1 END) AS feedback_count,
+               COUNT(CASE WHEN confirm_status IN ('AUTO_CONFIRMED', 'SECOND_AUTO_CONFIRMED') THEN 1 END) AS auto_confirmed_count
         FROM tb_employee_performance_record
         WHERE is_deleted = 0
           AND task_id IN
