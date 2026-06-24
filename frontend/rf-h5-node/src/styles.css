@@ -106,11 +106,24 @@ body {
   color: #1f2933;
 }
 
+.record-explanation {
+  margin-bottom: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #5f6c7b;
+  word-break: break-word;
+}
+
 .record-meta {
   display: flex;
   flex-direction: column;
   gap: 4px;
   font-size: 12px;
+}
+
+.record-deadline-highlight {
+  color: #d92d20;
+  font-weight: 600;
 }
 
 .record-actions {

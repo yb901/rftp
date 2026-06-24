@@ -356,9 +356,10 @@ public class PerformanceMngController {
                 item.setEmployeeName(cell(row, 0));
                 item.setMobile(cell(row, 1));
                 item.setPerformance(cell(row, 2));
-                item.setEmployeeNo(cell(row, 3));
-                item.setProjectDepartment(cell(row, 4));
-                item.setPositionName(cell(row, 5));
+                item.setPerformanceExplanation(cell(row, 3));
+                item.setEmployeeNo(cell(row, 4));
+                item.setProjectDepartment(cell(row, 5));
+                item.setPositionName(cell(row, 6));
                 if (hasImportValue(item)) {
                     records.add(item);
                 }
@@ -622,6 +623,7 @@ public class PerformanceMngController {
      */
     private boolean hasImportValue(EmployeePerformanceImportItemCommand item) {
         return item.getEmployeeName() != null || item.getMobile() != null || item.getPerformance() != null
+                || item.getPerformanceExplanation() != null
                 || item.getEmployeeNo() != null || item.getProjectDepartment() != null || item.getPositionName() != null;
     }
 
@@ -684,7 +686,7 @@ public class PerformanceMngController {
         response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + fileName);
         StringBuilder builder = new StringBuilder();
         builder.append('\uFEFF');
-        appendCsvLine(builder, List.of("绩效描述", "姓名", "手机号", "工号", "项目/部门", "岗位", "绩效", "确认状态", "反馈状态", "反馈内容", "处理意见", "处理人"));
+        appendCsvLine(builder, List.of("绩效描述", "姓名", "手机号", "工号", "项目/部门", "岗位", "绩效", "绩效说明", "确认状态", "反馈状态", "反馈内容", "处理意见", "处理人"));
         for (EmployeePerformanceRecordResult record : records) {
             appendCsvLine(builder, Arrays.asList(
                     record.getPerformanceDescription(),
@@ -694,6 +696,7 @@ public class PerformanceMngController {
                     record.getProjectDepartment(),
                     record.getPositionName(),
                     record.getPerformance(),
+                    record.getPerformanceExplanation(),
                     confirmStatusText(record.getConfirmStatus()),
                     feedbackStatusText(record.getFeedbackStatus()),
                     record.getFeedbackContent(),

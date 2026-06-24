@@ -19,7 +19,7 @@ public class EmployeePerformanceClientResult {
     private String performanceDescription;
 
     /**
-     * 评价周期展示文本。
+     * 绩效周期展示文本。
      */
     private String periodText;
 
@@ -27,6 +27,11 @@ public class EmployeePerformanceClientResult {
      * 绩效。
      */
     private String performance;
+
+    /**
+     * 绩效说明。
+     */
+    private String performanceExplanation;
 
     /**
      * 确认状态编码。

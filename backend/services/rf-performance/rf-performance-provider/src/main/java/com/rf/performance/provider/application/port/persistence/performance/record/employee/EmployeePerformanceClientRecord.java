@@ -27,12 +27,12 @@ public class EmployeePerformanceClientRecord {
     private String performanceDescription;
 
     /**
-     * 评价周期开始日期。
+     * 绩效周期开始日期。
      */
     private LocalDate periodStartDate;
 
     /**
-     * 评价周期结束日期。
+     * 绩效周期结束日期。
      */
     private LocalDate periodEndDate;
 
@@ -75,6 +75,11 @@ public class EmployeePerformanceClientRecord {
      * 绩效。
      */
     private String performance;
+
+    /**
+     * 绩效说明。
+     */
+    private String performanceExplanation;
 
     /**
      * 确认状态编码。

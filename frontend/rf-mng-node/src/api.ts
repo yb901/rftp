@@ -71,6 +71,7 @@ export interface EmployeePerformanceImportItem {
   projectDepartment?: string;
   positionName?: string;
   performance: string;
+  performanceExplanation?: string;
 }
 
 export interface EmployeePerformanceImportResult {
@@ -108,6 +109,7 @@ export interface EmployeePerformanceRecord {
   projectDepartment?: string;
   positionName?: string;
   performance: string;
+  performanceExplanation?: string;
   confirmStatus: string;
   feedbackStatus: string;
   feedbackContent?: string;

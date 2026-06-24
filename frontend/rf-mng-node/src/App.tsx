@@ -126,7 +126,7 @@ const performanceTaskStatusOptions = [
   { value: 'CLOSED', label: '关闭' },
 ];
 
-const performanceImportTemplateUrl = 'https://static.zcglhr.com/qy-mng/upload-task/%E5%91%98%E5%B7%A5%E7%BB%A9%E6%95%88%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF-20260623.xlsx';
+const performanceImportTemplateUrl = 'https://static.zcglhr.com/qy-mng/upload-task/%E5%91%98%E5%B7%A5%E7%BB%A9%E6%95%88%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF-20260624.xlsx';
 
 const adminRoleOptions = [
   { value: 1, label: '超级管理员' },
@@ -366,6 +366,7 @@ function App() {
     { title: '项目/部门', dataIndex: 'projectDepartment', width: 150, ellipsis: true },
     { title: '岗位', dataIndex: 'positionName', width: 130, ellipsis: true },
     { title: '绩效', dataIndex: 'performance', width: 120 },
+    { title: '绩效说明', dataIndex: 'performanceExplanation', width: 180, ellipsis: true, render: (value) => value || '-' },
     {
       title: '确认',
       dataIndex: 'confirmStatus',
@@ -394,7 +395,7 @@ function App() {
 
   const performanceTaskColumns: ColumnsType<PerformanceTask> = useMemo(() => [
     { title: '绩效描述', dataIndex: 'performanceDescription', width: 220, ellipsis: true },
-    { title: '评价周期', width: 230, render: (_, row) => formatPeriodRange(row.periodStartDate, row.periodEndDate) },
+    { title: '绩效周期', width: 230, render: (_, row) => formatPeriodRange(row.periodStartDate, row.periodEndDate) },
     { title: '确认截止', dataIndex: 'confirmDeadlineTime', width: 180, render: (value) => formatDateTime(value) },
     {
       title: '状态',
@@ -1016,7 +1017,7 @@ function App() {
           <Form.Item name="performanceDescription" label="绩效描述" rules={[{ required: true }]}>
             <Input placeholder="如：2026年6月绩效" />
           </Form.Item>
-          <Form.Item name="periodRange" label="评价周期" rules={[{ required: true }]}>
+          <Form.Item name="periodRange" label="绩效周期" rules={[{ required: true }]}>
             <DatePicker.RangePicker className="full-width" />
           </Form.Item>
           <Form.Item name="confirmDeadlineTime" label="确认截止时间" rules={[{ required: true }]}>
@@ -1152,7 +1153,7 @@ function getPageMeta(pageKey: PageKey) {
     socialTasks: { title: '社保缴费任务', subtitle: '查看税号级缴费任务状态，处理失败任务重试' },
     enterprise: { title: '企业维护', subtitle: '维护社保缴费相关企业基础信息' },
     region: { title: '地区配置', subtitle: '维护社保缴费地区与站点配置' },
-    performance: { title: '员工绩效管理', subtitle: '创建评价周期，导入员工绩效，跟踪确认反馈和调整闭环' },
+    performance: { title: '员工绩效管理', subtitle: '创建绩效周期，导入员工绩效，跟踪确认反馈和调整闭环' },
     admin: { title: '系统管理员', subtitle: '管理后台用户、角色、启用状态和动态验证码' },
   };
   return meta[pageKey];
@@ -1331,7 +1332,7 @@ function parseCompactDateTime(value: string | number) {
 function downloadImportTemplate() {
   const link = document.createElement('a');
   link.href = performanceImportTemplateUrl;
-  link.download = '员工绩效导入模板-20260623.xlsx';
+  link.download = '员工绩效导入模板-20260624.xlsx';
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
   link.click();

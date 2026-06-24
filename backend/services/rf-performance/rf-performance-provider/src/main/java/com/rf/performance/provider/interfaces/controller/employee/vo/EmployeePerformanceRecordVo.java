@@ -25,7 +25,7 @@ public class EmployeePerformanceRecordVo implements Serializable {
     private String performanceDescription;
 
     /**
-     * 评价周期展示文本。
+     * 绩效周期展示文本。
      */
     private String periodText;
 
@@ -33,6 +33,11 @@ public class EmployeePerformanceRecordVo implements Serializable {
      * 绩效。
      */
     private String performance;
+
+    /**
+     * 绩效说明。
+     */
+    private String performanceExplanation;
 
     /**
      * 确认状态展示文本。

@@ -6,6 +6,7 @@ export interface EmployeePerformance {
   performanceDescription: string;
   periodText: string;
   performance: string;
+  performanceExplanation?: string;
   confirmStatus: string;
   confirmStatusText: string;
   feedbackStatus: string;

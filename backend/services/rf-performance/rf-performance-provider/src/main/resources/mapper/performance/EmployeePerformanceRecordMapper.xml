@@ -10,6 +10,7 @@
         <result property="projectDepartment" column="project_department"/>
         <result property="positionName" column="position_name"/>
         <result property="performance" column="performance"/>
+        <result property="performanceExplanation" column="performance_explanation"/>
         <result property="confirmStatus" column="confirm_status"/>
         <result property="feedbackStatus" column="feedback_status"/>
     </resultMap>
@@ -22,7 +23,7 @@
     </resultMap>
 
     <select id="getById" resultMap="AdminRecordMap">
-        SELECT id, task_id, mobile, performance, confirm_status, feedback_status
+        SELECT id, task_id, mobile, performance, performance_explanation, confirm_status, feedback_status
         FROM tb_employee_performance_record
         WHERE id = #{id}
           AND is_deleted = 0
@@ -57,7 +58,7 @@
 
     <select id="page" resultMap="AdminRecordMap">
         SELECT id, task_id, employee_name, mobile, employee_no, project_department, position_name,
-               performance, confirm_status, feedback_status
+               performance, performance_explanation, confirm_status, feedback_status
         FROM tb_employee_performance_record
         <include refid="RecordWhere"/>
         ORDER BY id DESC
@@ -86,13 +87,13 @@
 
     <insert id="batchInsert">
         INSERT INTO tb_employee_performance_record
-        (task_id, employee_name, mobile, employee_no, project_department, position_name, performance,
+        (task_id, employee_name, mobile, employee_no, project_department, position_name, performance, performance_explanation,
          confirm_status, feedback_status, is_deleted)
         VALUES
         <foreach collection="records" item="record" separator=",">
             (#{record.taskId}, #{record.employeeName}, #{record.mobile}, #{record.employeeNo},
-             #{record.projectDepartment}, #{record.positionName}, #{record.performance}, #{record.confirmStatus},
-             #{record.feedbackStatus}, #{record.isDeleted})
+             #{record.projectDepartment}, #{record.positionName}, #{record.performance}, #{record.performanceExplanation},
+             #{record.confirmStatus}, #{record.feedbackStatus}, #{record.isDeleted})
         </foreach>
     </insert>
 

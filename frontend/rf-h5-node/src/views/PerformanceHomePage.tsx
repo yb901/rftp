@@ -196,7 +196,7 @@ export function PerformanceHomePage() {
         <main className="content">
           <section className="login-panel">
             <h1>手机号登录</h1>
-            <p>请输入名单内且当前有可评价绩效的手机号。</p>
+            <p>请输入名单内且当前有待确认绩效的手机号。</p>
             <Form layout="vertical" footer={
               <Button block color="primary" loading={loading} onClick={login}>
                 登录
@@ -234,10 +234,10 @@ export function PerformanceHomePage() {
       <main className="content">
         <section className="summary-band">
           <div>
-            <p className="summary-label">{includeHistory ? '绩效记录' : '当前可评价'}</p>
+            <p className="summary-label">{includeHistory ? '绩效记录' : '当前待确认绩效'}</p>
             <h1>{records.length}</h1>
           </div>
-          <span>{includeHistory ? '历史记录仅展示状态和处理结果' : '选择一项绩效评价后完成确认或反馈'}</span>
+          <span>{includeHistory ? '历史记录仅展示状态和处理结果' : '选择一项绩效进行确认或反馈'}</span>
         </section>
 
         <Tabs
@@ -254,7 +254,7 @@ export function PerformanceHomePage() {
         </Tabs>
 
         {records.length === 0 ? (
-          <Empty description={includeHistory ? '暂无历史绩效' : '暂无可评价绩效'} />
+          <Empty description={includeHistory ? '暂无历史绩效' : '暂无可确认绩效'} />
         ) : (
           <List className="record-list">
             {records.map((record) => (
@@ -263,14 +263,17 @@ export function PerformanceHomePage() {
                 description={
                   <div className="record-meta">
                     <span>{record.periodText}</span>
-                    <span>截止：{record.actionDeadlineTime || record.confirmDeadlineTime}</span>
-                    {record.feedbackStatusText && <span>反馈：{record.feedbackStatusText}</span>}
+                    <span className={record.history ? undefined : 'record-deadline-highlight'}>
+                      截止：{record.actionDeadlineTime || record.confirmDeadlineTime}
+                    </span>
+                    {record.feedbackStatusText && <span>反馈：{formatFeedbackStatusText(record.feedbackStatusText)}</span>}
                   </div>
                 }
                 extra={<Tag color={record.history ? 'default' : 'warning'}>{record.confirmStatusText}</Tag>}
               >
                 <div className="record-title">{record.performanceDescription}</div>
                 <div className="record-score">绩效：{record.performance}</div>
+                {record.performanceExplanation && <div className="record-explanation">{record.performanceExplanation}</div>}
                 <div className="record-actions">
                   <Button size="mini" color="primary" disabled={!record.confirmAvailable} onClick={() => confirmRecord(record)}>
                     确认
@@ -404,6 +407,10 @@ function maskMobile(value: string) {
     return value || '-';
   }
   return `${value.slice(0, 3)}****${value.slice(7)}`;
+}
+
+function formatFeedbackStatusText(value: string) {
+  return value === '无反馈' ? '无' : value;
 }
 
 function loadCaptchaScript(src: string) {

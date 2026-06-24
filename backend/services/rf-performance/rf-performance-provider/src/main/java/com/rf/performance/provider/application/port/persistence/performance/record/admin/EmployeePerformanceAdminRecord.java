@@ -49,6 +49,11 @@ public class EmployeePerformanceAdminRecord {
     private String performance;
 
     /**
+     * 绩效说明。
+     */
+    private String performanceExplanation;
+
+    /**
      * 确认状态编码。
      */
     private String confirmStatus;

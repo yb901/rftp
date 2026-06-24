@@ -15,6 +15,7 @@
         <result property="projectDepartment" column="project_department"/>
         <result property="positionName" column="position_name"/>
         <result property="performance" column="performance"/>
+        <result property="performanceExplanation" column="performance_explanation"/>
         <result property="confirmStatus" column="confirm_status"/>
         <result property="feedbackStatus" column="feedback_status"/>
     </resultMap>
@@ -28,6 +29,7 @@
         project_department,
         position_name,
         performance,
+        performance_explanation,
         confirm_status,
         feedback_status
     </sql>

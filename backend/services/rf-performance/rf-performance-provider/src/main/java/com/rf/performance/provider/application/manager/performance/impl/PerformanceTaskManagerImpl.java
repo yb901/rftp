@@ -140,10 +140,10 @@ public class PerformanceTaskManagerImpl implements PerformanceTaskManager {
         }
         command.setPerformanceDescription(command.getPerformanceDescription().trim());
         if (command.getPeriodStartDate() == null || command.getPeriodEndDate() == null) {
-            throw new BusinessException(ErrorCode.E999001, "评价周期不能为空");
+            throw new BusinessException(ErrorCode.E999001, "绩效周期不能为空");
         }
         if (command.getPeriodEndDate().isBefore(command.getPeriodStartDate())) {
-            throw new BusinessException(ErrorCode.E999001, "评价周期结束日期不能早于开始日期");
+            throw new BusinessException(ErrorCode.E999001, "绩效周期结束日期不能早于开始日期");
         }
         if (command.getConfirmDeadlineTime() == null) {
             throw new BusinessException(ErrorCode.E999001, "首次确认截止时间不能为空");

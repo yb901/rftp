@@ -367,10 +367,10 @@ public class EmployeePerformanceClientManagerImpl implements EmployeePerformance
     }
 
     /**
-     * 按手机号查询当前可评价绩效记录。
+     * 按手机号查询当前待确认绩效记录。
      *
      * @param mobile 员工手机号
-     * @return 当前可评价绩效记录
+     * @return 当前待确认绩效记录
      */
     private List<EmployeePerformanceClientRecord> listAvailableRecordsByMobile(String mobile) {
         List<EmployeePerformanceClientRecord> enrichedRecords = listAllRecordsByMobile(mobile);
@@ -597,6 +597,7 @@ public class EmployeePerformanceClientManagerImpl implements EmployeePerformance
         result.setPerformanceDescription(record.getPerformanceDescription());
         result.setPeriodText(record.getPeriodStartDate() + " 至 " + record.getPeriodEndDate());
         result.setPerformance(record.getPerformance());
+        result.setPerformanceExplanation(record.getPerformanceExplanation());
         result.setConfirmStatus(record.getConfirmStatus());
         result.setConfirmStatusText(confirmStatusText(record.getConfirmStatus()));
         result.setFeedbackStatus(record.getFeedbackStatus());

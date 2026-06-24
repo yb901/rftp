@@ -4,8 +4,8 @@
 CREATE TABLE IF NOT EXISTS `tb_employee_performance_task` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键编号',
   `performance_description` varchar(255) NOT NULL COMMENT '绩效描述',
-  `period_start_date` date NOT NULL COMMENT '评价周期开始日期',
-  `period_end_date` date NOT NULL COMMENT '评价周期结束日期',
+  `period_start_date` date NOT NULL COMMENT '绩效周期开始日期',
+  `period_end_date` date NOT NULL COMMENT '绩效周期结束日期',
   `confirm_deadline_time` datetime NOT NULL COMMENT '首次确认截止时间',
   `second_confirm_deadline_time` datetime DEFAULT NULL COMMENT '二次确认截止时间',
   `status` varchar(32) NOT NULL DEFAULT 'CLOSED' COMMENT '任务状态：OPEN-开启，CLOSED-关闭',
@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS `tb_employee_performance_record` (
   `project_department` varchar(128) DEFAULT NULL COMMENT '项目或部门',
   `position_name` varchar(128) DEFAULT NULL COMMENT '岗位',
   `performance` varchar(128) NOT NULL COMMENT '绩效',
+  `performance_explanation` mediumtext COMMENT '绩效说明',
   `confirm_status` varchar(32) NOT NULL DEFAULT 'PENDING_CONFIRM' COMMENT '确认状态',
   `feedback_status` varchar(32) NOT NULL DEFAULT 'NONE' COMMENT '反馈状态',
   `last_confirm_time` datetime DEFAULT NULL COMMENT '最近确认时间',

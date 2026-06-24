@@ -22,12 +22,12 @@ public class PerformanceTaskResult {
     private String performanceDescription;
 
     /**
-     * 评价周期开始日期。
+     * 绩效周期开始日期。
      */
     private LocalDate periodStartDate;
 
     /**
-     * 评价周期结束日期。
+     * 绩效周期结束日期。
      */
     private LocalDate periodEndDate;
 

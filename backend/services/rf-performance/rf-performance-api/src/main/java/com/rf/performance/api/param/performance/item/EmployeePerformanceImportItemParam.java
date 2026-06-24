@@ -48,4 +48,9 @@ public class EmployeePerformanceImportItemParam implements Serializable {
      * 绩效。
      */
     private String performance;
+
+    /**
+     * 绩效说明。
+     */
+    private String performanceExplanation;
 }
