@@ -368,8 +368,6 @@ function App() {
   ], []);
 
   const performanceColumns: ColumnsType<EmployeePerformanceRecord> = useMemo(() => [
-    { title: '记录', dataIndex: 'id', width: 80 },
-    { title: '任务', dataIndex: 'taskId', width: 90 },
     { title: '绩效描述', dataIndex: 'performanceDescription', width: 160, ellipsis: true },
     { title: '姓名', dataIndex: 'employeeName', width: 100 },
     { title: '手机号', dataIndex: 'mobile', width: 130 },
@@ -933,7 +931,7 @@ function App() {
                             columns={performanceColumns}
                             dataSource={performanceList}
                             size="small"
-                            scroll={{ x: 1500 }}
+                            scroll={{ x: 1330 }}
                             pagination={{
                               current: performanceRecordPage.page,
                               pageSize: performanceRecordPage.size,
