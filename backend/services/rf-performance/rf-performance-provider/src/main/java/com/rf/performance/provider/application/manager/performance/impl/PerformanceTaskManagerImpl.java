@@ -1,9 +1,11 @@
 package com.rf.performance.provider.application.manager.performance.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.rf.performance.provider.application.port.persistence.performance.EmployeePerformanceRecordPersistencePort;
 import com.rf.performance.provider.application.port.persistence.performance.PerformanceTaskPersistencePort;
 import com.rf.performance.provider.application.port.persistence.performance.data.PerformanceTaskData;
 import com.rf.performance.provider.application.port.persistence.performance.record.PerformanceTaskRecord;
+import com.rf.performance.provider.application.port.persistence.performance.record.admin.EmployeePerformanceTaskStatRecord;
 import com.rf.performance.provider.application.command.performance.PerformanceTaskCreateCommand;
 import com.rf.performance.provider.application.manager.performance.PerformanceTaskManager;
 import com.rf.performance.provider.application.query.performance.PerformanceTaskPageQuery;
@@ -18,6 +20,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * 绩效任务应用编排实现。
@@ -35,6 +41,12 @@ public class PerformanceTaskManagerImpl implements PerformanceTaskManager {
      */
     @Resource
     private PerformanceTaskPersistencePort performanceTaskPersistencePort;
+
+    /**
+     * 员工绩效记录持久化端口。
+     */
+    @Resource
+    private EmployeePerformanceRecordPersistencePort employeePerformanceRecordPersistencePort;
 
     /**
      * 创建绩效任务。
@@ -236,11 +248,46 @@ public class PerformanceTaskManagerImpl implements PerformanceTaskManager {
         java.util.List<PerformanceTaskResult> results = BeanUtil.copyToList(records, PerformanceTaskResult.class);
         for (PerformanceTaskResult result : results) {
             result.setStatusCode(records.stream()
-                    .filter(record -> java.util.Objects.equals(record.getId(), result.getId()))
+                    .filter(record -> Objects.equals(record.getId(), result.getId()))
                     .findFirst()
                     .map(PerformanceTaskRecord::getStatus)
                     .orElse(null));
         }
+        fillTaskStats(results);
         return results;
+    }
+
+    /**
+     * 按员工记录实时回填任务统计。
+     *
+     * @param results 绩效任务返回对象
+     */
+    private void fillTaskStats(List<PerformanceTaskResult> results) {
+        if (results == null || results.isEmpty()) {
+            return;
+        }
+        List<Long> taskIds = results.stream()
+                .map(PerformanceTaskResult::getId)
+                .distinct()
+                .toList();
+        List<EmployeePerformanceTaskStatRecord> statRecords = employeePerformanceRecordPersistencePort.listTaskStatsByTaskIds(taskIds);
+        Map<Long, EmployeePerformanceTaskStatRecord> statMap = new HashMap<>();
+        for (EmployeePerformanceTaskStatRecord statRecord : statRecords) {
+            statMap.put(statRecord.getTaskId(), statRecord);
+        }
+        for (PerformanceTaskResult result : results) {
+            EmployeePerformanceTaskStatRecord statRecord = statMap.get(result.getId());
+            if (statRecord == null) {
+                result.setTotalCount(0);
+                result.setConfirmedCount(0);
+                result.setFeedbackCount(0);
+                result.setAutoConfirmedCount(0);
+                continue;
+            }
+            result.setTotalCount(statRecord.getTotalCount());
+            result.setConfirmedCount(statRecord.getConfirmedCount());
+            result.setFeedbackCount(statRecord.getFeedbackCount());
+            result.setAutoConfirmedCount(statRecord.getAutoConfirmedCount());
+        }
     }
 }

@@ -6,6 +6,7 @@ import com.rf.performance.provider.application.port.persistence.performance.data
 import com.rf.performance.provider.application.port.persistence.performance.data.admin.EmployeePerformanceAdjustLogData;
 import com.rf.performance.provider.application.port.persistence.performance.record.admin.EmployeePerformanceAdminRecord;
 import com.rf.performance.provider.application.port.persistence.performance.record.admin.EmployeePerformanceFeedbackRecord;
+import com.rf.performance.provider.application.port.persistence.performance.record.admin.EmployeePerformanceTaskStatRecord;
 import com.rf.performance.provider.application.query.performance.EmployeePerformancePageQuery;
 import com.rf.performance.provider.infrastructure.persistence.performance.entity.EmployeePerformanceRecordEntity;
 import com.rf.performance.provider.infrastructure.persistence.performance.entity.admin.EmployeePerformanceAdjustLogEntity;
@@ -59,6 +60,20 @@ public class EmployeePerformanceRecordPersistencePortImpl implements EmployeePer
     public List<EmployeePerformanceAdminRecord> page(EmployeePerformancePageQuery query) {
         int offset = Math.max(query.getPage() - 1, 0) * query.getSize();
         return employeePerformanceRecordMapper.page(query, offset, query.getSize());
+    }
+
+    /**
+     * 按任务 ID 批量统计员工绩效记录。
+     *
+     * @param taskIds 绩效任务 ID
+     * @return 员工绩效任务统计
+     */
+    @Override
+    public List<EmployeePerformanceTaskStatRecord> listTaskStatsByTaskIds(List<Long> taskIds) {
+        if (taskIds == null || taskIds.isEmpty()) {
+            return List.of();
+        }
+        return employeePerformanceRecordMapper.listTaskStatsByTaskIds(taskIds);
     }
 
     /**

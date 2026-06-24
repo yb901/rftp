@@ -241,11 +241,11 @@ function App() {
     }
   };
 
-  const loadPerformanceRecords = async (page = performanceRecordPage.page, size = performanceRecordPage.size) => {
+  const loadPerformanceRecords = async (page = performanceRecordPage.page, size = performanceRecordPage.size, overrideValues: Record<string, unknown> = {}) => {
     setPerformanceLoading(true);
     try {
       const values = performanceQueryForm.getFieldsValue();
-      const data = await fetchPerformanceRecords({ page, size, ...trimObject(values) });
+      const data = await fetchPerformanceRecords({ page, size, ...trimObject(values), ...trimObject(overrideValues) });
       setPerformanceList(data.list || []);
       setPerformanceRecordPage({
         page: data.pagination?.page || page,
@@ -438,7 +438,7 @@ function App() {
             onClick={() => {
               performanceQueryForm.setFieldValue('taskId', row.id);
               setPerformanceTabKey('performanceRecords');
-              void loadPerformanceRecords(1, performanceRecordPage.size);
+              void loadPerformanceRecords(1, performanceRecordPage.size, { taskId: row.id });
             }}
           >
             员工记录

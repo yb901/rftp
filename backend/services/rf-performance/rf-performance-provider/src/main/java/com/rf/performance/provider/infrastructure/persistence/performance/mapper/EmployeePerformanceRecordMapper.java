@@ -3,6 +3,7 @@ package com.rf.performance.provider.infrastructure.persistence.performance.mappe
 import com.rf.performance.provider.infrastructure.persistence.performance.entity.EmployeePerformanceRecordEntity;
 import com.rf.performance.provider.application.port.persistence.performance.record.admin.EmployeePerformanceAdminRecord;
 import com.rf.performance.provider.application.port.persistence.performance.record.admin.EmployeePerformanceFeedbackRecord;
+import com.rf.performance.provider.application.port.persistence.performance.record.admin.EmployeePerformanceTaskStatRecord;
 import com.rf.performance.provider.application.query.performance.EmployeePerformancePageQuery;
 import com.rf.performance.provider.infrastructure.persistence.performance.entity.admin.EmployeePerformanceAdjustLogEntity;
 import org.apache.ibatis.annotations.Mapper;
@@ -43,6 +44,14 @@ public interface EmployeePerformanceRecordMapper {
     List<EmployeePerformanceAdminRecord> page(@Param("query") EmployeePerformancePageQuery query,
                                               @Param("offset") int offset,
                                               @Param("limit") int limit);
+
+    /**
+     * 按任务 ID 批量统计员工绩效记录。
+     *
+     * @param taskIds 绩效任务 ID
+     * @return 员工绩效任务统计
+     */
+    List<EmployeePerformanceTaskStatRecord> listTaskStatsByTaskIds(@Param("taskIds") List<Long> taskIds);
 
     /**
      * 按员工绩效记录 ID 批量查询反馈。

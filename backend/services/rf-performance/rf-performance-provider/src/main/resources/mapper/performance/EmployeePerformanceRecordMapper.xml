@@ -22,6 +22,14 @@
         <result property="handleAdminName" column="handle_admin_name"/>
     </resultMap>
 
+    <resultMap id="TaskStatMap" type="com.rf.performance.provider.application.port.persistence.performance.record.admin.EmployeePerformanceTaskStatRecord">
+        <id property="taskId" column="task_id"/>
+        <result property="totalCount" column="total_count"/>
+        <result property="confirmedCount" column="confirmed_count"/>
+        <result property="feedbackCount" column="feedback_count"/>
+        <result property="autoConfirmedCount" column="auto_confirmed_count"/>
+    </resultMap>
+
     <select id="getById" resultMap="AdminRecordMap">
         SELECT id, task_id, mobile, performance, performance_explanation, confirm_status, feedback_status
         FROM tb_employee_performance_record
@@ -63,6 +71,21 @@
         <include refid="RecordWhere"/>
         ORDER BY id DESC
         LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="listTaskStatsByTaskIds" resultMap="TaskStatMap">
+        SELECT task_id,
+               COUNT(1) AS total_count,
+               SUM(CASE WHEN confirm_status IN ('CONFIRMED', 'SECOND_CONFIRMED', 'AUTO_CONFIRMED', 'SECOND_AUTO_CONFIRMED') THEN 1 ELSE 0 END) AS confirmed_count,
+               SUM(CASE WHEN feedback_status != 'NONE' THEN 1 ELSE 0 END) AS feedback_count,
+               SUM(CASE WHEN confirm_status IN ('AUTO_CONFIRMED', 'SECOND_AUTO_CONFIRMED') THEN 1 ELSE 0 END) AS auto_confirmed_count
+        FROM tb_employee_performance_record
+        WHERE is_deleted = 0
+          AND task_id IN
+          <foreach collection="taskIds" item="taskId" open="(" separator="," close=")">
+              #{taskId}
+          </foreach>
+        GROUP BY task_id
     </select>
 
     <select id="listFeedbackByRecordIds" resultMap="FeedbackRecordMap">

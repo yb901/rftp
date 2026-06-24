@@ -4,6 +4,7 @@ import com.rf.performance.provider.application.port.persistence.performance.data
 import com.rf.performance.provider.application.port.persistence.performance.data.admin.EmployeePerformanceAdjustLogData;
 import com.rf.performance.provider.application.port.persistence.performance.record.admin.EmployeePerformanceAdminRecord;
 import com.rf.performance.provider.application.port.persistence.performance.record.admin.EmployeePerformanceFeedbackRecord;
+import com.rf.performance.provider.application.port.persistence.performance.record.admin.EmployeePerformanceTaskStatRecord;
 import com.rf.performance.provider.application.query.performance.EmployeePerformancePageQuery;
 
 import java.util.List;
@@ -36,6 +37,14 @@ public interface EmployeePerformanceRecordPersistencePort {
      * @return 员工绩效记录
      */
     List<EmployeePerformanceAdminRecord> page(EmployeePerformancePageQuery query);
+
+    /**
+     * 按任务 ID 批量统计员工绩效记录。
+     *
+     * @param taskIds 绩效任务 ID
+     * @return 员工绩效任务统计
+     */
+    List<EmployeePerformanceTaskStatRecord> listTaskStatsByTaskIds(List<Long> taskIds);
 
     /**
      * 按员工绩效记录 ID 批量查询反馈。
