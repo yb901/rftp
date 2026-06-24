@@ -29,12 +29,14 @@ body { margin: 0; background: #f5f7fb; color: #1f2937; font-family: -apple-syste
 .query-bar .ant-form-item { margin-inline-end: 0; margin-bottom: 0; }
 .toolbar-row { display: flex; align-items: center; justify-content: space-between; }
 .table-action-group .ant-btn { border-radius: 6px; }
-.modal-toolbar { margin-bottom: 12px; display: flex; justify-content: flex-end; }
+.modal-toolbar { margin: 4px 0 20px; display: flex; align-items: center; justify-content: flex-end; gap: 20px; }
+.modal-toolbar .ant-btn-link { height: 32px; padding-inline: 0; display: inline-flex; align-items: center; }
 .ant-card { border-radius: 10px; border-color: #eef2f7; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03); }
 .ant-card .ant-card-head { padding-inline: 16px; }
 .ant-card .ant-card-body { padding: 16px; }
 .detail-block { min-height: 88px; white-space: pre-wrap; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
 .readonly-field { display: inline-flex; min-height: 32px; align-items: center; color: #111827; }
+.import-task-readonly { min-height: 36px; padding: 4px 11px; background: #f8fafc; border: 1px solid #d9d9d9; border-radius: 6px; }
 .deadline-summary { margin-bottom: 24px; padding: 12px 14px; background: #f8fafc; border: 1px solid #eef2f7; border-radius: 6px; }
 .deadline-summary-label { display: block; margin-bottom: 6px; font-size: 13px; line-height: 20px; }
 .deadline-summary-value { display: block; color: #111827; font-size: 16px; line-height: 24px; }

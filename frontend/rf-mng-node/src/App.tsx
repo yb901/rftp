@@ -63,7 +63,7 @@ import {
 } from './api';
 
 const { Header, Content, Sider } = Layout;
-const { Link, Text } = Typography;
+const { Text } = Typography;
 
 const statusColor: Record<string, string> = {
   SUBMITTED: 'processing',
@@ -194,6 +194,16 @@ function App() {
     }
     return dayjs(confirmDeadlineTime).endOf('day').add(3, 'day').format('YYYY-MM-DD HH:mm:ss');
   }, [confirmDeadlineTime]);
+  const importTaskText = useMemo(() => {
+    if (!importTaskId) {
+      return '未选择绩效任务';
+    }
+    const task = performanceTaskList.find((item) => item.id === Number(importTaskId));
+    if (!task) {
+      return String(importTaskId);
+    }
+    return `${task.performanceDescription || '未命名任务'}（${formatPeriodRange(task.periodStartDate, task.periodEndDate)}）`;
+  }, [importTaskId, performanceTaskList]);
 
   const loadBatches = async () => {
     setBatchLoading(true);
@@ -1041,21 +1051,16 @@ function App() {
 
       <Modal title="导入员工绩效" open={importOpen} onCancel={() => setImportOpen(false)} footer={<Button onClick={() => setImportOpen(false)}>关闭</Button>} width={980}>
         <Form layout="vertical" form={importForm}>
-          <Form.Item name="taskId" label="绩效任务" rules={[{ required: true, message: '请选择绩效任务' }]}>
-            <Select
-              showSearch
-              optionFilterProp="label"
-              placeholder="请选择绩效任务"
-              options={performanceTaskList.map((task) => ({
-                value: task.id,
-                label: `${task.performanceDescription || '未命名任务'}（${formatPeriodRange(task.periodStartDate, task.periodEndDate)}）`,
-              }))}
-            />
+          <Form.Item name="taskId" hidden rules={[{ required: true, message: '请选择绩效任务' }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item label="绩效任务">
+            <div className="readonly-field import-task-readonly full-width">{importTaskText}</div>
           </Form.Item>
           <div className="modal-toolbar">
-            <Link onClick={downloadImportTemplate}>
-              <DownloadOutlined /> 下载导入模板
-            </Link>
+            <Button type="link" icon={<DownloadOutlined />} onClick={downloadImportTemplate}>
+              下载导入模板
+            </Button>
             <Upload
               accept=".xlsx,.xls"
               maxCount={1}
@@ -1065,7 +1070,7 @@ function App() {
                 return false;
               }}
             >
-              <Button type="primary" loading={importUploading} icon={<UploadOutlined />}>上传记录</Button>
+              <Button type="primary" loading={importUploading} icon={<UploadOutlined />}>上传绩效</Button>
             </Upload>
           </div>
         </Form>
