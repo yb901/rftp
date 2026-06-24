@@ -31,6 +31,8 @@ body { margin: 0; background: #f5f7fb; color: #1f2937; font-family: -apple-syste
 .table-action-group .ant-btn { border-radius: 6px; }
 .performance-task-table .ant-table-body { padding-bottom: 10px; }
 .performance-task-table .ant-table-tbody > tr > td { padding-top: 12px !important; padding-bottom: 12px !important; }
+.import-record-table .ant-table-body { padding-bottom: 10px; }
+.import-record-table .ant-table-tbody > tr > td { padding-top: 12px !important; padding-bottom: 12px !important; }
 .modal-toolbar { margin: 4px 0 20px; display: flex; align-items: center; justify-content: flex-end; gap: 20px; }
 .modal-toolbar .ant-btn-link { height: 32px; padding-inline: 0; display: inline-flex; align-items: center; }
 .ant-card { border-radius: 10px; border-color: #eef2f7; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03); }
