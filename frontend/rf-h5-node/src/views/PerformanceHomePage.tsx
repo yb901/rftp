@@ -32,6 +32,7 @@ const CONFIRM_SCENE = 'CONFIRM';
 const CAPTCHA_ELEMENT_ID = 'aliyun-captcha-element';
 const CAPTCHA_BUTTON_ID = 'aliyun-captcha-button';
 const captchaScriptPromises = new Map<string, Promise<void>>();
+type MobileCheckStatus = 'idle' | 'checking' | 'passed' | 'failed';
 
 /**
  * 员工绩效首页。
@@ -47,6 +48,8 @@ export function PerformanceHomePage() {
   const [captchaConfig, setCaptchaConfig] = useState<PerformanceCaptchaConfig | null>(null);
   const [captchaReady, setCaptchaReady] = useState(false);
   const [captchaInitError, setCaptchaInitError] = useState('');
+  const [mobileCheckStatus, setMobileCheckStatus] = useState<MobileCheckStatus>('idle');
+  const [mobileCheckMessage, setMobileCheckMessage] = useState('');
   const mobileRef = useRef('');
 
   useEffect(() => {
@@ -61,6 +64,47 @@ export function PerformanceHomePage() {
 
   useEffect(() => {
     mobileRef.current = mobile;
+  }, [mobile]);
+
+  useEffect(() => {
+    setSmsCode('');
+    if (!mobile) {
+      setMobileCheckStatus('idle');
+      setMobileCheckMessage('');
+      return undefined;
+    }
+    if (!/^1\d{10}$/.test(mobile)) {
+      setMobileCheckStatus('idle');
+      setMobileCheckMessage(mobile.length >= 11 ? '请输入正确的手机号' : '');
+      return undefined;
+    }
+    let canceled = false;
+    setMobileCheckStatus('checking');
+    setMobileCheckMessage('正在查询待确认绩效...');
+    performanceApi.checkPendingPerformance({ mobile })
+      .then((data) => {
+        if (canceled) {
+          return;
+        }
+        if (data?.hasPendingPerformance) {
+          setMobileCheckStatus('passed');
+          setMobileCheckMessage('');
+          return;
+        }
+        setMobileCheckStatus('failed');
+        setMobileCheckMessage('当前手机号没有待确认的绩效');
+      })
+      .catch((error) => {
+        if (canceled) {
+          return;
+        }
+        const message = error instanceof Error ? error.message : '绩效查询失败，请稍后重试';
+        setMobileCheckStatus('failed');
+        setMobileCheckMessage(message);
+      });
+    return () => {
+      canceled = true;
+    };
   }, [mobile]);
 
   const requestLoginSms = useCallback(async (captchaVerifyParam?: string) => {
@@ -127,6 +171,14 @@ export function PerformanceHomePage() {
       Toast.show({ icon: 'fail', content: '请输入正确的手机号' });
       return;
     }
+    if (mobileCheckStatus === 'checking') {
+      Toast.show({ icon: 'fail', content: '正在查询待确认绩效，请稍后' });
+      return;
+    }
+    if (mobileCheckStatus !== 'passed') {
+      Toast.show({ icon: 'fail', content: mobileCheckMessage || '当前手机号没有待确认的绩效' });
+      return;
+    }
     if (captchaInitError) {
       Toast.show({ icon: 'fail', content: captchaInitError });
       return;
@@ -150,7 +202,7 @@ export function PerformanceHomePage() {
     if (!captchaConfig?.enabled) {
       return;
     }
-    if (!/^1\d{10}$/.test(mobile) || !captchaReady || captchaInitError) {
+    if (!/^1\d{10}$/.test(mobile) || mobileCheckStatus !== 'passed' || !captchaReady || captchaInitError) {
       event.preventDefault();
       event.stopPropagation();
       event.nativeEvent.stopImmediatePropagation();
@@ -191,14 +243,9 @@ export function PerformanceHomePage() {
   };
 
   if (!loginMobile) {
+    const smsButtonDisabled = !/^1\d{10}$/.test(mobile) || mobileCheckStatus !== 'passed' || (!captchaReady && !captchaInitError);
     return (
       <div className="page-shell">
-        <NavBar back={null}>
-          <span className="nav-brand">
-            <img src={companyLogo} alt="中工经联" />
-            <span>员工绩效确认</span>
-          </span>
-        </NavBar>
         <main className="content">
           <section className="login-panel">
             <div className="login-brand">
@@ -208,7 +255,6 @@ export function PerformanceHomePage() {
                 <p>员工绩效确认</p>
               </div>
             </div>
-            <p>请输入名单内且当前有待确认绩效的手机号。</p>
             <Form layout="vertical" footer={
               <Button block color="primary" loading={loading} onClick={login}>
                 登录
@@ -216,15 +262,20 @@ export function PerformanceHomePage() {
             }>
               <Form.Item label="手机号">
                 <Input value={mobile} onChange={setMobile} placeholder="请输入手机号" type="tel" maxLength={11} />
+                {mobileCheckMessage && (
+                  <div className={mobileCheckStatus === 'checking' ? 'login-field-tip' : 'login-field-error'}>
+                    {mobileCheckMessage}
+                  </div>
+                )}
               </Form.Item>
               <Form.Item label="短信验证码">
                 <div className="sms-row">
                   <Input value={smsCode} onChange={setSmsCode} placeholder="请输入验证码" maxLength={6} />
                   <button
                     id={CAPTCHA_BUTTON_ID}
-                    className={buttonClassName(!captchaReady && !captchaInitError, smsSending)}
+                    className={buttonClassName(smsButtonDisabled, smsSending)}
                     type="button"
-                    disabled={!captchaReady && !captchaInitError}
+                    disabled={smsButtonDisabled}
                     onClickCapture={handleGetCodeClickCapture}
                     onClick={sendLoginSms}
                   >

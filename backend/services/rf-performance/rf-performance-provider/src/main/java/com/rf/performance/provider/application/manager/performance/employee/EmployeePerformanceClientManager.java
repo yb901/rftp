@@ -31,6 +31,14 @@ public interface EmployeePerformanceClientManager {
     EmployeePerformanceLoginResult login(EmployeePerformanceLoginCommand command);
 
     /**
+     * 判断手机号是否有当前待处理绩效。
+     *
+     * @param mobile 员工手机号
+     * @return 是否有当前待处理绩效
+     */
+    boolean hasPendingPerformance(String mobile);
+
+    /**
      * 查询员工绩效记录。
      *
      * @param mobile 登录手机号

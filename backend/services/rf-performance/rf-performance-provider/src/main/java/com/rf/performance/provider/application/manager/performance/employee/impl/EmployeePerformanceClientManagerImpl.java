@@ -97,7 +97,7 @@ public class EmployeePerformanceClientManagerImpl implements EmployeePerformance
         validateMobile(safeCommand.getMobile());
         String scene = StringUtils.defaultIfBlank(safeCommand.getScene(), "LOGIN");
         if (StringUtils.equals(scene, "LOGIN")) {
-            assertMobileInPerformanceList(safeCommand.getMobile());
+            assertMobileHasPendingPerformance(safeCommand.getMobile());
             verifyCaptcha(safeCommand.getCaptchaTraceId());
         }
         String code = createSmsCode();
@@ -129,10 +129,22 @@ public class EmployeePerformanceClientManagerImpl implements EmployeePerformance
         PerformanceSmsEvidenceData smsEvidence = verifySmsCode(safeCommand.getMobile(), "LOGIN", safeCommand.getSmsCode());
         smsEvidence.setVerifiedAt(LocalDateTime.now());
         employeePerformanceClientPersistencePort.markSmsVerified(smsEvidence);
-        assertMobileInPerformanceList(safeCommand.getMobile());
+        assertMobileHasPendingPerformance(safeCommand.getMobile());
         EmployeePerformanceLoginResult result = new EmployeePerformanceLoginResult();
         result.setMobile(safeCommand.getMobile());
         return result;
+    }
+
+    /**
+     * 判断手机号是否有当前待处理绩效。
+     *
+     * @param mobile 员工手机号
+     * @return 是否有当前待处理绩效
+     */
+    @Override
+    public boolean hasPendingPerformance(String mobile) {
+        validateMobile(mobile);
+        return !listAvailableRecordsByMobile(mobile).isEmpty();
     }
 
     /**
@@ -360,9 +372,9 @@ public class EmployeePerformanceClientManagerImpl implements EmployeePerformance
      *
      * @param mobile 员工手机号
      */
-    private void assertMobileInPerformanceList(String mobile) {
-        if (listAllRecordsByMobile(mobile).isEmpty()) {
-            throw new BusinessException(ErrorCode.E999001, "当前手机号暂无绩效记录");
+    private void assertMobileHasPendingPerformance(String mobile) {
+        if (listAvailableRecordsByMobile(mobile).isEmpty()) {
+            throw new BusinessException(ErrorCode.E999001, "当前手机号没有待确认的绩效");
         }
     }
 

@@ -1,6 +1,6 @@
 import { apiGet } from '../../shared/api/request';
 import { apiPost } from '../../shared/api/request';
-import type { EmployeePerformance, PerformanceCaptchaConfig, PerformanceLoginResult } from './types';
+import type { EmployeePerformance, PerformanceCaptchaConfig, PerformanceLoginResult, PerformancePendingCheckResult } from './types';
 
 /**
  * 员工绩效员工端 API。
@@ -32,6 +32,13 @@ export const performanceApi = {
    */
   login(data: { mobile: string; smsCode: string }) {
     return apiPost<PerformanceLoginResult>('/performance/employee/auth/login', data);
+  },
+
+  /**
+   * 登录前检查手机号是否有待处理绩效。
+   */
+  checkPendingPerformance(data: { mobile: string }) {
+    return apiPost<PerformancePendingCheckResult>('/performance/employee/auth/performance/check', data, { silentError: true });
   },
 
   /**

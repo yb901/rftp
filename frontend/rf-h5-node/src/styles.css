@@ -125,6 +125,21 @@ body {
   gap: 8px;
 }
 
+.login-field-tip,
+.login-field-error {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.login-field-tip {
+  color: #5f6c7b;
+}
+
+.login-field-error {
+  color: #d92d20;
+}
+
 .record-list {
   border-radius: 8px;
   overflow: hidden;

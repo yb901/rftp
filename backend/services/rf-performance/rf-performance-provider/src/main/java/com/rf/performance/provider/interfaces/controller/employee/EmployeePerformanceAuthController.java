@@ -9,9 +9,11 @@ import com.rf.performance.provider.common.config.PerformanceSmsProperties;
 import com.rf.performance.provider.common.config.PerformanceWebAuthProperties;
 import com.rf.performance.provider.common.web.EmployeePerformanceRequestContext;
 import com.rf.performance.provider.interfaces.controller.employee.param.EmployeePerformanceLoginCtrlParam;
+import com.rf.performance.provider.interfaces.controller.employee.param.EmployeePerformanceMobileCheckCtrlParam;
 import com.rf.performance.provider.interfaces.controller.employee.param.EmployeePerformanceSmsSendCtrlParam;
-import com.rf.performance.provider.interfaces.controller.employee.vo.auth.PerformanceCaptchaConfigVo;
 import com.rf.performance.provider.interfaces.controller.employee.vo.auth.EmployeePerformanceLoginVo;
+import com.rf.performance.provider.interfaces.controller.employee.vo.auth.EmployeePerformancePendingCheckVo;
+import com.rf.performance.provider.interfaces.controller.employee.vo.auth.PerformanceCaptchaConfigVo;
 import com.zy.common.core.bo.Result;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -103,6 +105,21 @@ public class EmployeePerformanceAuthController {
     public Result<EmployeePerformanceLoginVo> me(HttpServletRequest request) {
         EmployeePerformanceLoginVo vo = new EmployeePerformanceLoginVo();
         vo.setMobile(employeePerformanceRequestContext.requireMobile(request));
+        return Result.success(vo);
+    }
+
+    /**
+     * 登录前检查手机号是否有待处理绩效。
+     *
+     * @param param 手机号检查参数
+     * @return 待处理绩效检查结果
+     */
+    @PostMapping("/performance/check")
+    public Result<EmployeePerformancePendingCheckVo> checkPendingPerformance(@RequestBody EmployeePerformanceMobileCheckCtrlParam param) {
+        EmployeePerformanceMobileCheckCtrlParam safeParam = param == null ? new EmployeePerformanceMobileCheckCtrlParam() : param;
+        boolean hasPendingPerformance = employeePerformanceClientManager.hasPendingPerformance(safeParam.getMobile());
+        EmployeePerformancePendingCheckVo vo = new EmployeePerformancePendingCheckVo();
+        vo.setHasPendingPerformance(hasPendingPerformance);
         return Result.success(vo);
     }
 

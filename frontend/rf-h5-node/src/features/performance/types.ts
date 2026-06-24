@@ -27,6 +27,13 @@ export interface PerformanceLoginResult {
 }
 
 /**
+ * 登录前手机号绩效检查结果。
+ */
+export interface PerformancePendingCheckResult {
+  hasPendingPerformance?: boolean;
+}
+
+/**
  * 图形验证码配置。
  */
 export interface PerformanceCaptchaConfig {

@@ -674,23 +674,23 @@ function App() {
   const openAdminCreate = () => {
     setEditingAdmin(null);
     adminForm.resetFields();
-    adminForm.setFieldsValue({ enabled: 1, role: 2 });
+    adminForm.setFieldsValue({ role: 2 });
     setAdminOpen(true);
   };
 
   const openAdminEdit = (admin: AdminUser) => {
     setEditingAdmin(admin);
-    adminForm.setFieldsValue({ ...admin, password: '' });
+    adminForm.setFieldsValue({ username: admin.username, realName: admin.realName, role: admin.role, password: '' });
     setAdminOpen(true);
   };
 
   const submitAdmin = async () => {
     const values = await adminForm.validateFields();
     if (editingAdmin) {
-      await updateAdmin({ ...values, id: editingAdmin.id, username: editingAdmin.username });
+      await updateAdmin({ ...values, id: editingAdmin.id, username: editingAdmin.username, enabled: editingAdmin.enabled });
       message.success('管理员已更新');
     } else {
-      await saveAdmin({ ...values, enabled: values.enabled ?? 1 });
+      await saveAdmin({ ...values, enabled: 1 });
       message.success('管理员已新增');
     }
     setAdminOpen(false);
@@ -1127,9 +1127,6 @@ function App() {
           </Form.Item>
           <Form.Item name="role" label="角色" rules={[{ required: true, message: '请选择角色' }]}>
             <Select options={adminRoleOptions} />
-          </Form.Item>
-          <Form.Item name="enabled" label="是否启用" rules={[{ required: true, message: '请选择是否启用' }]}>
-            <Select options={[{ value: 1, label: '是' }, { value: 0, label: '否' }]} />
           </Form.Item>
         </Form>
       </Modal>
