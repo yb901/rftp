@@ -52,6 +52,12 @@
             <if test="query.confirmStatus != null and query.confirmStatus != ''">
                 AND confirm_status = #{query.confirmStatus}
             </if>
+            <if test="query.confirmStatusList != null and query.confirmStatusList.size() > 0">
+                AND confirm_status IN
+                <foreach collection="query.confirmStatusList" item="confirmStatus" open="(" separator="," close=")">
+                    #{confirmStatus}
+                </foreach>
+            </if>
             <if test="query.feedbackStatus != null and query.feedbackStatus != ''">
                 AND feedback_status = #{query.feedbackStatus}
             </if>

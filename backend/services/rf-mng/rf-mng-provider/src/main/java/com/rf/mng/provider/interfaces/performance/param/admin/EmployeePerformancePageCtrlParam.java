@@ -37,4 +37,9 @@ public class EmployeePerformancePageCtrlParam extends PageQuery {
      * 反馈状态编码。
      */
     private String feedbackStatus;
+
+    /**
+     * 导出确认范围，ALL/CONFIRMED/UNCONFIRMED。
+     */
+    private String exportConfirmScope;
 }

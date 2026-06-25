@@ -281,7 +281,6 @@ public class EmployeePerformanceManagerImpl implements EmployeePerformanceManage
         data.setAdjustReason(command.getAdjustReason());
         data.setOperatorAdminId(command.getOperatorAdminId());
         data.setOperatorAdminName(command.getOperatorAdminName());
-        data.setOperatorMobile(command.getOperatorMobile());
         data.setIpAddress(command.getIpAddress());
         return data;
     }

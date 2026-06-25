@@ -283,6 +283,7 @@ public class PerformanceMngController {
         EmployeePerformancePageQuery query = BeanUtil.copyProperties(param, EmployeePerformancePageQuery.class);
         query.setPage(1);
         query.setSize(10000);
+        applyExportConfirmScope(query, param == null ? null : param.getExportConfirmScope());
         PageResp<EmployeePerformanceRecordResult> resultPage = performanceMngManager.pageRecords(query);
         writeCsv(response, resultPage == null ? new ArrayList<>() : resultPage.getList());
     }
@@ -302,6 +303,8 @@ public class PerformanceMngController {
         EmployeePerformanceAdjustCtrlParam safeParam = param == null ? new EmployeePerformanceAdjustCtrlParam() : param;
         EmployeePerformanceAdjustCommand command = BeanUtil.copyProperties(safeParam, EmployeePerformanceAdjustCommand.class);
         command.setRecordId(recordId);
+        command.setOperatorAdminId((Long) request.getAttribute("adminId"));
+        command.setOperatorAdminName(limitText((String) request.getAttribute("adminName"), 64));
         command.setIpAddress(clientIp(request));
         EmployeePerformanceAdjustResult result = performanceMngManager.adjustPerformance(command);
         return Result.success(BeanUtil.copyProperties(result, EmployeePerformanceAdjustVo.class));
@@ -686,7 +689,8 @@ public class PerformanceMngController {
         response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + fileName);
         StringBuilder builder = new StringBuilder();
         builder.append('\uFEFF');
-        appendCsvLine(builder, List.of("绩效描述", "姓名", "手机号", "工号", "项目/部门", "岗位", "绩效", "绩效说明", "确认状态", "反馈状态", "反馈内容", "处理意见", "处理人"));
+        appendCsvLine(builder, List.of("绩效描述", "姓名", "手机号", "工号", "项目/部门", "岗位", "绩效", "绩效说明",
+                "是否确认", "确认状态", "是否有反馈", "反馈状态", "反馈内容", "处理意见", "处理人", "最终绩效"));
         for (EmployeePerformanceRecordResult record : records) {
             appendCsvLine(builder, Arrays.asList(
                     record.getPerformanceDescription(),
@@ -697,13 +701,63 @@ public class PerformanceMngController {
                     record.getPositionName(),
                     record.getPerformance(),
                     record.getPerformanceExplanation(),
+                    confirmedText(record.getConfirmStatus()),
                     confirmStatusText(record.getConfirmStatus()),
+                    feedbackText(record.getFeedbackStatus()),
                     feedbackStatusText(record.getFeedbackStatus()),
                     record.getFeedbackContent(),
                     record.getFeedbackHandleOpinion(),
-                    record.getFeedbackHandleAdminName()));
+                    record.getFeedbackHandleAdminName(),
+                    record.getPerformance()));
         }
         response.getWriter().write(builder.toString());
+    }
+
+    /**
+     * 应用导出确认范围。
+     *
+     * @param query 查询条件
+     * @param exportConfirmScope 导出确认范围
+     */
+    private void applyExportConfirmScope(EmployeePerformancePageQuery query, String exportConfirmScope) {
+        if (query == null || exportConfirmScope == null || exportConfirmScope.isBlank() || "ALL".equals(exportConfirmScope)) {
+            return;
+        }
+        query.setConfirmStatus(null);
+        if ("CONFIRMED".equals(exportConfirmScope)) {
+            query.setConfirmStatusList(List.of("CONFIRMED", "SECOND_CONFIRMED", "AUTO_CONFIRMED", "SECOND_AUTO_CONFIRMED"));
+            return;
+        }
+        if ("UNCONFIRMED".equals(exportConfirmScope)) {
+            query.setConfirmStatusList(List.of("PENDING_CONFIRM", "FEEDBACK_SUBMITTED", "PENDING_SECOND_CONFIRM"));
+        }
+    }
+
+    /**
+     * 转换是否确认文案。
+     *
+     * @param status 确认状态编码
+     * @return 是否确认文案
+     */
+    private String confirmedText(String status) {
+        if ("CONFIRMED".equals(status) || "SECOND_CONFIRMED".equals(status)
+                || "AUTO_CONFIRMED".equals(status) || "SECOND_AUTO_CONFIRMED".equals(status)) {
+            return "是";
+        }
+        return "否";
+    }
+
+    /**
+     * 转换是否有反馈文案。
+     *
+     * @param status 反馈状态编码
+     * @return 是否有反馈文案
+     */
+    private String feedbackText(String status) {
+        if (status == null || status.isBlank() || "NONE".equals(status)) {
+            return "否";
+        }
+        return "是";
     }
 
     /**

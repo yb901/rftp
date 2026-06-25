@@ -24,18 +24,4 @@ public class EmployeePerformanceAdjustCtrlParam implements Serializable {
      */
     private String adjustReason;
 
-    /**
-     * 操作管理员 ID。
-     */
-    private Long operatorAdminId;
-
-    /**
-     * 操作管理员名称。
-     */
-    private String operatorAdminName;
-
-    /**
-     * 操作员手机号。
-     */
-    private String operatorMobile;
 }

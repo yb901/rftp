@@ -268,9 +268,6 @@ export function exportPerformanceRecords(params: Record<string, unknown>) {
 export function adjustPerformanceRecord(recordId: number, data: {
   afterPerformance: string;
   adjustReason?: string;
-  operatorAdminId?: number;
-  operatorAdminName?: string;
-  operatorMobile?: string;
 }) {
   return unwrap<void>(request.post(`/api/performance/records/${recordId}/adjust`, data));
 }

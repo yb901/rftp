@@ -18,7 +18,7 @@ import {
   UserSwitchOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Avatar, Breadcrumb, Button, Card, DatePicker, Descriptions, Form, Input, Layout, Menu, Modal, Popconfirm, Select, Space, Table, Tabs, Tag, Typography, Upload, message } from 'antd';
+import { Avatar, Breadcrumb, Button, Card, DatePicker, Descriptions, Dropdown, Form, Input, Layout, Menu, Modal, Popconfirm, Select, Space, Table, Tabs, Tag, Typography, Upload, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { MenuProps } from 'antd';
 import dayjs from 'dayjs';
@@ -106,6 +106,12 @@ const feedbackStatusText: Record<string, string> = {
   HANDLED_ADJUSTED: '已调整',
   HANDLED_UNCHANGED: '已处理未调整',
 };
+
+const performanceExportItems: MenuProps['items'] = [
+  { key: 'ALL', label: '下载全部' },
+  { key: 'CONFIRMED', label: '下载已确认（含二次确认）' },
+  { key: 'UNCONFIRMED', label: '下载未确认（含二次确认）' },
+];
 
 const socialTaskStatusText: Record<string, string> = {
   PENDING: '待机器人领取',
@@ -623,7 +629,7 @@ function App() {
 
   const openAdjust = (record: EmployeePerformanceRecord) => {
     setCurrentRecord(record);
-    adjustForm.setFieldsValue({ afterPerformance: record.performance, operatorAdminId: loginUser?.id, operatorAdminName: currentAdminName(loginUser) });
+    adjustForm.setFieldsValue({ afterPerformance: record.performance });
     setAdjustOpen(true);
   };
 
@@ -632,7 +638,7 @@ function App() {
       return;
     }
     const values = await adjustForm.validateFields();
-    await adjustPerformanceRecord(currentRecord.id, { ...values, operatorAdminId: loginUser?.id, operatorAdminName: values.operatorAdminName || currentAdminName(loginUser) });
+    await adjustPerformanceRecord(currentRecord.id, values);
     message.success('绩效已调整，员工需二次确认');
     setAdjustOpen(false);
     adjustForm.resetFields();
@@ -723,9 +729,11 @@ function App() {
     await loadAdmins(adminPage.page, adminPage.size);
   };
 
-  const downloadPerformanceExport = async () => {
+  const downloadPerformanceExport = async (exportConfirmScope = 'ALL') => {
     const values = performanceQueryForm.getFieldsValue();
-    const response = await exportPerformanceRecords({ ...trimObject(values) });
+    const exportParams = trimObject(values);
+    delete exportParams.confirmStatus;
+    const response = await exportPerformanceRecords({ ...exportParams, exportConfirmScope });
     const url = window.URL.createObjectURL(response.data);
     const link = document.createElement('a');
     link.href = url;
@@ -898,7 +906,11 @@ function App() {
                             <Text strong>员工记录</Text>
                             <Space wrap>
                               <Button icon={<ReloadOutlined />} onClick={() => loadPerformanceRecords(1, performanceRecordPage.size)}>刷新</Button>
-                              <Button icon={<DownloadOutlined />} onClick={downloadPerformanceExport}>导出</Button>
+                              <Dropdown
+                                menu={{ items: performanceExportItems, onClick: ({ key }) => downloadPerformanceExport(key) }}
+                              >
+                                <Button icon={<DownloadOutlined />}>导出</Button>
+                              </Dropdown>
                             </Space>
                           </div>
                           <Form layout="inline" form={performanceQueryForm} className="query-bar">
@@ -1104,12 +1116,6 @@ function App() {
           </Form.Item>
           <Form.Item name="adjustReason" label="调整原因" rules={[{ required: true }]}>
             <Input.TextArea rows={4} />
-          </Form.Item>
-          <Form.Item name="operatorAdminName" label="操作人" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="operatorMobile" label="操作人手机号">
-            <Input />
           </Form.Item>
         </Form>
       </Modal>

@@ -360,10 +360,10 @@ export function PerformanceHomePage() {
                 <div className="record-score">绩效：{record.performance}</div>
                 {record.performanceExplanation && <div className="record-explanation">{record.performanceExplanation}</div>}
                 <div className="record-actions">
-                  <Button size="mini" color="primary" disabled={!record.confirmAvailable} onClick={() => confirmRecord(record)}>
+                  <Button block size="middle" color="primary" disabled={!record.confirmAvailable} onClick={() => confirmRecord(record)}>
                     确认
                   </Button>
-                  <Button size="mini" disabled={!record.feedbackAvailable} onClick={() => feedbackRecord(record)}>
+                  <Button block size="middle" disabled={!record.feedbackAvailable} onClick={() => feedbackRecord(record)}>
                     反馈
                   </Button>
                 </div>

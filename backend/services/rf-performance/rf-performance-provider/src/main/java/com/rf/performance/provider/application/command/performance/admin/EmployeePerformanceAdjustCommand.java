@@ -34,11 +34,6 @@ public class EmployeePerformanceAdjustCommand {
     private String operatorAdminName;
 
     /**
-     * 操作员手机号。
-     */
-    private String operatorMobile;
-
-    /**
      * 操作 IP。
      */
     private String ipAddress;

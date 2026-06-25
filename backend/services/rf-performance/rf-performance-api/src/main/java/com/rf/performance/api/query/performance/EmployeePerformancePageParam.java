@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.io.Serial;
+import java.util.List;
 
 /**
  * 员工绩效分页查询 RPC 入参。
@@ -42,4 +43,9 @@ public class EmployeePerformancePageParam extends PageQuery {
      * 反馈状态编码。
      */
     private String feedbackStatus;
+
+    /**
+     * 确认状态编码集合。
+     */
+    private List<String> confirmStatusList;
 }

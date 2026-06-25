@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+import java.util.List;
+
 /**
  * 员工绩效分页查询。
  */
@@ -37,4 +39,9 @@ public class EmployeePerformancePageQuery extends PageQuery {
      * 反馈状态编码。
      */
     private String feedbackStatus;
+
+    /**
+     * 确认状态编码集合。
+     */
+    private List<String> confirmStatusList;
 }
