@@ -71,6 +71,13 @@ public interface EmployeePerformanceGateway {
     PageResp<EmployeePerformanceRecordResult> pageRecords(EmployeePerformancePageQuery query);
 
     /**
+     * 删除员工绩效记录。
+     *
+     * @param recordId 员工绩效记录 ID
+     */
+    void deleteRecord(Long recordId);
+
+    /**
      * 调整员工绩效。
      *
      * @param command 员工绩效调整命令

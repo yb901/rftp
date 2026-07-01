@@ -32,6 +32,14 @@ public interface RemoteEmployeePerformanceService {
     PageResp<EmployeePerformanceRecordDto> pageRecords(EmployeePerformancePageParam param);
 
     /**
+     * 删除员工绩效记录。
+     *
+     * @param recordId 员工绩效记录 ID
+     * @throws BusinessException 业务异常
+     */
+    void deleteRecord(Long recordId) throws BusinessException;
+
+    /**
      * 调整员工绩效。
      *
      * @param param 员工绩效调整入参

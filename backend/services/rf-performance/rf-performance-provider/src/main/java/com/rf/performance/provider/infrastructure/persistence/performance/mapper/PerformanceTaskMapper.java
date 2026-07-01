@@ -127,6 +127,22 @@ public interface PerformanceTaskMapper {
     int increaseAutoConfirmedCount(@Param("id") Long id, @Param("count") int count);
 
     /**
+     * 扣减绩效任务统计。
+     *
+     * @param id 绩效任务 ID
+     * @param totalCount 总数扣减数量
+     * @param confirmedCount 确认数扣减数量
+     * @param feedbackCount 反馈数扣减数量
+     * @param autoConfirmedCount 自动确认数扣减数量
+     * @return 影响行数
+     */
+    int decreaseStats(@Param("id") Long id,
+                      @Param("totalCount") int totalCount,
+                      @Param("confirmedCount") int confirmedCount,
+                      @Param("feedbackCount") int feedbackCount,
+                      @Param("autoConfirmedCount") int autoConfirmedCount);
+
+    /**
      * 逻辑删除绩效任务。
      *
      * @param id 绩效任务 ID

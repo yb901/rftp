@@ -126,6 +126,26 @@
         </foreach>
     </insert>
 
+    <delete id="deleteById">
+        DELETE FROM tb_employee_performance_record
+        WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteFeedbackByRecordId">
+        DELETE FROM tb_employee_performance_feedback
+        WHERE record_id = #{recordId}
+    </delete>
+
+    <delete id="deleteAdjustLogByRecordId">
+        DELETE FROM tb_employee_performance_adjust_log
+        WHERE record_id = #{recordId}
+    </delete>
+
+    <delete id="deleteConfirmLogByRecordId">
+        DELETE FROM tb_employee_performance_confirm_log
+        WHERE record_id = #{recordId}
+    </delete>
+
     <update id="updatePerformanceForSecondConfirm">
         UPDATE tb_employee_performance_record
         SET performance = #{performance},

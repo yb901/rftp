@@ -72,6 +72,21 @@ public interface EmployeePerformanceRecordPersistencePort {
     int batchInsert(List<EmployeePerformanceRecordData> records);
 
     /**
+     * 按 ID 硬删除员工绩效记录。
+     *
+     * @param id 员工绩效记录 ID
+     * @return 是否删除成功
+     */
+    boolean deleteById(Long id);
+
+    /**
+     * 硬删除员工绩效记录关联数据。
+     *
+     * @param recordId 员工绩效记录 ID
+     */
+    void deleteRelatedByRecordId(Long recordId);
+
+    /**
      * 更新绩效并进入二次确认。
      *
      * @param id 员工绩效记录 ID

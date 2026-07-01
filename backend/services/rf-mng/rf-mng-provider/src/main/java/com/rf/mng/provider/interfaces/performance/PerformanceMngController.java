@@ -289,6 +289,18 @@ public class PerformanceMngController {
     }
 
     /**
+     * 删除员工绩效记录。
+     *
+     * @param recordId 员工绩效记录 ID
+     * @return 空结果
+     */
+    @PostMapping("/records/{recordId}/delete")
+    public Result<Void> deleteRecord(@PathVariable Long recordId) {
+        performanceMngManager.deleteRecord(recordId);
+        return Result.success();
+    }
+
+    /**
      * 调整员工绩效。
      *
      * @param recordId 员工绩效记录 ID

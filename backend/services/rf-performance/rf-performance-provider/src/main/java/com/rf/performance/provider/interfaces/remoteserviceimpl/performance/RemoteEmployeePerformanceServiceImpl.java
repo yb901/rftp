@@ -54,6 +54,17 @@ public class RemoteEmployeePerformanceServiceImpl implements RemoteEmployeePerfo
     }
 
     /**
+     * 删除员工绩效记录。
+     *
+     * @param recordId 员工绩效记录 ID
+     * @throws BusinessException 业务异常
+     */
+    @Override
+    public void deleteRecord(Long recordId) throws BusinessException {
+        employeePerformanceManager.deleteRecord(recordId);
+    }
+
+    /**
      * 调整员工绩效。
      *
      * @param param 员工绩效调整入参

@@ -328,6 +328,10 @@ export function fetchPerformanceRecords(params: Record<string, unknown>) {
   return unwrap<PageResp<EmployeePerformanceRecord>>(request.get('/api/performance/records', { params }));
 }
 
+export function deletePerformanceRecord(recordId: number) {
+  return unwrap<void>(request.post(`/api/performance/records/${recordId}/delete`));
+}
+
 export function exportPerformanceRecords(params: Record<string, unknown>) {
   return request.get('/api/performance/records/export', { params, responseType: 'blob' });
 }

@@ -118,6 +118,29 @@ public class EmployeePerformanceRecordPersistencePortImpl implements EmployeePer
     }
 
     /**
+     * 按 ID 硬删除员工绩效记录。
+     *
+     * @param id 员工绩效记录 ID
+     * @return 是否删除成功
+     */
+    @Override
+    public boolean deleteById(Long id) {
+        return employeePerformanceRecordMapper.deleteById(id) > 0;
+    }
+
+    /**
+     * 硬删除员工绩效记录关联数据。
+     *
+     * @param recordId 员工绩效记录 ID
+     */
+    @Override
+    public void deleteRelatedByRecordId(Long recordId) {
+        employeePerformanceRecordMapper.deleteFeedbackByRecordId(recordId);
+        employeePerformanceRecordMapper.deleteAdjustLogByRecordId(recordId);
+        employeePerformanceRecordMapper.deleteConfirmLogByRecordId(recordId);
+    }
+
+    /**
      * 更新绩效并进入二次确认。
      *
      * @param id 员工绩效记录 ID

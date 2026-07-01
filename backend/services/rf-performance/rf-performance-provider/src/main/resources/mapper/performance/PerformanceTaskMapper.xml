@@ -141,6 +141,16 @@
           AND is_deleted = 0
     </update>
 
+    <update id="decreaseStats">
+        UPDATE tb_employee_performance_task
+        SET total_count = GREATEST(total_count - #{totalCount}, 0),
+            confirmed_count = GREATEST(confirmed_count - #{confirmedCount}, 0),
+            feedback_count = GREATEST(feedback_count - #{feedbackCount}, 0),
+            auto_confirmed_count = GREATEST(auto_confirmed_count - #{autoConfirmedCount}, 0)
+        WHERE id = #{id}
+          AND is_deleted = 0
+    </update>
+
     <update id="deleteById">
         UPDATE tb_employee_performance_task
         SET is_deleted = 1

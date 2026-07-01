@@ -111,6 +111,16 @@ public class EmployeePerformanceGatewayImpl implements EmployeePerformanceGatewa
         return toRecordResultPage(dtoPage);
     }
 
+    /**
+     * 删除员工绩效记录。
+     *
+     * @param recordId 员工绩效记录 ID
+     */
+    @Override
+    public void deleteRecord(Long recordId) {
+        remoteEmployeePerformanceService.deleteRecord(recordId);
+    }
+
     @Override
     public EmployeePerformanceAdjustResult adjustPerformance(EmployeePerformanceAdjustCommand command) {
         EmployeePerformanceAdjustParam param = BeanUtil.copyProperties(command, EmployeePerformanceAdjustParam.class);

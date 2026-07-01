@@ -105,6 +105,28 @@ public class EmployeePerformanceManagerImpl implements EmployeePerformanceManage
     }
 
     /**
+     * 删除员工绩效记录。
+     *
+     * @param recordId 员工绩效记录 ID
+     */
+    @Override
+    @Transactional(transactionManager = "transactionManager", rollbackFor = Exception.class)
+    public void deleteRecord(Long recordId) {
+        if (recordId == null) {
+            throw new BusinessException(ErrorCode.E999001, "绩效记录ID不能为空");
+        }
+        EmployeePerformanceAdminRecord record = employeePerformanceRecordPersistencePort.getById(recordId);
+        if (record == null || record.getId() == null) {
+            throw new BusinessException(ErrorCode.E999001, "绩效记录不存在");
+        }
+        employeePerformanceRecordPersistencePort.deleteRelatedByRecordId(recordId);
+        if (!employeePerformanceRecordPersistencePort.deleteById(recordId)) {
+            throw new BusinessException(ErrorCode.E999002, "绩效记录删除失败");
+        }
+        decreaseTaskStats(record);
+    }
+
+    /**
      * 调整员工绩效。
      *
      * @param command 员工绩效调整命令
@@ -247,6 +269,44 @@ public class EmployeePerformanceManagerImpl implements EmployeePerformanceManage
         if (StringUtils.isBlank(command.getAfterPerformance())) {
             throw new BusinessException(ErrorCode.E999001, "调整后绩效不能为空");
         }
+    }
+
+    /**
+     * 扣减绩效任务统计。
+     *
+     * @param record 员工绩效记录
+     */
+    private void decreaseTaskStats(EmployeePerformanceAdminRecord record) {
+        int confirmedCount = confirmedStatCount(record.getConfirmStatus());
+        int feedbackCount = PerformanceFeedbackStatus.NONE.getCode().equals(record.getFeedbackStatus()) ? 0 : 1;
+        int autoConfirmedCount = autoConfirmedStatCount(record.getConfirmStatus());
+        if (!performanceTaskPersistencePort.decreaseStats(record.getTaskId(), 1, confirmedCount, feedbackCount, autoConfirmedCount)) {
+            throw new BusinessException(ErrorCode.E999002, "绩效任务统计更新失败");
+        }
+    }
+
+    /**
+     * 获取确认统计扣减数量。
+     *
+     * @param confirmStatus 确认状态
+     * @return 扣减数量
+     */
+    private int confirmedStatCount(String confirmStatus) {
+        return Set.of(PerformanceConfirmStatus.CONFIRMED.getCode(),
+                PerformanceConfirmStatus.SECOND_CONFIRMED.getCode(),
+                PerformanceConfirmStatus.AUTO_CONFIRMED.getCode(),
+                PerformanceConfirmStatus.SECOND_AUTO_CONFIRMED.getCode()).contains(confirmStatus) ? 1 : 0;
+    }
+
+    /**
+     * 获取自动确认统计扣减数量。
+     *
+     * @param confirmStatus 确认状态
+     * @return 扣减数量
+     */
+    private int autoConfirmedStatCount(String confirmStatus) {
+        return Set.of(PerformanceConfirmStatus.AUTO_CONFIRMED.getCode(),
+                PerformanceConfirmStatus.SECOND_AUTO_CONFIRMED.getCode()).contains(confirmStatus) ? 1 : 0;
     }
 
     /**

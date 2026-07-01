@@ -152,6 +152,16 @@ public class PerformanceMngManagerImpl implements PerformanceMngManager {
     }
 
     /**
+     * 删除员工绩效记录。
+     *
+     * @param recordId 员工绩效记录 ID
+     */
+    @Override
+    public void deleteRecord(Long recordId) {
+        employeePerformanceGateway.deleteRecord(recordId);
+    }
+
+    /**
      * 调整员工绩效。
      *
      * @param command 员工绩效调整命令

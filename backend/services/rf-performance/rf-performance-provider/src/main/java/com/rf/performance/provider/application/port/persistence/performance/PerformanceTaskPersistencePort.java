@@ -121,6 +121,18 @@ public interface PerformanceTaskPersistencePort {
     boolean increaseAutoConfirmedCount(Long id, int count);
 
     /**
+     * 扣减绩效任务统计。
+     *
+     * @param id 绩效任务 ID
+     * @param totalCount 总数扣减数量
+     * @param confirmedCount 确认数扣减数量
+     * @param feedbackCount 反馈数扣减数量
+     * @param autoConfirmedCount 自动确认数扣减数量
+     * @return 是否更新成功
+     */
+    boolean decreaseStats(Long id, int totalCount, int confirmedCount, int feedbackCount, int autoConfirmedCount);
+
+    /**
      * 删除绩效任务。
      *
      * @param id 绩效任务 ID

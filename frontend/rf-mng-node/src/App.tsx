@@ -41,6 +41,7 @@ import {
   deleteSocialSecurityEnterprise,
   deleteSocialSecurityRegionSite,
   deletePerformanceTask,
+  deletePerformanceRecord,
   disablePerformanceTask,
   deleteAdmin,
   disableAdminTotp,
@@ -528,17 +529,24 @@ function App() {
     },
     {
       title: '操作',
-      width: 180,
+      width: 230,
       fixed: 'right',
       render: (_, row) => (
         <Space>
           <Button size="small" icon={<EyeOutlined />} disabled={!row.feedbackContent} onClick={() => openFeedback(row)}>反馈</Button>
           <Button size="small" icon={<EditOutlined />} disabled={!canAdjustPerformance(row)} onClick={() => openAdjust(row)}>调整</Button>
           <Button size="small" disabled={!canAdjustPerformance(row)} onClick={() => closeFeedbackUnchanged(row)}>无需调整</Button>
+          <Popconfirm
+            title="确定删除该员工绩效记录？"
+            description="删除后该员工绩效记录及相关反馈、确认留痕将被清除。"
+            onConfirm={() => removePerformanceRecord(row)}
+          >
+            <Button size="small" danger icon={<DeleteOutlined />}>删除</Button>
+          </Popconfirm>
         </Space>
       ),
     },
-  ], []);
+  ], [performanceRecordPage.page, performanceRecordPage.size, performanceTaskPage.page, performanceTaskPage.size]);
 
   const performanceTaskColumns: ColumnsType<PerformanceTask> = useMemo(() => [
     { title: '绩效描述', dataIndex: 'performanceDescription', width: 220, ellipsis: true },
@@ -796,6 +804,19 @@ function App() {
     setCurrentRecord(record);
     adjustForm.setFieldsValue({ afterPerformance: record.performance });
     setAdjustOpen(true);
+  };
+
+  const removePerformanceRecord = async (record: EmployeePerformanceRecord) => {
+    try {
+      await deletePerformanceRecord(record.id);
+      message.success('员工绩效记录已删除');
+      await Promise.all([
+        loadPerformanceRecords(performanceRecordPage.page, performanceRecordPage.size),
+        loadPerformanceTasks(performanceTaskPage.page, performanceTaskPage.size),
+      ]);
+    } catch (error) {
+      message.error(getRequestErrorMessage(error, '员工绩效记录删除失败'));
+    }
   };
 
   const submitAdjust = async () => {

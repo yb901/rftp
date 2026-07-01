@@ -79,6 +79,38 @@ public interface EmployeePerformanceRecordMapper {
     int batchInsert(@Param("records") List<EmployeePerformanceRecordEntity> records);
 
     /**
+     * 按 ID 硬删除员工绩效记录。
+     *
+     * @param id 员工绩效记录 ID
+     * @return 影响行数
+     */
+    int deleteById(@Param("id") Long id);
+
+    /**
+     * 硬删除员工绩效反馈。
+     *
+     * @param recordId 员工绩效记录 ID
+     * @return 影响行数
+     */
+    int deleteFeedbackByRecordId(@Param("recordId") Long recordId);
+
+    /**
+     * 硬删除员工绩效调整留痕。
+     *
+     * @param recordId 员工绩效记录 ID
+     * @return 影响行数
+     */
+    int deleteAdjustLogByRecordId(@Param("recordId") Long recordId);
+
+    /**
+     * 硬删除员工绩效确认留痕。
+     *
+     * @param recordId 员工绩效记录 ID
+     * @return 影响行数
+     */
+    int deleteConfirmLogByRecordId(@Param("recordId") Long recordId);
+
+    /**
      * 更新绩效并进入二次确认。
      *
      * @param id 员工绩效记录 ID
