@@ -667,8 +667,23 @@ public class PerformanceMngController {
         }
         PageResp<EmployeePerformanceRecordVo> voPage = new PageResp<>();
         voPage.setPagination(resultPage.getPagination());
-        voPage.setList(BeanUtil.copyToList(resultPage.getList(), EmployeePerformanceRecordVo.class));
+        List<EmployeePerformanceRecordVo> records = BeanUtil.copyToList(resultPage.getList(), EmployeePerformanceRecordVo.class);
+        records.forEach(record -> record.setMobile(maskMobile(record.getMobile())));
+        voPage.setList(records);
         return voPage;
+    }
+
+    /**
+     * 脱敏手机号。
+     *
+     * @param mobile 手机号
+     * @return 脱敏后的手机号
+     */
+    private String maskMobile(String mobile) {
+        if (mobile == null || mobile.length() < 7) {
+            return mobile;
+        }
+        return mobile.substring(0, 3) + "****" + mobile.substring(mobile.length() - 4);
     }
 
     /**
