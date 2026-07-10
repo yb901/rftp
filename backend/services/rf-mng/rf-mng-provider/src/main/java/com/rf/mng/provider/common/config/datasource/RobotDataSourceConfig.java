@@ -1,11 +1,12 @@
 package com.rf.mng.provider.common.config.datasource;
 
+import com.zy.common.core.datasource.QyHikariDataSourceFactory;
+import com.zaxxer.hikari.HikariDataSource;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,17 +26,11 @@ import javax.sql.DataSource;
 )
 public class RobotDataSourceConfig {
 
-    /** 机器人协作库配置属性。 */
-    @Bean("robotDataSourceProperties")
-    @ConfigurationProperties("spring.datasource.robot")
-    public DataSourceProperties robotDataSourceProperties() {
-        return new DataSourceProperties();
-    }
-
     /** 机器人协作库数据源。 */
-    @Bean("robotDataSource")
-    public DataSource robotDataSource(@Qualifier("robotDataSourceProperties") DataSourceProperties properties) {
-        return properties.initializeDataSourceBuilder().build();
+    @Bean(name = "robotDataSource", destroyMethod = "close")
+    @ConfigurationProperties(prefix = "datasource.rf-robot")
+    public HikariDataSource robotDataSource(QyHikariDataSourceFactory dataSourceFactory) {
+        return dataSourceFactory.create("rf-robot");
     }
 
     /** 机器人协作库事务管理器。 */

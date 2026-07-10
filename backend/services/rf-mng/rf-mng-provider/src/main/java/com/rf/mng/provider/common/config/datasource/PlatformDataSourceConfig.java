@@ -1,11 +1,12 @@
 package com.rf.mng.provider.common.config.datasource;
 
+import com.zy.common.core.datasource.QyHikariDataSourceFactory;
+import com.zaxxer.hikari.HikariDataSource;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,19 +27,12 @@ import javax.sql.DataSource;
 )
 public class PlatformDataSourceConfig {
 
-    /** 平台主库配置属性。 */
-    @Primary
-    @Bean("platformDataSourceProperties")
-    @ConfigurationProperties("spring.datasource.platform")
-    public DataSourceProperties platformDataSourceProperties() {
-        return new DataSourceProperties();
-    }
-
     /** 平台主库数据源。 */
     @Primary
-    @Bean("dataSource")
-    public DataSource platformDataSource(@Qualifier("platformDataSourceProperties") DataSourceProperties properties) {
-        return properties.initializeDataSourceBuilder().build();
+    @Bean(name = "dataSource", destroyMethod = "close")
+    @ConfigurationProperties(prefix = "datasource.rf-pt")
+    public HikariDataSource platformDataSource(QyHikariDataSourceFactory dataSourceFactory) {
+        return dataSourceFactory.create("rf-pt");
     }
 
     /** 平台主库事务管理器。 */
