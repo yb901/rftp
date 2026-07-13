@@ -33,6 +33,7 @@ dependencies {
     implementation(libs.xxl.job.core)
     implementation(libs.aliyun.dysmsapi)
     implementation(libs.aliyun.captcha)
+    implementation(libs.logstash.logback.encoder)
 
     testRuntimeOnly(libs.mysql.connector.j)
 }

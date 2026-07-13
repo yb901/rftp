@@ -28,6 +28,7 @@ dependencies {
     implementation(libs.easyexcel)
     implementation(libs.aliyun.oss)
     implementation(libs.totp)
+    implementation(libs.logstash.logback.encoder)
     implementation("jakarta.validation:jakarta.validation-api")
 
     testRuntimeOnly(libs.mysql.connector.j)
