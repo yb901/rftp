@@ -37,7 +37,7 @@ vi deploy/test/.env
 
 公共配置直接复用 `zy_qy` 的 `common-backend-test.properties`；`rf` 自己的配置内容可参考生产样例 `backend/docs/config/rf-mng-prod.properties` 和 `backend/docs/config/rf-performance-prod.properties`。
 
-如需关闭社保机器人协作表结构自动补齐，可在 `rf-mng-test.properties` 设置 `rf.robot.schema-init.enabled=false`，再执行普通 DDL 脚本 `backend/services/rf-mng/sql/rf_robot/20260623_social_security_payment_task_queue.sql`。
+社保机器人协作表结构通过普通 DDL 脚本维护。部署或升级前执行 `backend/services/rf-mng/sql/rf_robot/20260623_social_security_payment_task_queue.sql`。
 
 ## 启动
 

@@ -58,19 +58,21 @@ public class SocialSecurityPaymentManagerImpl implements SocialSecurityPaymentMa
     @Transactional(rollbackFor = Exception.class, transactionManager = "transactionManager")
     public Long createBatch(SocialSecurityPaymentBatchCreateCommand command) {
         validateCreateCommand(command);
+        List<String> taxNos = resolveTaxNos(command);
+        validateRunnableEnterprises(command, taxNos);
         SocialSecurityPaymentBatchData batch = new SocialSecurityPaymentBatchData();
         batch.setRegionCode(command.getRegionCode());
         batch.setSiteType(StringUtils.defaultIfBlank(command.getSiteType(), "default"));
         batch.setPeriodMonth(command.getPeriodMonth());
         batch.setStatus(SocialSecurityPaymentBatchStatus.SUBMITTED.name());
-        batch.setTotalCount(countTaxNos(command));
+        batch.setTotalCount(taxNos.size());
         batch.setSuccessCount(0);
         batch.setFailedCount(0);
         batch.setCreateAdminId(command.getCreateAdminId());
         batch.setCreateAdminName(command.getCreateAdminName());
         batchPersistencePort.insert(batch);
 
-        List<SocialSecurityPaymentTaskData> tasks = buildTasks(batch, command);
+        List<SocialSecurityPaymentTaskData> tasks = buildTasks(batch, command, taxNos);
         taskPersistencePort.batchInsert(tasks);
         return batch.getId();
     }
@@ -108,11 +110,9 @@ public class SocialSecurityPaymentManagerImpl implements SocialSecurityPaymentMa
         if (!Boolean.TRUE.equals(task.getRetryable())) {
             throw new BusinessException(ErrorCode.E999001, "当前任务不允许重试");
         }
-        taskPersistencePort.markRetry(command.getTaskId());
-    }
-
-    private int countTaxNos(SocialSecurityPaymentBatchCreateCommand command) {
-        return resolveTaxNos(command).size();
+        if (taskPersistencePort.markRetry(command.getTaskId()) != 1) {
+            throw new BusinessException(ErrorCode.E999001, "重试次数已达上限");
+        }
     }
 
     /**
@@ -214,8 +214,8 @@ public class SocialSecurityPaymentManagerImpl implements SocialSecurityPaymentMa
     }
 
     private List<SocialSecurityPaymentTaskData> buildTasks(SocialSecurityPaymentBatchData batch,
-                                                             SocialSecurityPaymentBatchCreateCommand command) {
-        List<String> taxNoList = resolveTaxNos(command);
+                                                             SocialSecurityPaymentBatchCreateCommand command,
+                                                             List<String> taxNoList) {
         List<SocialSecurityPaymentTaskData> tasks = new ArrayList<>();
         for (String taxNo : taxNoList) {
             if (StringUtils.isBlank(taxNo)) {
@@ -254,6 +254,35 @@ public class SocialSecurityPaymentManagerImpl implements SocialSecurityPaymentMa
                 .filter(StringUtils::isNotBlank)
                 .distinct()
                 .toList();
+    }
+
+    /**
+     * 入队前校验企业和地区站点配置，避免无效任务由 worker 领取后才失败。
+     */
+    private void validateRunnableEnterprises(SocialSecurityPaymentBatchCreateCommand command, List<String> taxNos) {
+        if (taxNos == null || taxNos.isEmpty()) {
+            throw new BusinessException(ErrorCode.E999001, "未找到需要缴费的企业税号");
+        }
+        String siteType = StringUtils.defaultIfBlank(command.getSiteType(), "default");
+        var regionSite = configPersistencePort.findRegionSiteByCodeAndType(command.getRegionCode(), siteType);
+        if (regionSite == null || !"active".equals(regionSite.getStatus())) {
+            throw new BusinessException(ErrorCode.E999001, "地区站点不存在或未启用");
+        }
+        for (String taxNo : taxNos) {
+            SocialSecurityEnterpriseRecord enterprise = configPersistencePort.findEnterpriseByTaxNo(taxNo);
+            if (enterprise == null) {
+                throw new BusinessException(ErrorCode.E999001, "企业不存在：" + taxNo);
+            }
+            if (!"active".equals(enterprise.getStatus())) {
+                throw new BusinessException(ErrorCode.E999001, "企业未启用：" + taxNo);
+            }
+            if (!command.getRegionCode().equals(enterprise.getRegionCode())) {
+                throw new BusinessException(ErrorCode.E999001, "企业地区与批次地区不一致：" + taxNo);
+            }
+            if (StringUtils.isBlank(enterprise.getSecurityAccountName())) {
+                throw new BusinessException(ErrorCode.E999001, "企业未配置社保账户：" + taxNo);
+            }
+        }
     }
 
     private SocialSecurityPaymentBatchResult toBatchResult(SocialSecurityPaymentBatchRecord entity) {

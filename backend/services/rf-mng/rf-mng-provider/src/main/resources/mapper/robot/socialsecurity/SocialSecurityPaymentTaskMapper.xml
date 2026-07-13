@@ -85,6 +85,7 @@
             worker_id = NULL, claimed_at = NULL, heartbeat_at = NULL, started_at = NULL, finished_at = NULL,
             error_message = NULL, result_body = NULL
         WHERE id = #{id}
+          AND retry_count &lt; max_retry_count
     </update>
 
     <select id="listSummaryByBatchIds" resultMap="TaskSummaryMap">

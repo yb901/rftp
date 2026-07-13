@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * 社保缴费配置管理器实现。
@@ -60,6 +61,32 @@ public class SocialSecurityConfigManagerImpl implements SocialSecurityConfigMana
             configPersistencePort.updateEnterprise(data);
         }
         return toEnterpriseResult(configPersistencePort.findEnterpriseById(data.getId()));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class, transactionManager = "robotTransactionManager")
+    public int importEnterprises(List<SocialSecurityEnterpriseSaveCommand> commands) {
+        if (commands == null || commands.isEmpty()) {
+            return 0;
+        }
+        for (SocialSecurityEnterpriseSaveCommand command : commands) {
+            validateEnterprise(command);
+            SocialSecurityEnterpriseRecord existed = configPersistencePort.findEnterpriseByTaxNo(command.getTaxNo().trim());
+            SocialSecurityEnterpriseData data = new SocialSecurityEnterpriseData();
+            data.setId(existed == null ? null : existed.getId());
+            data.setTaxNo(command.getTaxNo().trim());
+            data.setEnterpriseName(command.getEnterpriseName().trim());
+            data.setRegionCode(command.getRegionCode().trim());
+            data.setSecurityAccountName(StringUtils.trimToNull(command.getSecurityAccountName()));
+            data.setStatus(StringUtils.defaultIfBlank(command.getStatus(), "active"));
+            data.setRemark(StringUtils.trimToNull(command.getRemark()));
+            if (data.getId() == null) {
+                configPersistencePort.insertEnterprise(data);
+            } else {
+                configPersistencePort.updateEnterprise(data);
+            }
+        }
+        return commands.size();
     }
 
     @Override

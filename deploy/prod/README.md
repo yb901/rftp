@@ -85,7 +85,7 @@ kubectl -n prod get deploy rf-mng rf-performance -o yaml | grep -n "rf-platform-
 
 - `rf-mng` 生产配置需要在 `rf-mng-prod.properties` 中设置：
   - `id-codec.enabled=true`：启用 ID 编解码自动配置；接口字段仍需要在代码中使用 `@IdEncode` / `@IdDecode` 标注才会实际生效。
-  - `rf.robot.schema-init.enabled=true`：启动时通过 Java 初始化逻辑幂等补齐社保机器人协作字段和索引，不使用存储过程。
+  - 部署前执行 `backend/services/rf-mng/sql/rf_robot/20260623_social_security_payment_task_queue.sql`，通过版本化 DDL 补齐社保机器人协作字段和索引。
   - `db.encrypt.enabled=true`、`db.encrypt.secrets.S1=SM4_密文` 和 `db.encrypt.tables.tb_admin.columns.otp_secret.*`：启用 `tb_admin.otp_secret` 字段透明加解密。
   - `dubbo.protocol.id=dubbo`、`dubbo.protocol.port=20891`、`dubbo.application.qos-port=22221`、`dubbo.scan.base-packages=com.rf.mng.provider.interfaces.remoteserviceimpl`：避免与其他生产服务默认端口冲突，并对齐 `zy_qy` 的 Dubbo 扫描配置。
 - `rf-performance` 生产配置需要在 `rf-performance-prod.properties` 中设置：
